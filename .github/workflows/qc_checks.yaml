@@ -45,6 +45,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # pin@v6.0.2
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # pin@v3.0.2
         id: filter
         with:
@@ -733,7 +734,9 @@ jobs:
       - name: Build frontend
         run: cd src/frontend && yarn run compile && yarn run build
       - name: Write version file - SHA
-        run: cd src/backend/InvenTree/web/static/web/.vite && echo "$GITHUB_SHA" > sha.txt
+        run: |
+          mkdir -p src/backend/InvenTree/web/static/web/.vite
+          echo "${GITHUB_SHA}" > src/backend/InvenTree/web/static/web/.vite/sha.txt
       - name: Zip frontend
         run: |
           cd src/backend/InvenTree/web/static
