@@ -57,6 +57,7 @@ import {
   RenderStockLocationType
 } from './Stock';
 import { RenderGroup, RenderOwner, RenderUser } from './User';
+import { RenderEvent } from './Event';
 
 /**
  * Lookup table for rendering a model instance
@@ -82,6 +83,7 @@ export const RendererLookup: ModelRendererDict = {
   [ModelType.returnorderlineitem]: RenderReturnOrderLineItem,
   [ModelType.salesorder]: RenderSalesOrder,
   [ModelType.salesordershipment]: RenderSalesOrderShipment,
+  [ModelType.event]: RenderEvent,
   [ModelType.stocklocation]: RenderStockLocation,
   [ModelType.stocklocationtype]: RenderStockLocationType,
   [ModelType.stockitem]: RenderStockItem,

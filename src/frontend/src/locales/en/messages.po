@@ -50,7 +50,7 @@ msgid "Cancel"
 msgstr "Cancel"
 
 #: lib/components/RowActions.tsx:136
-#: src/components/nav/NavigationDrawer.tsx:190
+#: src/components/nav/NavigationDrawer.tsx:197
 #: src/forms/PurchaseOrderForms.tsx:862
 #: src/forms/StockForms.tsx:803
 #: src/forms/StockForms.tsx:850
@@ -125,7 +125,7 @@ msgstr "Part"
 #: lib/enums/ModelInformation.tsx:30
 #: lib/enums/Roles.tsx:35
 #: src/components/nav/NavigationDrawer.tsx:70
-#: src/defaults/links.tsx:36
+#: src/defaults/links.tsx:37
 #: src/pages/Index/Settings/SystemSettings.tsx:197
 #: src/pages/part/CategoryDetail.tsx:135
 #: src/pages/part/CategoryDetail.tsx:285
@@ -340,7 +340,7 @@ msgstr "Purchase Order"
 
 #: lib/enums/ModelInformation.tsx:160
 #: lib/enums/Roles.tsx:39
-#: src/defaults/actions.tsx:105
+#: src/defaults/actions.tsx:106
 #: src/pages/Index/Settings/SystemSettings.tsx:300
 #: src/pages/company/CompanyDetail.tsx:204
 #: src/pages/company/SupplierPartDetail.tsx:267
@@ -373,7 +373,7 @@ msgstr "Sales Order"
 
 #: lib/enums/ModelInformation.tsx:176
 #: lib/enums/Roles.tsx:43
-#: src/defaults/actions.tsx:115
+#: src/defaults/actions.tsx:116
 #: src/pages/Index/Settings/SystemSettings.tsx:316
 #: src/pages/company/CompanyDetail.tsx:224
 #: src/pages/part/PartDetail.tsx:879
@@ -398,7 +398,7 @@ msgstr "Return Order"
 
 #: lib/enums/ModelInformation.tsx:195
 #: lib/enums/Roles.tsx:41
-#: src/defaults/actions.tsx:126
+#: src/defaults/actions.tsx:127
 #: src/pages/Index/Settings/SystemSettings.tsx:333
 #: src/pages/company/CompanyDetail.tsx:231
 #: src/pages/part/PartDetail.tsx:886
@@ -415,16 +415,22 @@ msgid "Return Order Line Items"
 msgstr "Return Order Line Items"
 
 #: lib/enums/ModelInformation.tsx:210
+#: src/components/render/Event.tsx:20
+#: src/pages/events/EventDetail.tsx:134
+msgid "Event"
+msgstr "Event"
+
+#: lib/enums/ModelInformation.tsx:219
 #: src/tables/company/AddressTable.tsx:52
 msgid "Address"
 msgstr "Address"
 
-#: lib/enums/ModelInformation.tsx:211
+#: lib/enums/ModelInformation.tsx:220
 #: src/pages/company/CompanyDetail.tsx:265
 msgid "Addresses"
 msgstr "Addresses"
 
-#: lib/enums/ModelInformation.tsx:217
+#: lib/enums/ModelInformation.tsx:226
 #: src/pages/Index/Settings/AccountSettings/AccountDetailPanel.tsx:89
 #: src/pages/core/UserDetail.tsx:135
 #: src/pages/purchasing/PurchaseOrderDetail.tsx:230
@@ -433,22 +439,22 @@ msgstr "Addresses"
 msgid "Contact"
 msgstr "Contact"
 
-#: lib/enums/ModelInformation.tsx:218
+#: lib/enums/ModelInformation.tsx:227
 #: src/pages/company/CompanyDetail.tsx:259
 #: src/pages/core/CoreIndex.tsx:33
 msgid "Contacts"
 msgstr "Contacts"
 
-#: lib/enums/ModelInformation.tsx:224
+#: lib/enums/ModelInformation.tsx:233
 #: src/tables/ColumnRenderers.tsx:631
 msgid "Owner"
 msgstr "Owner"
 
-#: lib/enums/ModelInformation.tsx:225
+#: lib/enums/ModelInformation.tsx:234
 msgid "Owners"
 msgstr "Owners"
 
-#: lib/enums/ModelInformation.tsx:231
+#: lib/enums/ModelInformation.tsx:240
 #: src/pages/Auth/ChangePassword.tsx:36
 #: src/pages/core/UserDetail.tsx:220
 #: src/tables/ColumnRenderers.tsx:582
@@ -463,21 +469,21 @@ msgstr "Owners"
 msgid "User"
 msgstr "User"
 
-#: lib/enums/ModelInformation.tsx:232
-#: src/components/nav/NavigationDrawer.tsx:105
+#: lib/enums/ModelInformation.tsx:241
+#: src/components/nav/NavigationDrawer.tsx:112
 #: src/pages/Index/Settings/AdminCenter/UserManagementPanel.tsx:15
 #: src/pages/core/CoreIndex.tsx:21
 #: src/pages/core/UserDetail.tsx:226
 msgid "Users"
 msgstr "Users"
 
-#: lib/enums/ModelInformation.tsx:238
+#: lib/enums/ModelInformation.tsx:247
 #: src/pages/core/GroupDetail.tsx:78
 msgid "Group"
 msgstr "Group"
 
-#: lib/enums/ModelInformation.tsx:239
-#: src/components/nav/NavigationDrawer.tsx:111
+#: lib/enums/ModelInformation.tsx:248
+#: src/components/nav/NavigationDrawer.tsx:118
 #: src/pages/Index/Settings/AdminCenter/UserManagementPanel.tsx:23
 #: src/pages/core/CoreIndex.tsx:27
 #: src/pages/core/GroupDetail.tsx:82
@@ -486,59 +492,59 @@ msgstr "Group"
 msgid "Groups"
 msgstr "Groups"
 
-#: lib/enums/ModelInformation.tsx:246
+#: lib/enums/ModelInformation.tsx:255
 msgid "Import Session"
 msgstr "Import Session"
 
-#: lib/enums/ModelInformation.tsx:247
+#: lib/enums/ModelInformation.tsx:256
 msgid "Import Sessions"
 msgstr "Import Sessions"
 
-#: lib/enums/ModelInformation.tsx:254
+#: lib/enums/ModelInformation.tsx:263
 msgid "Label Template"
 msgstr "Label Template"
 
-#: lib/enums/ModelInformation.tsx:255
+#: lib/enums/ModelInformation.tsx:264
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:209
 msgid "Label Templates"
 msgstr "Label Templates"
 
-#: lib/enums/ModelInformation.tsx:262
+#: lib/enums/ModelInformation.tsx:271
 msgid "Report Template"
 msgstr "Report Template"
 
-#: lib/enums/ModelInformation.tsx:263
+#: lib/enums/ModelInformation.tsx:272
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:215
 msgid "Report Templates"
 msgstr "Report Templates"
 
-#: lib/enums/ModelInformation.tsx:270
+#: lib/enums/ModelInformation.tsx:279
 #: src/components/plugins/PluginDrawer.tsx:153
 msgid "Plugin Configuration"
 msgstr "Plugin Configuration"
 
-#: lib/enums/ModelInformation.tsx:271
+#: lib/enums/ModelInformation.tsx:280
 msgid "Plugin Configurations"
 msgstr "Plugin Configurations"
 
-#: lib/enums/ModelInformation.tsx:278
+#: lib/enums/ModelInformation.tsx:287
 msgid "Content Type"
 msgstr "Content Type"
 
-#: lib/enums/ModelInformation.tsx:279
+#: lib/enums/ModelInformation.tsx:288
 msgid "Content Types"
 msgstr "Content Types"
 
-#: lib/enums/ModelInformation.tsx:284
+#: lib/enums/ModelInformation.tsx:293
 msgid "Selection List"
 msgstr "Selection List"
 
-#: lib/enums/ModelInformation.tsx:285
+#: lib/enums/ModelInformation.tsx:294
 #: src/pages/Index/Settings/AdminCenter/ParameterPanel.tsx:21
 msgid "Selection Lists"
 msgstr "Selection Lists"
 
-#: lib/enums/ModelInformation.tsx:291
+#: lib/enums/ModelInformation.tsx:300
 #: src/components/barcodes/BarcodeInput.tsx:114
 #: src/components/dashboard/DashboardLayout.tsx:281
 #: src/components/editors/NotesEditor.tsx:74
@@ -566,14 +572,14 @@ msgstr "Selection Lists"
 #: src/pages/part/PartPricingPanel.tsx:71
 #: src/states/IconState.tsx:46
 #: src/states/IconState.tsx:76
-#: src/tables/InvenTreeTableHeader.tsx:125
+#: src/tables/TrackletTableHeader.tsx:125
 #: src/tables/bom/BomTable.tsx:563
 #: src/tables/settings/EmailTable.tsx:109
 #: src/tables/stock/StockItemTestResultTable.tsx:338
 msgid "Error"
 msgstr "Error"
 
-#: lib/enums/ModelInformation.tsx:292
+#: lib/enums/ModelInformation.tsx:301
 #: src/tables/machine/MachineListTable.tsx:402
 #: src/tables/machine/MachineTypeTable.tsx:297
 msgid "Errors"
@@ -584,7 +590,7 @@ msgid "Admin"
 msgstr "Admin"
 
 #: lib/enums/Roles.tsx:33
-#: src/defaults/actions.tsx:136
+#: src/defaults/actions.tsx:146
 #: src/pages/Index/Settings/SystemSettings.tsx:281
 #: src/pages/build/BuildIndex.tsx:67
 #: src/pages/part/PartDetail.tsx:896
@@ -599,10 +605,6 @@ msgstr "Error rendering component"
 #: src/components/Boundary.tsx:16
 msgid "An error occurred while rendering this component. Refer to the console for more information."
 msgstr "An error occurred while rendering this component. Refer to the console for more information."
-
-#: src/components/DashboardItemProxy.tsx:34
-#~ msgid "Title"
-#~ msgstr "Title"
 
 #: src/components/barcodes/BarcodeCameraInput.tsx:103
 msgid "Error while scanning"
@@ -632,7 +634,7 @@ msgstr "Barcode"
 
 #: src/components/barcodes/BarcodeInput.tsx:35
 #: src/components/barcodes/BarcodeKeyboardInput.tsx:18
-#: src/defaults/actions.tsx:86
+#: src/defaults/actions.tsx:137
 msgid "Scan"
 msgstr "Scan"
 
@@ -662,7 +664,7 @@ msgstr "Enter barcode data"
 
 #: src/components/barcodes/BarcodeScanDialog.tsx:56
 #: src/components/buttons/ScanButton.tsx:27
-#: src/components/nav/NavigationDrawer.tsx:122
+#: src/components/nav/NavigationDrawer.tsx:129
 #: src/forms/PurchaseOrderForms.tsx:503
 #: src/forms/PurchaseOrderForms.tsx:620
 msgid "Scan Barcode"
@@ -892,7 +894,7 @@ msgid "Next month"
 msgstr "Next month"
 
 #: src/components/calendar/Calendar.tsx:178
-#: src/tables/InvenTreeTableHeader.tsx:294
+#: src/tables/TrackletTableHeader.tsx:294
 msgid "Export data"
 msgstr "Export data"
 
@@ -934,7 +936,7 @@ msgstr "Accept Layout"
 #: src/components/dashboard/DashboardMenu.tsx:94
 #: src/components/nav/NavigationDrawer.tsx:64
 #: src/defaults/actions.tsx:42
-#: src/defaults/links.tsx:31
+#: src/defaults/links.tsx:32
 #: src/pages/Index/Home.tsx:8
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -1139,14 +1141,19 @@ msgstr "Show the number of return orders which are assigned to you"
 
 #: src/components/dashboard/DashboardWidgetLibrary.tsx:194
 #: src/components/dashboard/widgets/GetStartedWidget.tsx:15
-#: src/defaults/links.tsx:86
+#: src/defaults/links.tsx:94
 msgid "Getting Started"
 msgstr "Getting Started"
 
 #: src/components/dashboard/DashboardWidgetLibrary.tsx:195
+#: src/defaults/links.tsx:97
+msgid "Getting started with Tracklet"
+msgstr "Getting started with Tracklet"
+
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:195
 #: src/defaults/links.tsx:89
-msgid "Getting started with InvenTree"
-msgstr "Getting started with InvenTree"
+#~ msgid "Getting started with InvenTree"
+#~ msgstr "Getting started with InvenTree"
 
 #: src/components/dashboard/DashboardWidgetLibrary.tsx:202
 #: src/components/dashboard/widgets/NewsWidget.tsx:123
@@ -1154,8 +1161,12 @@ msgid "News Updates"
 msgstr "News Updates"
 
 #: src/components/dashboard/DashboardWidgetLibrary.tsx:203
-msgid "The latest news from InvenTree"
-msgstr "The latest news from InvenTree"
+msgid "The latest news from Tracklet"
+msgstr "The latest news from Tracklet"
+
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:203
+#~ msgid "The latest news from InvenTree"
+#~ msgstr "The latest news from InvenTree"
 
 #: src/components/dashboard/widgets/ColorToggleWidget.tsx:18
 #: src/components/nav/MainMenu.tsx:93
@@ -1834,14 +1845,14 @@ msgid "Version"
 msgstr "Version"
 
 #: src/components/forms/InstanceOptions.tsx:136
-#: src/components/modals/AboutInvenTreeModal.tsx:124
+#: src/components/modals/AboutTrackletModal.tsx:124
 #: src/components/modals/ServerInfoModal.tsx:34
 msgid "API Version"
 msgstr "API Version"
 
 #: src/components/forms/InstanceOptions.tsx:142
-#: src/components/nav/NavigationDrawer.tsx:197
-#: src/defaults/actions.tsx:163
+#: src/components/nav/NavigationDrawer.tsx:204
+#: src/defaults/actions.tsx:173
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:228
 #: src/pages/Index/Settings/AdminCenter/PluginManagementPanel.tsx:46
 msgid "Plugins"
@@ -1895,7 +1906,7 @@ msgid "Uncategorized"
 msgstr "Uncategorized"
 
 #: src/components/forms/fields/IconField.tsx:211
-#: src/components/nav/Layout.tsx:138
+#: src/components/nav/Layout.tsx:139
 #: src/tables/part/PartThumbTable.tsx:199
 msgid "Search..."
 msgstr "Search..."
@@ -1915,7 +1926,7 @@ msgid "{0} icons"
 msgstr "{0} icons"
 
 #: src/components/forms/fields/RelatedModelField.tsx:480
-#: src/components/modals/AboutInvenTreeModal.tsx:96
+#: src/components/modals/AboutTrackletModal.tsx:96
 #: src/pages/Index/Settings/AccountSettings/SecurityContent.tsx:397
 msgid "Loading"
 msgstr "Loading"
@@ -2066,10 +2077,6 @@ msgstr "Map Columns"
 msgid "Import Rows"
 msgstr "Import Rows"
 
-#: src/components/importer/ImporterDrawer.tsx:45
-#~ msgid "Import Data"
-#~ msgstr "Import Data"
-
 #: src/components/importer/ImporterDrawer.tsx:46
 msgid "Process Data"
 msgstr "Process Data"
@@ -2095,7 +2102,7 @@ msgid "Data has been imported successfully"
 msgstr "Data has been imported successfully"
 
 #: src/components/importer/ImporterDrawer.tsx:109
-#: src/components/modals/AboutInvenTreeModal.tsx:205
+#: src/components/modals/AboutTrackletModal.tsx:205
 #: src/components/modals/ServerInfoModal.tsx:134
 #: src/components/wizards/ImportPartWizard.tsx:773
 #: src/forms/BomForms.tsx:137
@@ -2132,8 +2139,8 @@ msgstr "Options"
 #~ msgstr "Link custom barcode"
 
 #: src/components/items/ActionDropdown.tsx:171
-#: src/tables/InvenTreeTableHeader.tsx:193
-#: src/tables/InvenTreeTableHeader.tsx:194
+#: src/tables/TrackletTableHeader.tsx:193
+#: src/tables/TrackletTableHeader.tsx:194
 msgid "Barcode Actions"
 msgstr "Barcode Actions"
 
@@ -2206,15 +2213,15 @@ msgid "None"
 msgstr "None"
 
 #: src/components/items/InvenTreeLogo.tsx:23
-msgid "InvenTree Logo"
-msgstr "InvenTree Logo"
+#~ msgid "InvenTree Logo"
+#~ msgstr "InvenTree Logo"
 
 #: src/components/items/LanguageToggle.tsx:21
 msgid "Select language"
 msgstr "Select language"
 
 #: src/components/items/OnlyStaff.tsx:10
-#: src/components/modals/AboutInvenTreeModal.tsx:50
+#: src/components/modals/AboutTrackletModal.tsx:50
 msgid "This information is only available for staff users"
 msgstr "This information is only available for staff users"
 
@@ -2277,6 +2284,10 @@ msgstr "Reset"
 msgid "Save group roles"
 msgstr "Save group roles"
 
+#: src/components/items/TrackletLogo.tsx:23
+msgid "Tracklet Logo"
+msgstr "Tracklet Logo"
+
 #: src/components/items/TransferList.tsx:65
 msgid "No items"
 msgstr "No items"
@@ -2303,32 +2314,8 @@ msgstr "Selected"
 #~ msgstr "Your InvenTree version status is"
 
 #: src/components/modals/AboutInvenTreeModal.tsx:118
-msgid "InvenTree Version"
-msgstr "InvenTree Version"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:130
-msgid "Python Version"
-msgstr "Python Version"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:135
-msgid "Django Version"
-msgstr "Django Version"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:144
-msgid "Commit Hash"
-msgstr "Commit Hash"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:149
-msgid "Commit Date"
-msgstr "Commit Date"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:154
-msgid "Commit Branch"
-msgstr "Commit Branch"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:165
-msgid "Version Information"
-msgstr "Version Information"
+#~ msgid "InvenTree Version"
+#~ msgstr "InvenTree Version"
 
 #: src/components/modals/AboutInvenTreeModal.tsx:165
 #~ msgid "Credits"
@@ -2342,46 +2329,74 @@ msgstr "Version Information"
 #~ msgid "View Code on GitHub"
 #~ msgstr "View Code on GitHub"
 
-#: src/components/modals/AboutInvenTreeModal.tsx:174
-msgid "Links"
-msgstr "Links"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:180
-#: src/components/nav/NavigationDrawer.tsx:208
-#: src/defaults/actions.tsx:49
-msgid "Documentation"
-msgstr "Documentation"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:181
-msgid "Source Code"
-msgstr "Source Code"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:182
-msgid "Mobile App"
-msgstr "Mobile App"
-
-#: src/components/modals/AboutInvenTreeModal.tsx:183
-msgid "Submit Bug Report"
-msgstr "Submit Bug Report"
-
 #: src/components/modals/AboutInvenTreeModal.tsx:189
 #: src/components/modals/ServerInfoModal.tsx:147
 #~ msgid "Dismiss"
 #~ msgstr "Dismiss"
 
-#: src/components/modals/AboutInvenTreeModal.tsx:195
+#: src/components/modals/AboutTrackletModal.tsx:118
+msgid "Tracklet Version"
+msgstr "Tracklet Version"
+
+#: src/components/modals/AboutTrackletModal.tsx:130
+msgid "Python Version"
+msgstr "Python Version"
+
+#: src/components/modals/AboutTrackletModal.tsx:135
+msgid "Django Version"
+msgstr "Django Version"
+
+#: src/components/modals/AboutTrackletModal.tsx:144
+msgid "Commit Hash"
+msgstr "Commit Hash"
+
+#: src/components/modals/AboutTrackletModal.tsx:149
+msgid "Commit Date"
+msgstr "Commit Date"
+
+#: src/components/modals/AboutTrackletModal.tsx:154
+msgid "Commit Branch"
+msgstr "Commit Branch"
+
+#: src/components/modals/AboutTrackletModal.tsx:165
+msgid "Version Information"
+msgstr "Version Information"
+
+#: src/components/modals/AboutTrackletModal.tsx:174
+msgid "Links"
+msgstr "Links"
+
+#: src/components/modals/AboutTrackletModal.tsx:180
+#: src/components/nav/NavigationDrawer.tsx:215
+#: src/defaults/actions.tsx:49
+msgid "Documentation"
+msgstr "Documentation"
+
+#: src/components/modals/AboutTrackletModal.tsx:181
+msgid "Source Code"
+msgstr "Source Code"
+
+#: src/components/modals/AboutTrackletModal.tsx:182
+msgid "Mobile App"
+msgstr "Mobile App"
+
+#: src/components/modals/AboutTrackletModal.tsx:183
+msgid "Submit Bug Report"
+msgstr "Submit Bug Report"
+
+#: src/components/modals/AboutTrackletModal.tsx:195
 msgid "Copy version information"
 msgstr "Copy version information"
 
-#: src/components/modals/AboutInvenTreeModal.tsx:215
+#: src/components/modals/AboutTrackletModal.tsx:215
 msgid "Development Version"
 msgstr "Development Version"
 
-#: src/components/modals/AboutInvenTreeModal.tsx:217
+#: src/components/modals/AboutTrackletModal.tsx:217
 msgid "Up to Date"
 msgstr "Up to Date"
 
-#: src/components/modals/AboutInvenTreeModal.tsx:219
+#: src/components/modals/AboutTrackletModal.tsx:219
 msgid "Update Available"
 msgstr "Update Available"
 
@@ -2542,7 +2557,7 @@ msgid "Learn more about {code}"
 msgstr "Learn more about {code}"
 
 #: src/components/nav/Header.tsx:188
-#: src/components/nav/NavigationDrawer.tsx:134
+#: src/components/nav/NavigationDrawer.tsx:141
 #: src/components/nav/NotificationDrawer.tsx:181
 #: src/pages/Index/Settings/SystemSettings.tsx:122
 #: src/pages/Index/Settings/UserSettings.tsx:107
@@ -2551,7 +2566,7 @@ msgstr "Learn more about {code}"
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/components/nav/Layout.tsx:141
+#: src/components/nav/Layout.tsx:142
 msgid "Nothing found..."
 msgstr "Nothing found..."
 
@@ -2561,7 +2576,7 @@ msgstr "Nothing found..."
 #~ msgstr "Profile"
 
 #: src/components/nav/MainMenu.tsx:54
-#: src/components/nav/NavigationDrawer.tsx:185
+#: src/components/nav/NavigationDrawer.tsx:192
 #: src/pages/Index/Settings/AdminCenter/EmailManagementPanel.tsx:21
 #: src/pages/Index/Settings/AdminCenter/UserManagementPanel.tsx:39
 msgid "Settings"
@@ -2573,9 +2588,9 @@ msgstr "Settings"
 #~ msgstr "Account settings"
 
 #: src/components/nav/MainMenu.tsx:61
-#: src/components/nav/NavigationDrawer.tsx:140
+#: src/components/nav/NavigationDrawer.tsx:147
 #: src/components/nav/SettingsHeader.tsx:40
-#: src/defaults/actions.tsx:93
+#: src/defaults/actions.tsx:86
 #: src/pages/Index/Settings/UserSettings.tsx:142
 #: src/pages/Index/Settings/UserSettings.tsx:146
 msgid "User Settings"
@@ -2591,9 +2606,9 @@ msgstr "User Settings"
 #~ msgstr "Current language {locale}"
 
 #: src/components/nav/MainMenu.tsx:69
-#: src/components/nav/NavigationDrawer.tsx:146
+#: src/components/nav/NavigationDrawer.tsx:153
 #: src/components/nav/SettingsHeader.tsx:41
-#: src/defaults/actions.tsx:145
+#: src/defaults/actions.tsx:155
 #: src/pages/Index/Settings/SystemSettings.tsx:365
 #: src/pages/Index/Settings/SystemSettings.tsx:370
 msgid "System Settings"
@@ -2604,9 +2619,9 @@ msgstr "System Settings"
 #~ msgstr "Switch to pseudo language"
 
 #: src/components/nav/MainMenu.tsx:78
-#: src/components/nav/NavigationDrawer.tsx:153
+#: src/components/nav/NavigationDrawer.tsx:160
 #: src/components/nav/SettingsHeader.tsx:42
-#: src/defaults/actions.tsx:154
+#: src/defaults/actions.tsx:164
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:293
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:298
 msgid "Admin Center"
@@ -2614,10 +2629,17 @@ msgstr "Admin Center"
 
 #: src/components/nav/MainMenu.tsx:99
 #: src/defaults/actions.tsx:58
+#: src/defaults/links.tsx:148
+#: src/defaults/links.tsx:194
+msgid "About Tracklet"
+msgstr "About Tracklet"
+
+#: src/components/nav/MainMenu.tsx:99
+#: src/defaults/actions.tsx:58
 #: src/defaults/links.tsx:140
 #: src/defaults/links.tsx:186
-msgid "About InvenTree"
-msgstr "About InvenTree"
+#~ msgid "About InvenTree"
+#~ msgstr "About InvenTree"
 
 #: src/components/nav/MainMenu.tsx:108
 msgid "Logout"
@@ -2643,7 +2665,7 @@ msgstr "Logout"
 #: src/components/nav/NavigationDrawer.tsx:77
 #: src/components/render/Part.tsx:36
 #: src/components/wizards/ImportPartWizard.tsx:808
-#: src/defaults/links.tsx:42
+#: src/defaults/links.tsx:43
 #: src/forms/StockForms.tsx:801
 #: src/pages/Index/Settings/SystemSettings.tsx:230
 #: src/pages/part/PartDetail.tsx:796
@@ -2655,14 +2677,14 @@ msgid "Stock"
 msgstr "Stock"
 
 #: src/components/nav/NavigationDrawer.tsx:84
-#: src/defaults/links.tsx:48
+#: src/defaults/links.tsx:49
 #: src/pages/build/BuildDetail.tsx:774
 #: src/pages/build/BuildIndex.tsx:101
 msgid "Manufacturing"
 msgstr "Manufacturing"
 
 #: src/components/nav/NavigationDrawer.tsx:91
-#: src/defaults/links.tsx:54
+#: src/defaults/links.tsx:55
 #: src/pages/company/ManufacturerDetail.tsx:9
 #: src/pages/company/ManufacturerPartDetail.tsx:268
 #: src/pages/company/SupplierDetail.tsx:9
@@ -2673,7 +2695,7 @@ msgid "Purchasing"
 msgstr "Purchasing"
 
 #: src/components/nav/NavigationDrawer.tsx:98
-#: src/defaults/links.tsx:60
+#: src/defaults/links.tsx:61
 #: src/pages/company/CustomerDetail.tsx:9
 #: src/pages/sales/ReturnOrderDetail.tsx:560
 #: src/pages/sales/SalesIndex.tsx:168
@@ -2682,11 +2704,11 @@ msgstr "Purchasing"
 msgid "Sales"
 msgstr "Sales"
 
-#: src/components/nav/NavigationDrawer.tsx:180
+#: src/components/nav/NavigationDrawer.tsx:187
 msgid "Navigation"
 msgstr "Navigation"
 
-#: src/components/nav/NavigationDrawer.tsx:214
+#: src/components/nav/NavigationDrawer.tsx:221
 msgid "About"
 msgstr "About"
 
@@ -2842,6 +2864,7 @@ msgstr "Plugin Information"
 #: src/pages/company/ManufacturerPartDetail.tsx:92
 #: src/pages/company/ManufacturerPartDetail.tsx:119
 #: src/pages/company/SupplierPartDetail.tsx:146
+#: src/pages/events/EventDetail.tsx:43
 #: src/pages/part/CategoryDetail.tsx:111
 #: src/pages/part/PartDetail.tsx:460
 #: src/pages/purchasing/PurchaseOrderDetail.tsx:163
@@ -2982,7 +3005,7 @@ msgstr "Error occurred while loading plugin content"
 #~ msgid "Unknown model: {model}"
 #~ msgstr "Unknown model: {model}"
 
-#: src/components/render/Instance.tsx:247
+#: src/components/render/Instance.tsx:249
 msgid "Unknown model: {model_name}"
 msgstr "Unknown model: {model_name}"
 
@@ -4079,29 +4102,47 @@ msgstr "Order Parts"
 #~ msgstr "About this Inventree instance"
 
 #: src/defaults/actions.tsx:43
-msgid "Go to the InvenTree dashboard"
-msgstr "Go to the InvenTree dashboard"
+msgid "Go to the Tracklet dashboard"
+msgstr "Go to the Tracklet dashboard"
+
+#: src/defaults/actions.tsx:43
+#~ msgid "Go to the InvenTree dashboard"
+#~ msgstr "Go to the InvenTree dashboard"
 
 #: src/defaults/actions.tsx:50
-msgid "Visit the documentation to learn more about InvenTree"
-msgstr "Visit the documentation to learn more about InvenTree"
+msgid "Visit the documentation to learn more about Tracklet"
+msgstr "Visit the documentation to learn more about Tracklet"
+
+#: src/defaults/actions.tsx:50
+#~ msgid "Visit the documentation to learn more about InvenTree"
+#~ msgstr "Visit the documentation to learn more about InvenTree"
 
 #: src/defaults/actions.tsx:59
-msgid "About the InvenTree org"
-msgstr "About the InvenTree org"
+#: src/defaults/links.tsx:195
+msgid "About the Tracklet project"
+msgstr "About the Tracklet project"
+
+#: src/defaults/actions.tsx:59
+#~ msgid "About the InvenTree org"
+#~ msgstr "About the InvenTree org"
 
 #: src/defaults/actions.tsx:65
 msgid "Server Information"
 msgstr "Server Information"
 
 #: src/defaults/actions.tsx:66
+#: src/defaults/links.tsx:177
+msgid "About this Tracklet instance"
+msgstr "About this Tracklet instance"
+
+#: src/defaults/actions.tsx:66
 #: src/defaults/links.tsx:169
-msgid "About this InvenTree instance"
-msgstr "About this InvenTree instance"
+#~ msgid "About this InvenTree instance"
+#~ msgstr "About this InvenTree instance"
 
 #: src/defaults/actions.tsx:72
-#: src/defaults/links.tsx:153
-#: src/defaults/links.tsx:175
+#: src/defaults/links.tsx:161
+#: src/defaults/links.tsx:183
 msgid "License Information"
 msgstr "License Information"
 
@@ -4118,38 +4159,46 @@ msgid "Open the main navigation menu"
 msgstr "Open the main navigation menu"
 
 #: src/defaults/actions.tsx:87
-msgid "Scan a barcode or QR code"
-msgstr "Scan a barcode or QR code"
-
-#: src/defaults/actions.tsx:95
 msgid "Go to your user settings"
 msgstr "Go to your user settings"
 
-#: src/defaults/actions.tsx:106
+#: src/defaults/actions.tsx:96
+msgid "Import Data"
+msgstr "Import Data"
+
+#: src/defaults/actions.tsx:97
+msgid "Import data from a file"
+msgstr "Import data from a file"
+
+#: src/defaults/actions.tsx:107
 msgid "Go to Purchase Orders"
 msgstr "Go to Purchase Orders"
 
-#: src/defaults/actions.tsx:116
+#: src/defaults/actions.tsx:117
 msgid "Go to Sales Orders"
 msgstr "Go to Sales Orders"
 
-#: src/defaults/actions.tsx:127
+#: src/defaults/actions.tsx:128
 msgid "Go to Return Orders"
 msgstr "Go to Return Orders"
 
-#: src/defaults/actions.tsx:137
+#: src/defaults/actions.tsx:138
+msgid "Scan a barcode or QR code"
+msgstr "Scan a barcode or QR code"
+
+#: src/defaults/actions.tsx:147
 msgid "Go to Build Orders"
 msgstr "Go to Build Orders"
 
-#: src/defaults/actions.tsx:146
+#: src/defaults/actions.tsx:156
 msgid "Go to System Settings"
 msgstr "Go to System Settings"
 
-#: src/defaults/actions.tsx:155
+#: src/defaults/actions.tsx:165
 msgid "Go to the Admin Center"
 msgstr "Go to the Admin Center"
 
-#: src/defaults/actions.tsx:164
+#: src/defaults/actions.tsx:174
 msgid "Manage InvenTree plugins"
 msgstr "Manage InvenTree plugins"
 
@@ -4223,58 +4272,74 @@ msgstr "Manage InvenTree plugins"
 #~ msgid "InvenTree"
 #~ msgstr "InvenTree"
 
-#: src/defaults/links.tsx:93
+#: src/defaults/links.tsx:96
+#~ msgid "InvenTree API documentation"
+#~ msgstr "InvenTree API documentation"
+
+#: src/defaults/links.tsx:101
 msgid "API"
 msgstr "API"
 
-#: src/defaults/links.tsx:96
-msgid "InvenTree API documentation"
-msgstr "InvenTree API documentation"
+#: src/defaults/links.tsx:103
+#~ msgid "InvenTree developer manual"
+#~ msgstr "InvenTree developer manual"
 
-#: src/defaults/links.tsx:100
+#: src/defaults/links.tsx:104
+msgid "Tracklet API documentation"
+msgstr "Tracklet API documentation"
+
+#: src/defaults/links.tsx:108
 msgid "Developer Manual"
 msgstr "Developer Manual"
 
-#: src/defaults/links.tsx:103
-msgid "InvenTree developer manual"
-msgstr "InvenTree developer manual"
+#: src/defaults/links.tsx:111
+msgid "Tracklet developer manual"
+msgstr "Tracklet developer manual"
 
-#: src/defaults/links.tsx:107
+#: src/defaults/links.tsx:115
 msgid "FAQ"
 msgstr "FAQ"
 
-#: src/defaults/links.tsx:110
-msgid "Frequently asked questions"
-msgstr "Frequently asked questions"
-
-#: src/defaults/links.tsx:114
-msgid "GitHub Repository"
-msgstr "GitHub Repository"
-
 #: src/defaults/links.tsx:117
-msgid "InvenTree source code on GitHub"
-msgstr "InvenTree source code on GitHub"
+#~ msgid "InvenTree source code on GitHub"
+#~ msgstr "InvenTree source code on GitHub"
 
 #: src/defaults/links.tsx:117
 #~ msgid "Licenses for packages used by InvenTree"
 #~ msgstr "Licenses for packages used by InvenTree"
 
-#: src/defaults/links.tsx:127
-#: src/defaults/links.tsx:168
-msgid "System Information"
-msgstr "System Information"
+#: src/defaults/links.tsx:118
+msgid "Frequently asked questions"
+msgstr "Frequently asked questions"
+
+#: src/defaults/links.tsx:122
+msgid "GitHub Repository"
+msgstr "GitHub Repository"
+
+#: src/defaults/links.tsx:125
+msgid "Tracklet source code on GitHub"
+msgstr "Tracklet source code on GitHub"
 
 #: src/defaults/links.tsx:134
 #~ msgid "Licenses"
 #~ msgstr "Licenses"
 
+#: src/defaults/links.tsx:135
 #: src/defaults/links.tsx:176
-msgid "Licenses for dependencies of the InvenTree software"
-msgstr "Licenses for dependencies of the InvenTree software"
+msgid "System Information"
+msgstr "System Information"
+
+#: src/defaults/links.tsx:176
+#~ msgid "Licenses for dependencies of the InvenTree software"
+#~ msgstr "Licenses for dependencies of the InvenTree software"
+
+#: src/defaults/links.tsx:184
+msgid "Licenses for dependencies of the Tracklet software"
+msgstr "Licenses for dependencies of the Tracklet software"
 
 #: src/defaults/links.tsx:187
-msgid "About the InvenTree Project"
-msgstr "About the InvenTree Project"
+#~ msgid "About the InvenTree Project"
+#~ msgstr "About the InvenTree Project"
 
 #: src/defaults/menuItems.tsx:7
 #~ msgid "Open sourcea"
@@ -4441,12 +4506,14 @@ msgstr "Quantity to Complete"
 #: src/pages/Index/Settings/AccountSettings/AccountDetailPanel.tsx:87
 #: src/pages/build/BuildDetail.tsx:241
 #: src/pages/core/UserDetail.tsx:151
+#: src/pages/events/EventDetail.tsx:50
 #: src/pages/purchasing/PurchaseOrderDetail.tsx:169
 #: src/pages/sales/ReturnOrderDetail.tsx:136
 #: src/pages/sales/SalesOrderDetail.tsx:126
 #: src/pages/stock/StockDetail.tsx:170
 #: src/tables/Filter.tsx:274
 #: src/tables/build/BuildOutputTable.tsx:404
+#: src/tables/events/EventsTable.tsx:39
 #: src/tables/machine/MachineListTable.tsx:387
 #: src/tables/part/PartPurchaseOrdersTable.tsx:38
 #: src/tables/part/PartTestResultTable.tsx:317
@@ -6711,8 +6778,12 @@ msgstr "Info"
 #~ msgstr "Plugin Error Stack"
 
 #: src/pages/Index/Settings/AdminCenter/PluginManagementPanel.tsx:37
-msgid "External plugins are not enabled for this InvenTree installation."
-msgstr "External plugins are not enabled for this InvenTree installation."
+msgid "External plugins are not enabled for this Tracklet installation."
+msgstr "External plugins are not enabled for this Tracklet installation."
+
+#: src/pages/Index/Settings/AdminCenter/PluginManagementPanel.tsx:37
+#~ msgid "External plugins are not enabled for this InvenTree installation."
+#~ msgstr "External plugins are not enabled for this InvenTree installation."
 
 #: src/pages/Index/Settings/AdminCenter/PluginManagementPanel.tsx:45
 #~ msgid "Warning"
@@ -7010,6 +7081,7 @@ msgstr "External"
 #: src/tables/ColumnRenderers.tsx:489
 #: src/tables/build/BuildAllocatedStockTable.tsx:113
 #: src/tables/build/BuildLineTable.tsx:354
+#: src/tables/events/EventsTable.tsx:131
 msgid "Reference"
 msgstr "Reference"
 
@@ -7077,6 +7149,7 @@ msgstr "Created"
 #~ msgstr "Print build report"
 
 #: src/pages/build/BuildDetail.tsx:377
+#: src/pages/events/EventDetail.tsx:57
 #: src/pages/purchasing/PurchaseOrderDetail.tsx:287
 #: src/pages/sales/ReturnOrderDetail.tsx:266
 #: src/pages/sales/SalesOrderDetail.tsx:258
@@ -7568,6 +7641,61 @@ msgstr "User Details"
 msgid "Basic user"
 msgstr "Basic user"
 
+#: src/pages/events/EventDetail.tsx:36
+#: src/tables/events/EventsTable.tsx:138
+msgid "Title"
+msgstr "Title"
+
+#: src/pages/events/EventDetail.tsx:63
+#: src/tables/events/EventsTable.tsx:147
+msgid "End Date"
+msgstr "End Date"
+
+#: src/pages/events/EventDetail.tsx:70
+#: src/tables/events/EventsTable.tsx:151
+msgid "Late-night takedown?"
+msgstr "Late-night takedown?"
+
+#: src/pages/events/EventDetail.tsx:76
+#: src/tables/events/EventsTable.tsx:98
+#: src/tables/events/EventsTable.tsx:156
+msgid "Planner"
+msgstr "Planner"
+
+#: src/pages/events/EventDetail.tsx:84
+#: src/tables/events/EventsTable.tsx:72
+#: src/tables/events/EventsTable.tsx:161
+msgid "Venue"
+msgstr "Venue"
+
+#: src/pages/events/EventDetail.tsx:91
+#: src/tables/events/EventsTable.tsx:45
+#: src/tables/events/EventsTable.tsx:168
+msgid "Event Type"
+msgstr "Event Type"
+
+#: src/pages/events/EventDetail.tsx:98
+#: src/pages/part/PartDetail.tsx:678
+#: src/pages/purchasing/PurchaseOrderDetail.tsx:272
+#: src/pages/sales/ReturnOrderDetail.tsx:250
+#: src/pages/sales/SalesOrderDetail.tsx:243
+#: src/tables/ColumnRenderers.tsx:689
+msgid "Creation Date"
+msgstr "Creation Date"
+
+#: src/pages/events/EventDetail.tsx:105
+#: src/pages/part/PartDetail.tsx:683
+#: src/tables/ColumnRenderers.tsx:622
+#: src/tables/Filter.tsx:373
+#: src/tables/events/EventsTable.tsx:93
+msgid "Created By"
+msgstr "Created By"
+
+#: src/pages/events/EventDetail.tsx:114
+#: src/pages/events/EventDetail.tsx:123
+msgid "Event Details"
+msgstr "Event Details"
+
 #: src/pages/part/CategoryDetail.tsx:103
 #: src/pages/stock/LocationDetail.tsx:103
 #: src/tables/settings/ErrorTable.tsx:63
@@ -7832,20 +7960,6 @@ msgstr "Saleable Part"
 #: src/tables/bom/BomTable.tsx:440
 msgid "Virtual Part"
 msgstr "Virtual Part"
-
-#: src/pages/part/PartDetail.tsx:678
-#: src/pages/purchasing/PurchaseOrderDetail.tsx:272
-#: src/pages/sales/ReturnOrderDetail.tsx:250
-#: src/pages/sales/SalesOrderDetail.tsx:243
-#: src/tables/ColumnRenderers.tsx:689
-msgid "Creation Date"
-msgstr "Creation Date"
-
-#: src/pages/part/PartDetail.tsx:683
-#: src/tables/ColumnRenderers.tsx:622
-#: src/tables/Filter.tsx:373
-msgid "Created By"
-msgstr "Created By"
 
 #: src/pages/part/PartDetail.tsx:698
 msgid "Default Supplier"
@@ -9274,7 +9388,7 @@ msgid "Filter"
 msgstr "Filter"
 
 #: src/tables/FilterSelectDrawer.tsx:313
-#: src/tables/InvenTreeTableHeader.tsx:260
+#: src/tables/TrackletTableHeader.tsx:260
 msgid "Table Filters"
 msgstr "Table Filters"
 
@@ -9286,15 +9400,6 @@ msgstr "Add Filter"
 msgid "Clear Filters"
 msgstr "Clear Filters"
 
-#: src/tables/InvenTreeTable.tsx:46
-#: src/tables/InvenTreeTable.tsx:481
-msgid "No records found"
-msgstr "No records found"
-
-#: src/tables/InvenTreeTable.tsx:153
-msgid "Error loading table options"
-msgstr "Error loading table options"
-
 #: src/tables/InvenTreeTable.tsx:250
 #~ msgid "Failed to load table options"
 #~ msgstr "Failed to load table options"
@@ -9302,10 +9407,6 @@ msgstr "Error loading table options"
 #: src/tables/InvenTreeTable.tsx:510
 #~ msgid "Are you sure you want to delete the selected records?"
 #~ msgstr "Are you sure you want to delete the selected records?"
-
-#: src/tables/InvenTreeTable.tsx:522
-msgid "Server returned incorrect data type"
-msgstr "Server returned incorrect data type"
 
 #: src/tables/InvenTreeTable.tsx:535
 #~ msgid "Deleted records"
@@ -9323,10 +9424,6 @@ msgstr "Server returned incorrect data type"
 #~ msgid "This action cannot be undone!"
 #~ msgstr "This action cannot be undone!"
 
-#: src/tables/InvenTreeTable.tsx:555
-msgid "Error loading table data"
-msgstr "Error loading table data"
-
 #: src/tables/InvenTreeTable.tsx:594
 #: src/tables/InvenTreeTable.tsx:595
 #~ msgid "Print actions"
@@ -9337,14 +9434,6 @@ msgstr "Error loading table data"
 #~ msgid "Barcode actions"
 #~ msgstr "Barcode actions"
 
-#: src/tables/InvenTreeTable.tsx:684
-msgid "View details"
-msgstr "View details"
-
-#: src/tables/InvenTreeTable.tsx:687
-msgid "View {model}"
-msgstr "View {model}"
-
 #: src/tables/InvenTreeTable.tsx:712
 #~ msgid "Table filters"
 #~ msgstr "Table filters"
@@ -9353,47 +9442,72 @@ msgstr "View {model}"
 #~ msgid "Clear custom query filters"
 #~ msgstr "Clear custom query filters"
 
-#: src/tables/InvenTreeTableHeader.tsx:104
+#: src/tables/TableHoverCard.tsx:35
+#~ msgid "item-{idx}"
+#~ msgstr "item-{idx}"
+
+#: src/tables/TrackletTable.tsx:46
+#: src/tables/TrackletTable.tsx:481
+msgid "No records found"
+msgstr "No records found"
+
+#: src/tables/TrackletTable.tsx:153
+msgid "Error loading table options"
+msgstr "Error loading table options"
+
+#: src/tables/TrackletTable.tsx:522
+msgid "Server returned incorrect data type"
+msgstr "Server returned incorrect data type"
+
+#: src/tables/TrackletTable.tsx:555
+msgid "Error loading table data"
+msgstr "Error loading table data"
+
+#: src/tables/TrackletTable.tsx:684
+msgid "View details"
+msgstr "View details"
+
+#: src/tables/TrackletTable.tsx:687
+msgid "View {model}"
+msgstr "View {model}"
+
+#: src/tables/TrackletTableHeader.tsx:104
 msgid "Delete Selected Items"
 msgstr "Delete Selected Items"
 
-#: src/tables/InvenTreeTableHeader.tsx:108
+#: src/tables/TrackletTableHeader.tsx:108
 msgid "Are you sure you want to delete the selected items?"
 msgstr "Are you sure you want to delete the selected items?"
 
-#: src/tables/InvenTreeTableHeader.tsx:110
+#: src/tables/TrackletTableHeader.tsx:110
 #: src/tables/plugin/PluginListTable.tsx:322
 msgid "This action cannot be undone"
 msgstr "This action cannot be undone"
 
-#: src/tables/InvenTreeTableHeader.tsx:121
+#: src/tables/TrackletTableHeader.tsx:121
 msgid "Items deleted"
 msgstr "Items deleted"
 
-#: src/tables/InvenTreeTableHeader.tsx:126
+#: src/tables/TrackletTableHeader.tsx:126
 msgid "Failed to delete items"
 msgstr "Failed to delete items"
 
-#: src/tables/InvenTreeTableHeader.tsx:177
+#: src/tables/TrackletTableHeader.tsx:177
 msgid "Custom table filters are active"
 msgstr "Custom table filters are active"
 
-#: src/tables/InvenTreeTableHeader.tsx:203
+#: src/tables/TrackletTableHeader.tsx:203
 #: src/tables/general/BarcodeScanTable.tsx:93
 msgid "Delete selected records"
 msgstr "Delete selected records"
 
-#: src/tables/InvenTreeTableHeader.tsx:223
+#: src/tables/TrackletTableHeader.tsx:223
 msgid "Refresh data"
 msgstr "Refresh data"
 
-#: src/tables/InvenTreeTableHeader.tsx:272
+#: src/tables/TrackletTableHeader.tsx:272
 msgid "Active Filters"
 msgstr "Active Filters"
-
-#: src/tables/TableHoverCard.tsx:35
-#~ msgid "item-{idx}"
-#~ msgstr "item-{idx}"
 
 #: src/tables/UploadAction.tsx:7
 #~ msgid "Upload Data"
@@ -10100,6 +10214,87 @@ msgstr "Delete Contact"
 #: src/tables/company/ContactTable.tsx:158
 msgid "Add contact"
 msgstr "Add contact"
+
+#: src/tables/events/EventsTable.tsx:40
+msgid "Filter by event status"
+msgstr "Filter by event status"
+
+#: src/tables/events/EventsTable.tsx:46
+msgid "Filter by event type"
+msgstr "Filter by event type"
+
+#: src/tables/events/EventsTable.tsx:49
+msgid "Unspecified"
+msgstr "Unspecified"
+
+#: src/tables/events/EventsTable.tsx:50
+msgid "Conference"
+msgstr "Conference"
+
+#: src/tables/events/EventsTable.tsx:51
+msgid "Party"
+msgstr "Party"
+
+#: src/tables/events/EventsTable.tsx:52
+msgid "Meeting"
+msgstr "Meeting"
+
+#: src/tables/events/EventsTable.tsx:53
+msgid "Wedding"
+msgstr "Wedding"
+
+#: src/tables/events/EventsTable.tsx:54
+msgid "Other"
+msgstr "Other"
+
+#: src/tables/events/EventsTable.tsx:60
+msgid "Has End Date"
+msgstr "Has End Date"
+
+#: src/tables/events/EventsTable.tsx:61
+msgid "Show events with an end date"
+msgstr "Show events with an end date"
+
+#: src/tables/events/EventsTable.tsx:66
+msgid "Late-night takedown"
+msgstr "Late-night takedown"
+
+#: src/tables/events/EventsTable.tsx:67
+msgid "Show events requiring late-night takedown"
+msgstr "Show events requiring late-night takedown"
+
+#: src/tables/events/EventsTable.tsx:73
+msgid "Filter by venue"
+msgstr "Filter by venue"
+
+#: src/tables/events/EventsTable.tsx:82
+msgid "End Date Before"
+msgstr "End Date Before"
+
+#: src/tables/events/EventsTable.tsx:83
+msgid "Show events with an end date before this date"
+msgstr "Show events with an end date before this date"
+
+#: src/tables/events/EventsTable.tsx:88
+msgid "End Date After"
+msgstr "End Date After"
+
+#: src/tables/events/EventsTable.tsx:89
+msgid "Show events with an end date after this date"
+msgstr "Show events with an end date after this date"
+
+#: src/tables/events/EventsTable.tsx:94
+msgid "Filter by user who created the event"
+msgstr "Filter by user who created the event"
+
+#: src/tables/events/EventsTable.tsx:99
+msgid "Filter by event planner"
+msgstr "Filter by event planner"
+
+#: src/tables/events/EventsTable.tsx:108
+#: src/tables/events/EventsTable.tsx:120
+msgid "Add Event"
+msgstr "Add Event"
 
 #: src/tables/general/AttachmentTable.tsx:108
 msgid "Uploading file {filename}"
@@ -12519,8 +12714,12 @@ msgstr "Mobile viewport detected"
 #~ msgstr "Platform UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
 
 #: src/views/MobileAppView.tsx:28
-msgid "InvenTree UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
-msgstr "InvenTree UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
+msgid "Tracklet UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
+msgstr "Tracklet UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
+
+#: src/views/MobileAppView.tsx:28
+#~ msgid "InvenTree UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
+#~ msgstr "InvenTree UI is optimized for Tablets and Desktops, you can use the official app for a mobile experience."
 
 #: src/views/MobileAppView.tsx:34
 msgid "Read the docs"

@@ -8,6 +8,7 @@ import { ModelType } from '@lib/enums/ModelType';
  */
 export const statusCodeList: Record<string, ModelType> = {
   BuildStatus: ModelType.build,
+  EventStatus: ModelType.event,
   PurchaseOrderStatus: ModelType.purchaseorder,
   ReturnOrderStatus: ModelType.returnorder,
   ReturnOrderLineStatus: ModelType.returnorderlineitem,

@@ -8,6 +8,7 @@ import type { UserStateProps } from '@lib/types/User';
 import {
   IconBox,
   IconBuildingFactory2,
+  IconCalendar,
   IconDashboard,
   IconPackages,
   IconShoppingCart,
@@ -59,6 +60,12 @@ export function getNavTabs(user: UserStateProps): NavTab[] {
       name: 'sales',
       title: t`Sales`,
       icon: <IconTruckDelivery />,
+      role: UserRoles.sales_order
+    },
+    {
+      name: 'events',
+      title: 'Events',
+      icon: <IconCalendar />,
       role: UserRoles.sales_order
     }
   ];

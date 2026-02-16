@@ -76,6 +76,10 @@ export const SalesIndex = Loadable(
   lazy(() => import('./pages/sales/SalesIndex'))
 );
 
+export const EventsIndex = Loadable(
+  lazy(() => import('./pages/events/EventsIndex'))
+);
+
 export const SalesOrderDetail = Loadable(
   lazy(() => import('./pages/sales/SalesOrderDetail'))
 );
@@ -86,6 +90,10 @@ export const SalesOrderShipmentDetail = Loadable(
 
 export const ReturnOrderDetail = Loadable(
   lazy(() => import('./pages/sales/ReturnOrderDetail'))
+);
+
+export const EventDetail = Loadable(
+  lazy(() => import('./pages/events/EventDetail'))
 );
 
 export const Scan = Loadable(lazy(() => import('./pages/Index/Scan')));
@@ -195,6 +203,11 @@ export const routes = (
         <Route path='shipment/:id/*' element={<SalesOrderShipmentDetail />} />
         <Route path='return-order/:id/*' element={<ReturnOrderDetail />} />
         <Route path='customer/:id/*' element={<CustomerDetail />} />
+      </Route>
+      <Route path='events/'>
+        <Route index element={<Navigate to='index/' />} />
+        <Route path='index/*' element={<EventsIndex />} />
+        <Route path='event/:id/*' element={<EventDetail />} />
       </Route>
       <Route path='core/'>
         <Route index element={<Navigate to='index/' />} />

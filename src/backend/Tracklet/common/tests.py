@@ -56,6 +56,27 @@ from .models import (
 CONTENT_TYPE_JSON = 'application/json'
 
 
+class IconPackTest(TestCase):
+    """Unit tests for icon pack loading."""
+
+    def test_tabler_icon_pack_loads(self):
+        """Ensure the built-in Tabler icon pack can be loaded."""
+        from common.icons import get_icon_packs, reload_icon_packs
+
+        reload_icon_packs()
+
+        packs = get_icon_packs()
+
+        self.assertIn('ti', packs)
+
+        tabler = packs['ti']
+
+        self.assertEqual(tabler.name, 'Tabler Icons')
+        self.assertIn('woff2', tabler.fonts)
+        self.assertIsInstance(tabler.icons, dict)
+        self.assertGreater(len(tabler.icons), 0)
+
+
 class AttachmentTest(InvenTreeAPITestCase):
     """Unit tests for the 'Attachment' model."""
 

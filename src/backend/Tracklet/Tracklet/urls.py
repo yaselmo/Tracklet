@@ -26,6 +26,7 @@ import part.api
 import plugin.api
 import report.api
 import stock.api
+import tracklet_events.api
 import users.api
 from plugin.urls import get_plugin_urls
 from web.urls import cui_compatibility_urls
@@ -55,6 +56,7 @@ apipatterns = [
     path('bom/', include(part.api.bom_api_urls)),
     path('build/', include(build.api.build_api_urls)),
     path('company/', include(company.api.company_api_urls)),
+    path('events/', include(tracklet_events.api.event_api_urls)),
     path('importer/', include(importer.api.importer_api_urls)),
     path('label/', include(report.api.label_api_urls)),
     path('machine/', include(machine.api.machine_api_urls)),

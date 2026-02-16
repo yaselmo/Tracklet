@@ -101,6 +101,13 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         icon: 'sales_orders'
       },
       {
+        id: 'events',
+        title: 'Events',
+        link: '/events/',
+        hidden: !user.hasViewRole(UserRoles.sales_order),
+        icon: 'calendar'
+      },
+      {
         id: 'users',
         title: t`Users`,
         link: '/core/index/users',

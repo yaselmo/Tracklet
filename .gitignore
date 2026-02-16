@@ -92,10 +92,14 @@ env/
 # Locale stats file
 src/backend/InvenTree/InvenTree/locale_stats.json
 src/backend/InvenTree/InvenTree/licenses.txt
+src/backend/Tracklet/Tracklet/locale_stats.json
+src/backend/Tracklet/Tracklet/licenses.txt
 
 # Logs
 src/backend/InvenTree/logs.json
 src/backend/InvenTree/logs.log
+src/backend/Tracklet/logs.json
+src/backend/Tracklet/logs.log
 
 # node.js
 node_modules/
@@ -105,6 +109,7 @@ maintenance_mode_state.txt
 
 # plugin dev directory
 src/backend/InvenTree/plugins/
+src/backend/Tracklet/plugins/
 
 # Compiled translation files
 *.mo
@@ -116,6 +121,9 @@ api.yaml
 # web frontend (static files)
 src/backend/InvenTree/web/static
 InvenTree/web/static
+src/backend/Tracklet/web/static
+Tracklet/web/static
+src/backend/Tracklet/web/static.docker-root
 
 # performance test results
 .codspeed/

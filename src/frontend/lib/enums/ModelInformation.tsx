@@ -206,6 +206,15 @@ export const ModelInformationDict: ModelDict = {
     api_endpoint: ApiEndpoints.return_order_line_list,
     icon: 'return_orders'
   },
+  event: {
+    label: () => t`Event`,
+    label_multiple: () => 'Events',
+    url_overview: '/events/index/',
+    url_detail: '/events/event/:pk/',
+    api_endpoint: ApiEndpoints.event_list,
+    admin_url: '/events/event/',
+    icon: 'calendar'
+  },
   address: {
     label: () => t`Address`,
     label_multiple: () => t`Addresses`,
