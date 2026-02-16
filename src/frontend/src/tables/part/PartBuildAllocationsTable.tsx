@@ -22,7 +22,7 @@ import {
   StatusColumn
 } from '../ColumnRenderers';
 import { IncludeVariantsFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import RowExpansionIcon from '../RowExpansionIcon';
 import { BuildLineSubTable } from '../build/BuildLineTable';
 
@@ -151,7 +151,7 @@ export default function PartBuildAllocationsTable({
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.build_line_list)}
       tableState={table}
       columns={tableColumns}

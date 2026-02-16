@@ -27,7 +27,7 @@ import {
 } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 import {
   PARAMETER_FILTER_OPERATORS,
@@ -408,7 +408,7 @@ export default function ParametricDataTable({
     <>
       {addParameter.modal}
       {editParameter.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(endpoint)}
         tableState={table}
         columns={tableColumns}

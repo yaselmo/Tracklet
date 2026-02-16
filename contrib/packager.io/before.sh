@@ -60,8 +60,8 @@ if [ "$TAG_SHA" != "$FULL_SHA" ]; then
 else
   echo "INFO frontend | Getting frontend from github via tag"
   curl https://github.com/$APP_REPO/releases/download/$APP_PKG_VERSION/frontend-build.zip -L -O -f
-  mkdir -p src/backend/InvenTree/web/static
+  mkdir -p src/backend/Tracklet/web/static
   echo "INFO frontend | Unzipping frontend"
-  unzip -qq frontend-build.zip -d src/backend/InvenTree/web/static/web
+  unzip -qq frontend-build.zip -d src/backend/Tracklet/web/static/web
   echo "INFO frontend | Unzipped frontend"
 fi

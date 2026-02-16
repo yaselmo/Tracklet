@@ -11,7 +11,7 @@ import { useDeleteApiFormModal } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { DateColumn } from '../ColumnRenderers';
 import { UserFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function ExportSessionTable() {
   const table = useTable('exportsession');
@@ -74,7 +74,7 @@ export default function ExportSessionTable() {
   return (
     <>
       {deleteRow.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.data_output)}
         tableState={table}
         columns={columns}

@@ -70,13 +70,14 @@ export function getNavTabs(user: UserStateProps): NavTab[] {
 }
 
 export const docLinks = {
-  app: 'https://docs.inventree.org/en/latest/app/',
-  getting_started: 'https://docs.inventree.org/en/latest/start/',
-  api: 'https://docs.inventree.org/en/latest/api/',
-  developer: 'https://docs.inventree.org/en/latest/develop/contributing/',
-  faq: 'https://docs.inventree.org/en/latest/faq/',
-  github: 'https://github.com/inventree/inventree',
-  errorcodes: 'https://docs.inventree.org/en/latest/sref/error-codes/'
+  // Replace these with your Tracklet documentation URLs if / when you publish them
+  app: 'https://github.com/yaselmo/Tracklet#readme',
+  getting_started: 'https://github.com/yaselmo/Tracklet#readme',
+  api: 'https://github.com/yaselmo/Tracklet#readme',
+  developer: 'https://github.com/yaselmo/Tracklet#readme',
+  faq: 'https://github.com/yaselmo/Tracklet#readme',
+  github: 'https://github.com/yaselmo/Tracklet',
+  errorcodes: 'https://github.com/yaselmo/Tracklet#readme'
 };
 
 export function DocumentationLinks(): MenuLinkItem[] {
@@ -86,21 +87,21 @@ export function DocumentationLinks(): MenuLinkItem[] {
       title: t`Getting Started`,
       link: docLinks.getting_started,
       external: true,
-      description: t`Getting started with InvenTree`
+      description: t`Getting started with Tracklet`
     },
     {
       id: 'api',
       title: t`API`,
       link: docLinks.api,
       external: true,
-      description: t`InvenTree API documentation`
+      description: t`Tracklet API documentation`
     },
     {
       id: 'developer',
       title: t`Developer Manual`,
       link: docLinks.developer,
       external: true,
-      description: t`InvenTree developer manual`
+      description: t`Tracklet developer manual`
     },
     {
       id: 'faq',
@@ -114,7 +115,7 @@ export function DocumentationLinks(): MenuLinkItem[] {
       title: t`GitHub Repository`,
       link: docLinks.github,
       external: true,
-      description: t`InvenTree source code on GitHub`
+      description: t`Tracklet source code on GitHub`
     }
   ];
 }
@@ -132,12 +133,12 @@ export function serverInfo() {
   });
 }
 
-export function aboutInvenTree() {
+export function aboutTracklet() {
   return openContextModal({
     modal: 'about',
     title: (
       <StylishText size='xl'>
-        <Trans>About InvenTree</Trans>
+        <Trans>About Tracklet</Trans>
       </StylishText>
     ),
     size: 'xl',
@@ -166,14 +167,14 @@ export function AboutLinks(
     {
       id: 'instance',
       title: t`System Information`,
-      description: t`About this InvenTree instance`,
+      description: t`About this Tracklet instance`,
       icon: 'info',
       action: serverInfo
     },
     {
       id: 'licenses',
       title: t`License Information`,
-      description: t`Licenses for dependencies of the InvenTree software`,
+      description: t`Licenses for dependencies of the Tracklet software`,
       icon: 'license',
       action: licenseInfo
     }
@@ -183,10 +184,10 @@ export function AboutLinks(
   if (user.isSuperuser() || !settings.isSet('INVENTREE_RESTRICT_ABOUT')) {
     base_items.push({
       id: 'about',
-      title: t`About InvenTree`,
-      description: t`About the InvenTree Project`,
+      title: t`About Tracklet`,
+      description: t`About the Tracklet project`,
       icon: 'info',
-      action: aboutInvenTree
+      action: aboutTracklet
     });
   }
   return base_items;

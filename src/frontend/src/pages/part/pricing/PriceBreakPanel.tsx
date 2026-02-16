@@ -23,7 +23,7 @@ import {
 } from '../../../hooks/UseForm';
 import { useTable } from '../../../hooks/UseTable';
 import { useUserState } from '../../../states/UserState';
-import { InvenTreeTable } from '../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../tables/TrackletTable';
 import { NoPricingData } from './PricingPanel';
 
 export default function PriceBreakPanel({
@@ -152,7 +152,7 @@ export default function PriceBreakPanel({
       {editPriceBreak.modal}
       {deletePriceBreak.modal}
       <SimpleGrid cols={{ base: 1, md: 2 }}>
-        <InvenTreeTable
+        <TrackletTable
           tableState={table}
           url={tableUrl}
           columns={columns}

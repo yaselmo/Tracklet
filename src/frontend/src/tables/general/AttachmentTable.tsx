@@ -35,7 +35,7 @@ import {
 } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Define set of columns to display for the attachment table
@@ -352,7 +352,7 @@ export function AttachmentTable({
       {deleteAttachment.modal}
       <Stack gap='xs'>
         {validPk && (
-          <InvenTreeTable
+          <TrackletTable
             key='attachment-table'
             url={url}
             tableState={table}

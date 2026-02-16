@@ -22,7 +22,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn, DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Stock location table
@@ -186,7 +186,7 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
       {newLocation.modal}
       {editLocation.modal}
       {setParent.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.stock_location_list)}
         tableState={table}
         columns={tableColumns}

@@ -22,7 +22,7 @@ import {
   CompanyColumn,
   DescriptionColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * A table which displays a list of company records,
@@ -145,7 +145,7 @@ export function CompanyTable({
     <>
       {newCompany.modal}
       {editCompany.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.company_list)}
         tableState={table}
         columns={columns}

@@ -13,4 +13,4 @@ This allows for custom functionality to be executed when a state transition occu
 Additionally, the mixin can be used to prevent certain transitions from occurring, or to modify the transition logic based on custom conditions.
 
 !!! info "More Info"
-    For more information on this plugin mixin, refer to the InvenTree source code. [A working example is available as a starting point]({{ sourcefile("/src/backend/InvenTree/plugin/samples/integration/transition.py") }}).
+    For more information on this plugin mixin, refer to the InvenTree source code. [A working example is available as a starting point]({{ sourcefile("/src/backend/Tracklet/plugin/samples/integration/transition.py") }}).

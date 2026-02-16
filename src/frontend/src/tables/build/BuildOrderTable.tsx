@@ -49,7 +49,7 @@ import {
   TargetDateAfterFilter,
   TargetDateBeforeFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /*
  * Construct a table of build orders, according to the provided parameters
@@ -231,7 +231,7 @@ export function BuildOrderTable({
   return (
     <>
       {newBuild.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.build_order_list)}
         tableState={table}
         columns={tableColumns}

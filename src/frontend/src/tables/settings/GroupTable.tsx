@@ -28,7 +28,7 @@ import {
 import { useInstance } from '../../hooks/UseInstance';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export interface GroupDetailI {
   pk: number;
@@ -230,7 +230,7 @@ export function GroupTable({
           }}
         />
       )}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.group_list)}
         tableState={table}
         columns={columns}

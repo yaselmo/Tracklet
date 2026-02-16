@@ -35,7 +35,7 @@ export default function PluginManagementPanel() {
           color='blue'
         >
           <Trans>
-            External plugins are not enabled for this InvenTree installation.
+            External plugins are not enabled for this Tracklet installation.
           </Trans>
         </Alert>
       )}

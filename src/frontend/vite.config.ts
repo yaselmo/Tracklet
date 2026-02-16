@@ -17,7 +17,7 @@ if (IS_IN_WSL) {
 }
 
 // Output directory for the built files
-const OUTPUT_DIR = '../../src/backend/InvenTree/web/static/web';
+const OUTPUT_DIR = '../../src/backend/Tracklet/web/static/web';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {

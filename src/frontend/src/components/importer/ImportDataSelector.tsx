@@ -30,7 +30,7 @@ import {
 } from '../../hooks/UseForm';
 import type { ImportSessionState } from '../../hooks/UseImportSession';
 import { useTable } from '../../hooks/UseTable';
-import { InvenTreeTable } from '../../tables/InvenTreeTable';
+import { TrackletTable } from '../../tables/TrackletTable';
 import { RenderRemoteInstance } from '../render/Instance';
 
 function ImporterDataCell({
@@ -419,7 +419,7 @@ export default function ImporterDataSelector({
             <Space />
           </Group>
         </Paper>
-        <InvenTreeTable
+        <TrackletTable
           tableState={table}
           columns={columns}
           url={apiUrl(ApiEndpoints.import_session_row_list)}

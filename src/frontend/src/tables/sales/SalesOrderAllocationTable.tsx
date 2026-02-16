@@ -35,7 +35,7 @@ import {
   StatusColumn
 } from '../ColumnRenderers';
 import { IncludeVariantsFilter, StockLocationFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function SalesOrderAllocationTable({
   partId,
@@ -356,7 +356,7 @@ export default function SalesOrderAllocationTable({
       {editAllocation.modal}
       {deleteAllocation.modal}
       {!isSubTable && stockAdjustActions.modals.map((modal) => modal.modal)}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.sales_order_allocation_list)}
         tableState={table}
         columns={tableColumns}

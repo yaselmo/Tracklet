@@ -192,7 +192,7 @@ function BuiltinGettingStartedWidgets(): DashboardWidgetProps[] {
     {
       label: 'gstart',
       title: t`Getting Started`,
-      description: t`Getting started with InvenTree`,
+      description: t`Getting started with Tracklet`,
       minWidth: 5,
       minHeight: 4,
       render: () => <GetStartedWidget />
@@ -200,7 +200,7 @@ function BuiltinGettingStartedWidgets(): DashboardWidgetProps[] {
     {
       label: 'news',
       title: t`News Updates`,
-      description: t`The latest news from InvenTree`,
+      description: t`The latest news from Tracklet`,
       minWidth: 5,
       minHeight: 4,
       render: () => <NewsWidget />

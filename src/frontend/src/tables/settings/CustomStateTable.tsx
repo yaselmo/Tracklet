@@ -28,7 +28,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useGlobalStatusState } from '../../states/GlobalStatusState';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Table for displaying list of custom states
@@ -210,7 +210,7 @@ export default function CustomStateTable() {
       {editCustomState.modal}
       {duplicateCustomState.modal}
       {deleteCustomState.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.custom_state_list)}
         tableState={table}
         columns={columns}

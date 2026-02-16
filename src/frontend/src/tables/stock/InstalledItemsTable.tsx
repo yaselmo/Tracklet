@@ -17,7 +17,7 @@ import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { PartColumn, StatusColumn, StockColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function InstalledItemsTable({
   stockItem
@@ -114,7 +114,7 @@ export default function InstalledItemsTable({
       {installItem.modal}
       {uninstallItem.modal}
       {stockItem.pk ? (
-        <InvenTreeTable
+        <TrackletTable
           url={apiUrl(ApiEndpoints.stock_item_list)}
           tableState={table}
           columns={tableColumns}

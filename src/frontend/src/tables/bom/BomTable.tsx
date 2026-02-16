@@ -48,7 +48,7 @@ import {
   ReferenceColumn
 } from '../ColumnRenderers';
 import { PartCategoryFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 // Calculate the total stock quantity available for a given BomItem
@@ -668,7 +668,7 @@ export function BomTable({
             <Text>{t`Bill of materials cannot be edited, as the part is locked`}</Text>
           </Alert>
         )}
-        <InvenTreeTable
+        <TrackletTable
           url={apiUrl(ApiEndpoints.bom_list)}
           tableState={table}
           columns={tableColumns}

@@ -11,7 +11,7 @@ exclude = [
     ".env",
     "src/backend/plugins/*",
 ]
-src = ["src/backend/InvenTree"]
+src = ["src/backend/Tracklet"]
 # line-length = 120
 
 [tool.ruff.lint.extend-per-file-ignores]
@@ -102,7 +102,7 @@ no-strip-extras=true
 generate-hashes=true
 
 [tool.ty.environment]
-root = ["src/backend/InvenTree"]
+root = ["src/backend/Tracklet"]
 
 [tool.ty.rules]
 unresolved-reference="ignore"  # 21 # see https://github.com/astral-sh/ty/issues/220
@@ -116,7 +116,7 @@ invalid-assignment="ignore"  # 17  # need to wait for betterdjango field stubs
 no-matching-overload="ignore"  # 3  # need to wait for betterdjango field stubs
 
 [tool.coverage.run]
-source = ["src/backend/InvenTree", "InvenTree"]
+source = ["src/backend/Tracklet", "Tracklet"]
 dynamic_context = "test_function"
 
 [tool.coverage.html]
@@ -126,7 +126,7 @@ show_contexts = true
 ignore = "D018,H006,H008,H020,H021,H023,H025,H030,H031,T002"
 
 [tool.isort]
-src_paths=["src/backend/InvenTree", ]
+src_paths=["src/backend/Tracklet", ]
 skip_glob ="*/migrations/*.py"
 known_django="django"
 sections=["FUTURE","STDLIB","DJANGO","THIRDPARTY","FIRSTPARTY","LOCALFOLDER"]
@@ -136,6 +136,6 @@ ignore-words-list = ["assertIn","SME","intoto","fitH"]
 
 [tool.pytest]
 django_find_project = false
-pythonpath = ["src/backend/InvenTree"]
-DJANGO_SETTINGS_MODULE = "InvenTree.settings"
+pythonpath = ["src/backend/Tracklet"]
+DJANGO_SETTINGS_MODULE = "Tracklet.settings"
 python_files = ["test*.py",]

@@ -49,7 +49,7 @@ import {
   TargetDateAfterFilter,
   TargetDateBeforeFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export function SalesOrderTable({
   partId,
@@ -190,7 +190,7 @@ export function SalesOrderTable({
   return (
     <>
       {newSalesOrder.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.sales_order_list)}
         tableState={table}
         columns={tableColumns}

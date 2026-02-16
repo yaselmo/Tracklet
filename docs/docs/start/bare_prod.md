@@ -38,8 +38,8 @@ First, let's confirm that the gunicorn server is operational.
 cd /home/InvenTree
 source ./env/bin/activate
 
-cd src/src/backend/InvenTree
-/home/inventree/env/bin/gunicorn -c gunicorn.conf.py InvenTree.wsgi -b 127.0.0.1:8000
+cd src/src/backend/Tracklet
+/home/inventree/env/bin/gunicorn -c gunicorn.conf.py Tracklet.wsgi -b 127.0.0.1:8000
 ```
 
 This should start the gunicorn server as a foreground process.

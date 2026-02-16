@@ -39,26 +39,26 @@ component_management:
     - component_id: backend-apps
       name: Backend Apps
       paths:
-        - src/backend/InvenTree/build/**
-        - src/backend/InvenTree/company/**
-        - src/backend/InvenTree/data_exporter/**
-        - src/backend/InvenTree/importer/**
-        - src/backend/InvenTree/machine/**
-        - src/backend/InvenTree/order/**
-        - src/backend/InvenTree/part/**
-        - src/backend/InvenTree/plugin/**
-        - src/backend/InvenTree/report/**
-        - src/backend/InvenTree/stock/**
-        - src/backend/InvenTree/users/**
-        - src/backend/InvenTree/web/**
+        - src/backend/Tracklet/build/**
+        - src/backend/Tracklet/company/**
+        - src/backend/Tracklet/data_exporter/**
+        - src/backend/Tracklet/importer/**
+        - src/backend/Tracklet/machine/**
+        - src/backend/Tracklet/order/**
+        - src/backend/Tracklet/part/**
+        - src/backend/Tracklet/plugin/**
+        - src/backend/Tracklet/report/**
+        - src/backend/Tracklet/stock/**
+        - src/backend/Tracklet/users/**
+        - src/backend/Tracklet/web/**
       statuses:
         - type: project
           target: 90%
     - component_id: backend-general
       name: Backend General
       paths:
-        - src/backend/InvenTree/generic/**
-        - src/backend/InvenTree/common/**
+        - src/backend/Tracklet/generic/**
+        - src/backend/Tracklet/common/**
       statuses:
         - type: project
           target: 92% # 95%

@@ -11,7 +11,7 @@ import { IconTrashXFilled, IconX } from '@tabler/icons-react';
 import { api } from '../../App';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function PendingTasksTable({
   onRecordsUpdated
@@ -89,7 +89,7 @@ export default function PendingTasksTable({
   }, [user]);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.task_pending_list)}
       tableState={table}
       columns={columns}

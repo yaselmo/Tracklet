@@ -46,7 +46,7 @@ import {
   TargetDateAfterFilter,
   TargetDateBeforeFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Display a table of purchase orders
@@ -174,7 +174,7 @@ export function PurchaseOrderTable({
   return (
     <>
       {newPurchaseOrder.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.purchase_order_list)}
         tableState={table}
         columns={tableColumns}

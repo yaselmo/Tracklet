@@ -1,4 +1,4 @@
-"""Gunicorn configuration for InvenTree."""
+"""Gunicorn configuration for Tracklet."""
 
 import logging
 import multiprocessing
@@ -50,7 +50,7 @@ def post_fork(server, worker):
         return
 
     # Instrument gunicorm
-    from InvenTree.tracing import setup_instruments, setup_tracing
+    from Tracklet.tracing import setup_instruments, setup_tracing
 
     # Run tracing/logging instrumentation
     setup_tracing(**settings.TRACING_DETAILS)

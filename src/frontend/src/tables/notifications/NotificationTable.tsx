@@ -6,7 +6,7 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
 import type { TableState } from '@lib/types/Tables';
 import type { TableColumn } from '@lib/types/Tables';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export function NotificationTable({
   params,
@@ -44,7 +44,7 @@ export function NotificationTable({
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.notifications_list)}
       tableState={tableState}
       columns={columns}

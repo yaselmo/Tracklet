@@ -44,7 +44,7 @@ import {
   LinkColumn,
   PartColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 /**
@@ -570,7 +570,7 @@ export function PartListTable({
       {importParts.modal}
       {orderPartsWizard.wizard}
       {importPartWizard.wizard}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.part_list)}
         tableState={table}
         columns={tableColumns}

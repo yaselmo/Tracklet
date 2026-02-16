@@ -29,7 +29,7 @@ import {
   StockColumn
 } from '../ColumnRenderers';
 import { IncludeVariantsFilter, StockLocationFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Render a table of allocated stock for a build.
@@ -295,7 +295,7 @@ export default function BuildAllocatedStockTable({
       {deleteItem.modal}
       {consumeStock.modal}
       {stockAdjustActions.modals.map((modal) => modal.modal)}
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         url={apiUrl(ApiEndpoints.build_item_list)}
         columns={tableColumns}

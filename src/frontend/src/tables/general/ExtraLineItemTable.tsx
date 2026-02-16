@@ -28,7 +28,7 @@ import {
   NoteColumn,
   ProjectCodeColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function ExtraLineItemTable({
   endpoint,
@@ -169,7 +169,7 @@ export default function ExtraLineItemTable({
       {newLineItem.modal}
       {editLineItem.modal}
       {deleteLineItem.modal}
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         url={apiUrl(endpoint)}
         columns={tableColumns}

@@ -42,7 +42,7 @@ import {
   NoteColumn,
   UserColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import RowExpansionIcon from '../RowExpansionIcon';
 
 export default function StockItemTestResultTable({
@@ -486,7 +486,7 @@ export default function StockItemTestResultTable({
       {newTestModal.modal}
       {editTestModal.modal}
       {deleteTestModal.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.stock_test_result_list)}
         tableState={table}
         columns={tableColumns}

@@ -24,7 +24,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { CompanyColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export function calculateSupplierPartUnitPrice(record: any) {
   const pack_quantity = record?.part_detail?.pack_quantity_native ?? 1;
@@ -195,7 +195,7 @@ export default function SupplierPriceBreakTable({
       {newPriceBreak.modal}
       {editPriceBreak.modal}
       {deletePriceBreak.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.supplier_part_pricing_list)}
         columns={columns}
         tableState={table}

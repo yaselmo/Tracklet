@@ -19,7 +19,7 @@ import { tooltipFormatter } from '../../../components/charts/tooltipFormatter';
 import { formatDecimal, formatPriceRange } from '../../../defaults/formatters';
 import { useTable } from '../../../hooks/UseTable';
 import { DateColumn, PartColumn } from '../../../tables/ColumnRenderers';
-import { InvenTreeTable } from '../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../tables/TrackletTable';
 import { LoadingPricingData, NoPricingData } from './PricingPanel';
 
 // Display BOM data as a pie chart
@@ -178,7 +178,7 @@ export default function BomPricingPanel({
   return (
     <Stack gap='xs'>
       <SimpleGrid cols={{ base: 1, md: 2 }}>
-        <InvenTreeTable
+        <TrackletTable
           tableState={table}
           url={apiUrl(ApiEndpoints.bom_list)}
           columns={columns}

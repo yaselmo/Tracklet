@@ -12,7 +12,7 @@ import { formatCurrency, formatDecimal } from '../../defaults/formatters';
 import { useTable } from '../../hooks/UseTable';
 import { DateColumn, ReferenceColumn, StatusColumn } from '../ColumnRenderers';
 import { IncludeVariantsFilter, StatusFilterOptions } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 export default function PartPurchaseOrdersTable({
@@ -138,7 +138,7 @@ export default function PartPurchaseOrdersTable({
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.purchase_order_line_list)}
       tableState={table}
       columns={tableColumns}

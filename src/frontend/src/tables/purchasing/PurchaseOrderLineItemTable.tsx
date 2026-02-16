@@ -49,7 +49,7 @@ import {
   ReferenceColumn,
   TargetDateColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 /*
@@ -430,7 +430,7 @@ export function PurchaseOrderLineItemTable({
       {newLine.modal}
       {editLine.modal}
       {deleteLine.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.purchase_order_line_list)}
         tableState={table}
         columns={tableColumns}

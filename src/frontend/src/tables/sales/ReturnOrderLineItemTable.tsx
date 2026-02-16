@@ -40,7 +40,7 @@ import {
   StockColumn
 } from '../ColumnRenderers';
 import { StatusFilterOptions } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function ReturnOrderLineItemTable({
   orderId,
@@ -256,7 +256,7 @@ export default function ReturnOrderLineItemTable({
       {editLine.modal}
       {deleteLine.modal}
       {receiveLineItems.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.return_order_line_list)}
         tableState={table}
         columns={tableColumns}

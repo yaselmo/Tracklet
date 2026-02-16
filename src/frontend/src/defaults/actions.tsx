@@ -19,7 +19,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLocalState } from '../states/LocalState';
 import { useGlobalSettingsState } from '../states/SettingsStates';
 import { useUserState } from '../states/UserState';
-import { aboutInvenTree, docLinks, licenseInfo, serverInfo } from './links';
+import { aboutTracklet, docLinks, licenseInfo, serverInfo } from './links';
 
 export function openQrModal(navigate: NavigateFunction) {
   return openContextModal({
@@ -40,14 +40,14 @@ export function getActions(navigate: NavigateFunction) {
       {
         id: 'dashboard',
         label: t`Dashboard`,
-        description: t`Go to the InvenTree dashboard`,
+        description: t`Go to the Tracklet dashboard`,
         onClick: () => navigate('/'),
         leftSection: <IconLink size='1.2rem' />
       },
       {
         id: 'documentation',
         label: t`Documentation`,
-        description: t`Visit the documentation to learn more about InvenTree`,
+        description: t`Visit the documentation to learn more about Tracklet`,
         onClick: () => {
           window.location.href = docLinks.faq;
         },
@@ -55,15 +55,15 @@ export function getActions(navigate: NavigateFunction) {
       },
       {
         id: 'about',
-        label: t`About InvenTree`,
-        description: t`About the InvenTree org`,
-        onClick: () => aboutInvenTree(),
+        label: t`About Tracklet`,
+        description: t`About the Tracklet project`,
+        onClick: () => aboutTracklet(),
         leftSection: <IconLink size='1.2rem' />
       },
       {
         id: 'server-info',
         label: t`Server Information`,
-        description: t`About this InvenTree instance`,
+        description: t`About this Tracklet instance`,
         onClick: () => serverInfo(),
         leftSection: <IconLink size='1.2rem' />
       },

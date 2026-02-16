@@ -44,7 +44,7 @@ import { useInstance } from '../../hooks/UseInstance';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import type { GroupDetailI } from './GroupTable';
 
 export interface UserDetailI {
@@ -439,7 +439,7 @@ export function UserTable({
           }}
         />
       )}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.user_list)}
         tableState={table}
         columns={columns}

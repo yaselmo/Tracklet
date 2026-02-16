@@ -9,7 +9,7 @@ import type { BarcodeScanItem } from '../../components/barcodes/BarcodeScanItem'
 import { RenderInstance } from '../../components/render/Instance';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * A table for showing barcode scan history data on the scan index page
@@ -105,7 +105,7 @@ export default function BarcodeScanTable({
 
   return (
     <>
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         tableData={records}
         columns={tableColumns}

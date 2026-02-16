@@ -117,7 +117,7 @@ The translation process is as follows:
 
 ## API versioning
 
-The [API version]({{ sourcefile("src/backend/InvenTree/InvenTree/api_version.py") }}) needs to be bumped every time when the API is changed.
+The [API version]({{ sourcefile("src/backend/Tracklet/Tracklet/api_version.py") }}) needs to be bumped every time when the API is changed.
 
 ### Understanding API shape
 

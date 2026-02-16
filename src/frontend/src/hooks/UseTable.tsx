@@ -7,7 +7,7 @@ import type { TableState } from '@lib/types/Tables';
 import { useFilterSet } from './UseFilterSet';
 
 /**
- * A custom hook for managing the state of an <InvenTreeTable> component.
+ * A custom hook for managing the state of an <TrackletTable> component.
  *
  * Refer to the TableState type definition for more information.
  */

@@ -36,7 +36,7 @@ import {
   MinDateFilter,
   UserFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 type StockTrackingEntry = {
   label: string;
@@ -286,7 +286,7 @@ export function StockTrackingTable({
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       tableState={table}
       url={apiUrl(ApiEndpoints.stock_tracking_list)}
       columns={tableColumns}

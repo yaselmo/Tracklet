@@ -56,7 +56,7 @@ import {
 } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { BooleanColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import type { MachineDriverI, MachineTypeI } from './MachineTypeTable';
 
 interface MachineI {
@@ -775,7 +775,7 @@ export function MachineListTable({
           }}
         />
       )}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.machine_list)}
         tableState={table}
         columns={machineTableColumns}

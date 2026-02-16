@@ -124,4 +124,4 @@ A custom exporter which only supports [bill of materials](../../manufacturing/bo
 
 The full source code of the `DataExportMixin` class:
 
-{{ includefile("src/backend/InvenTree/plugin/base/integration/DataExport.py", title="DataExportMixin") }}
+{{ includefile("src/backend/Tracklet/plugin/base/integration/DataExport.py", title="DataExportMixin") }}

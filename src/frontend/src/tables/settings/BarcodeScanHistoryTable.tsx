@@ -30,7 +30,7 @@ import { useTable } from '../../hooks/UseTable';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import { UserFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /*
  * Render detail information for a particular barcode scan result.
@@ -261,7 +261,7 @@ export default function BarcodeScanHistoryTable() {
             <Text>{t`Barcode logging is not enabled`}</Text>
           </Alert>
         )}
-        <InvenTreeTable
+        <TrackletTable
           url={apiUrl(ApiEndpoints.barcode_history)}
           tableState={table}
           columns={tableColumns}

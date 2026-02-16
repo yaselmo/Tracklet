@@ -20,7 +20,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn, DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Table for displaying list of selectionlist items
@@ -122,7 +122,7 @@ export default function SelectionListTable() {
       {newSelectionList.modal}
       {editSelectionList.modal}
       {deleteSelectionList.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.selectionlist_list)}
         tableState={table}
         columns={columns}

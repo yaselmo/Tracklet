@@ -8,7 +8,7 @@ import { apiUrl } from '@lib/functions/Api';
 import type { TableColumn } from '@lib/types/Tables';
 import { formatCurrency, formatDate } from '../../../defaults/formatters';
 import { useTable } from '../../../hooks/UseTable';
-import { InvenTreeTable } from '../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../tables/TrackletTable';
 import { NoPricingData } from './PricingPanel';
 
 export default function PurchaseHistoryPanel({
@@ -104,7 +104,7 @@ export default function PurchaseHistoryPanel({
 
   return (
     <SimpleGrid cols={{ base: 1, md: 2 }}>
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         url={apiUrl(ApiEndpoints.purchase_order_line_list)}
         columns={columns}

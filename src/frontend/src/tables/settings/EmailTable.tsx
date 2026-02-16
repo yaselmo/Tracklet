@@ -13,7 +13,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { DateColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 function EmailStatusBadge({
   status
@@ -155,7 +155,7 @@ export function EmailTable() {
     <>
       {sendTestMail.modal}
       {deleteEmail.modal}
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         url={apiUrl(ApiEndpoints.email_list)}
         columns={tableColumns}

@@ -28,7 +28,7 @@ function NewsLink({ item }: Readonly<{ item: any }>) {
   let link: string = item.link;
 
   if (link?.startsWith('/')) {
-    link = `https://inventree.org${link}`;
+    link = `${window.location.origin}${link}`;
   }
 
   if (link) {

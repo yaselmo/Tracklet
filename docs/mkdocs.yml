@@ -304,7 +304,7 @@ plugins:
       handlers:
         python:
           paths:
-            - ../src/backend/InvenTree
+            - ../src/backend/Tracklet
           options:
             show_symbol_type_heading: true
             show_symbol_type_toc: true
@@ -327,7 +327,7 @@ plugins:
         'sref/ci.md': 'https://github.com/inventree/InvenTree/actions' # https://github.com/inventree/InvenTree/actions
         'sref/ci-sample.md': 'https://github.com/inventree/InvenTree/blob/master/.github/workflows/qc_checks.yaml' # https://github.com/inventree/InvenTree/blob/master/.github/workflows/qc_checks.yaml
         'sref/ci-pre.md': 'https://github.com/inventree/InvenTree/blob/master/.pre-commit-config.yaml' # https://github.com/inventree/InvenTree/blob/master/.pre-commit-config.yaml
-        'sref/test-sample.md': 'https://github.com/inventree/InvenTree/blob/master/src/backend/InvenTree/InvenTree/tests.py' # https://github.com/inventree/InvenTree/blob/master/src/backend/InvenTree/InvenTree/tests.py
+        'sref/test-sample.md': 'https://github.com/inventree/InvenTree/blob/master/src/backend/Tracklet/Tracklet/tests.py' # https://github.com/inventree/InvenTree/blob/master/src/backend/Tracklet/Tracklet/tests.py
         'sref/coverage.md': 'https://coveralls.io/github/inventree/InvenTree' # https://coveralls.io/github/inventree/InvenTree
         'sref/error-codes.md': 'settings/error_codes.md'
 
@@ -353,7 +353,7 @@ markdown_extensions:
 
 # Global Variables
 extra:
-  static_folder_source: ./src/backend/InvenTree/InvenTree/static/
+  static_folder_source: ./src/backend/Tracklet/Tracklet/static/
   static_folder_local_default: ./inventree_static/
 
   # Site Analytics

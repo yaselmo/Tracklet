@@ -28,7 +28,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { DateColumn, DecimalColumn } from '../../tables/ColumnRenderers';
-import { InvenTreeTable } from '../../tables/InvenTreeTable';
+import { TrackletTable } from '../../tables/TrackletTable';
 import { StockTrackingTable } from '../../tables/stock/StockTrackingTable';
 
 /*
@@ -210,7 +210,7 @@ export function PartStocktakePanel({ partId }: Readonly<{ partId: number }>) {
       {editStocktakeEntry.modal}
       {deleteStocktakeEntry.modal}
       <SimpleGrid cols={{ base: 1, lg: 2 }}>
-        <InvenTreeTable
+        <TrackletTable
           url={apiUrl(ApiEndpoints.part_stocktake_list)}
           tableState={table}
           columns={tableColumns}

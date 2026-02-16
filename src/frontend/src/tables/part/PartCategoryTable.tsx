@@ -24,7 +24,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * PartCategoryTable - Displays a table of part categories
@@ -187,7 +187,7 @@ export function PartCategoryTable({ parentId }: Readonly<{ parentId?: any }>) {
       {newCategory.modal}
       {editCategory.modal}
       {setParent.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.category_list)}
         tableState={table}
         columns={tableColumns}

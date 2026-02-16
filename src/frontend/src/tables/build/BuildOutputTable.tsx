@@ -67,7 +67,7 @@ import {
   StatusFilterOptions,
   StockLocationFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 import BuildLineTable from './BuildLineTable';
 
@@ -702,7 +702,7 @@ export default function BuildOutputTable({
             {t`This build order is fulfilled by an external purchase order`}
           </Alert>
         )}
-        <InvenTreeTable
+        <TrackletTable
           tableState={table}
           url={apiUrl(ApiEndpoints.stock_item_list)}
           columns={tableColumns}

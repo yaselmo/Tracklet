@@ -7,7 +7,7 @@ import { apiUrl } from '@lib/functions/Api';
 import { StylishText } from '../../../../components/items/StylishText';
 import { useTable } from '../../../../hooks/UseTable';
 import { BooleanColumn } from '../../../../tables/ColumnRenderers';
-import { InvenTreeTable } from '../../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../../tables/TrackletTable';
 import CustomUnitsTable from '../../../../tables/settings/CustomUnitsTable';
 
 function AllUnitTable() {
@@ -24,7 +24,7 @@ function AllUnitTable() {
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.all_units)}
       tableState={table}
       columns={columns}

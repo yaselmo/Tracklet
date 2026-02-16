@@ -21,7 +21,7 @@ import {
   StatusColumn
 } from '../ColumnRenderers';
 import { IncludeVariantsFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import RowExpansionIcon from '../RowExpansionIcon';
 import SalesOrderAllocationTable from '../sales/SalesOrderAllocationTable';
 
@@ -125,7 +125,7 @@ export default function PartSalesAllocationsTable({
   }, [table.isRowExpanded]);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.sales_order_line_list)}
       tableState={table}
       columns={tableColumns}

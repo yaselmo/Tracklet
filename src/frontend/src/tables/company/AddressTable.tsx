@@ -21,7 +21,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { LinkColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export function AddressTable({
   companyId,
@@ -196,7 +196,7 @@ export function AddressTable({
       {newAddress.modal}
       {editAddress.modal}
       {deleteAddress.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.address_list)}
         tableState={table}
         columns={columns}

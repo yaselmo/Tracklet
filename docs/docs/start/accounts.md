@@ -42,7 +42,7 @@ If a password has been lost, and other backup options (such as email recovery) a
 Log into the machine running the InvenTree server, and run the following command (from the top-level source directory):
 
 ```bash
-cd src/backend/InvenTree
+cd src/backend/Tracklet
 python ./manage.py changepassword <username>
 ```
 

@@ -8,7 +8,7 @@ import { apiUrl } from '@lib/functions/Api';
 import type { TableColumn } from '@lib/types/Tables';
 import { tooltipFormatter } from '../../../components/charts/tooltipFormatter';
 import { useTable } from '../../../hooks/UseTable';
-import { InvenTreeTable } from '../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../tables/TrackletTable';
 import {
   SupplierPriceBreakColumns,
   calculateSupplierPartUnitPrice
@@ -46,7 +46,7 @@ export default function SupplierPricingPanel({
 
   return (
     <SimpleGrid cols={{ base: 1, md: 2 }}>
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.supplier_part_pricing_list)}
         columns={columns}
         tableState={table}

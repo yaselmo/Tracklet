@@ -32,7 +32,7 @@ In certain container environments (such as docker), plugins are installed into a
 
 #### Builtin Plugins
 
-Builtin plugins ship in `src/backend/InvenTree/plugin/builtin`. To achieve full unit-testing for all mixins there are some sample implementations in `src/backend/InvenTree/plugin/samples`.
+Builtin plugins ship in `src/backend/Tracklet/plugin/builtin`. To achieve full unit-testing for all mixins there are some sample implementations in `src/backend/Tracklet/plugin/samples`.
 
 !!! success "Builtin Plugins"
     Builtin plugins are always enabled, as they are required for core InvenTree functionality

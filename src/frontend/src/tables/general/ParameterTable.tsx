@@ -30,7 +30,7 @@ import {
   UserColumn
 } from '../ColumnRenderers';
 import { UserFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 /**
@@ -245,7 +245,7 @@ export function ParameterTable({
       {editParameter.modal}
       {deleteParameter.modal}
       {importParameters.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.parameter_list)}
         tableState={table}
         columns={tableColumns}

@@ -52,7 +52,7 @@ from plugin.mixins import APICallMixin, SettingsMixin, ScheduleMixin, BarcodeMix
 
 ### Plugin Base Class
 
-Custom plugins must inherit from the [InvenTreePlugin class]({{ sourcefile("src/backend/InvenTree/plugin/plugin.py") }}). Any plugins installed via the methods outlined above will be "discovered" when the InvenTree server launches.
+Custom plugins must inherit from the [InvenTreePlugin class]({{ sourcefile("src/backend/Tracklet/plugin/plugin.py") }}). Any plugins installed via the methods outlined above will be "discovered" when the InvenTree server launches.
 
 ### Imports
 
@@ -61,7 +61,7 @@ Please read all release notes and watch out for warnings - we generally provide 
 
 #### Plugins
 
-General classes and mechanisms are provided under the `plugin` [namespaces]({{ sourcefile("src/backend/InvenTree/plugin/__init__.py") }}). These include:
+General classes and mechanisms are provided under the `plugin` [namespaces]({{ sourcefile("src/backend/Tracklet/plugin/__init__.py") }}). These include:
 
 ```python
 # Management objects
@@ -77,7 +77,7 @@ MixinNotImplementedError    # Is raised if a mixin was not implemented (core mec
 
 #### Mixins
 
-Plugin functionality is split between multiple "mixin" classes - each of which provides a specific set of features or behaviors that can be integrated into a plugin. These mixins are designed to be used in conjunction with the `InvenTreePlugin` base class, allowing developers to easily extend the functionality of their plugins. All public APIs that should be used are exposed under `plugin.mixins`. These include all built-in mixins and notification methods. An up-to-date reference can be found in the source code [can be found here]({{ sourcefile("src/backend/InvenTree/plugin/mixins/__init__.py") }}).
+Plugin functionality is split between multiple "mixin" classes - each of which provides a specific set of features or behaviors that can be integrated into a plugin. These mixins are designed to be used in conjunction with the `InvenTreePlugin` base class, allowing developers to easily extend the functionality of their plugins. All public APIs that should be used are exposed under `plugin.mixins`. These include all built-in mixins and notification methods. An up-to-date reference can be found in the source code [can be found here]({{ sourcefile("src/backend/Tracklet/plugin/mixins/__init__.py") }}).
 
 Refer to the [mixin documentation](#plugin-mixins) for a list of available mixins, and their usage.
 
@@ -107,7 +107,7 @@ MIN_VERSION = None  # Lowest InvenTree version number that is supported by the p
 MAX_VERSION = None  # Highest InvenTree version number that is supported by the plugin
 ```
 
-Refer to the [sample plugins]({{ sourcedir("src/backend/InvenTree/plugin/samples") }}) for further examples.
+Refer to the [sample plugins]({{ sourcedir("src/backend/Tracklet/plugin/samples") }}) for further examples.
 
 ### Plugin Config
 

@@ -13,7 +13,7 @@ import { useDeleteApiFormModal } from '../../hooks/UseForm';
 import { useInstance } from '../../hooks/UseInstance';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 function ErrorDetail({ errorId }: Readonly<{ errorId?: number }>) {
   const { id } = useParams();
@@ -151,7 +151,7 @@ export default function ErrorReportTable() {
           return <ErrorDetail errorId={selectedError.pk} />;
         }}
       />
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.error_report_list)}
         tableState={table}
         columns={columns}

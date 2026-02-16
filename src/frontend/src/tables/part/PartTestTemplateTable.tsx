@@ -28,7 +28,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn, DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 export default function PartTestTemplateTable({
@@ -263,7 +263,7 @@ export default function PartTestTemplateTable({
             <Text>{t`Part templates cannot be edited, as the part is locked`}</Text>
           </Alert>
         )}
-        <InvenTreeTable
+        <TrackletTable
           url={apiUrl(ApiEndpoints.part_test_template_list)}
           tableState={table}
           columns={tableColumns}

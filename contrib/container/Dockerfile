@@ -49,12 +49,12 @@ ENV INVENTREE_BACKGROUND_WORKERS="4"
 ENV INVENTREE_WEB_ADDR=0.0.0.0
 ENV INVENTREE_WEB_PORT=8000
 
-LABEL org.opencontainers.image.vendor="inventree" \
-      org.opencontainers.image.title="InvenTree backend server" \
-      org.opencontainers.image.description="InvenTree is the open-source inventory management system" \
-      org.opencontainers.image.url="https://inventree.org" \
-      org.opencontainers.image.documentation="https://docs.inventree.org" \
-      org.opencontainers.image.source="https://github.com/inventree/InvenTree" \
+LABEL org.opencontainers.image.vendor="tracklet" \
+      org.opencontainers.image.title="Tracklet backend server" \
+      org.opencontainers.image.description="Tracklet is an inventory + operations management platform" \
+      org.opencontainers.image.url="https://github.com/yaselmo/Tracklet" \
+      org.opencontainers.image.documentation="https://github.com/yaselmo/Tracklet#readme" \
+      org.opencontainers.image.source="https://github.com/yaselmo/Tracklet" \
       org.opencontainers.image.revision=${commit_hash} \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.version=${commit_tag}
@@ -140,17 +140,17 @@ ENV INVENTREE_COMMIT_HASH="${commit_hash}"
 ENV INVENTREE_COMMIT_DATE="${commit_date}"
 
 # Copy source code
-COPY src/backend/InvenTree ${INVENTREE_BACKEND_DIR}/InvenTree
+COPY src/backend/Tracklet ${INVENTREE_BACKEND_DIR}/Tracklet
 COPY src/backend/requirements.txt ${INVENTREE_BACKEND_DIR}/requirements.txt
 
 # Copy compiled dependencies from prebuild image
 ENV PATH=/root/.local/bin:$PATH
 
-COPY --from=builder_stage ${INVENTREE_BACKEND_DIR}/InvenTree/web/static/web ${INVENTREE_BACKEND_DIR}/InvenTree/web/static/web
+COPY --from=builder_stage ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web
 COPY --from=builder_stage /root/.local /root/.local
 
 # Launch the production server
-CMD ["sh", "-c", "exec gunicorn -c ./gunicorn.conf.py InvenTree.wsgi -b ${INVENTREE_WEB_ADDR}:${INVENTREE_WEB_PORT} --chdir ${INVENTREE_BACKEND_DIR}/InvenTree"]
+CMD ["sh", "-c", "exec gunicorn -c ./gunicorn.conf.py Tracklet.wsgi -b ${INVENTREE_WEB_ADDR}:${INVENTREE_WEB_PORT} --chdir ${INVENTREE_BACKEND_DIR}/Tracklet"]
 
 FROM builder_stage AS dev
 

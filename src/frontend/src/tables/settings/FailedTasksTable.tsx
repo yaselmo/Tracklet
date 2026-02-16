@@ -11,7 +11,7 @@ import type { TableColumn } from '@lib/types/Tables';
 import { StylishText } from '../../components/items/StylishText';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function FailedTasksTable({
   onRecordsUpdated
@@ -73,7 +73,7 @@ export default function FailedTasksTable({
           );
         })}
       </Drawer>
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.task_failed_list)}
         tableState={table}
         columns={columns}

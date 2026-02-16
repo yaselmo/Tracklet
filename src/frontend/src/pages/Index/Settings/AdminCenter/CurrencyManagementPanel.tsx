@@ -12,7 +12,7 @@ import { FactCollection } from '../../../../components/settings/FactCollection';
 import { GlobalSettingList } from '../../../../components/settings/SettingList';
 import { showApiErrorMessage } from '../../../../functions/notifications';
 import { useTable } from '../../../../hooks/UseTable';
-import { InvenTreeTable } from '../../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../../tables/TrackletTable';
 
 /*
  * Table for displaying available currencies
@@ -67,7 +67,7 @@ export function CurrencyTable({
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.currency_list)}
       tableState={table}
       columns={columns}

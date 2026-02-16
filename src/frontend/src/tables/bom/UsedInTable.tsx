@@ -18,7 +18,7 @@ import {
   PartColumn,
   ReferenceColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /*
  * For a given part, render a table showing all the assemblies the part is used in
@@ -137,7 +137,7 @@ export function UsedInTable({
   return (
     <>
       {editBomItem.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.bom_list)}
         tableState={table}
         columns={tableColumns}

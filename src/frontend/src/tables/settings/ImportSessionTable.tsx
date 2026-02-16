@@ -21,7 +21,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { DateColumn, StatusColumn } from '../ColumnRenderers';
 import { StatusFilterOptions, UserFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function ImportSessionTable() {
   const table = useTable('importsession');
@@ -147,7 +147,7 @@ export default function ImportSessionTable() {
     <>
       {newImportSession.modal}
       {deleteSession.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.import_session_list)}
         tableState={table}
         columns={columns}

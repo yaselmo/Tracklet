@@ -49,7 +49,7 @@ import { usePluginUIFeature } from '../../hooks/UsePluginUIFeature';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn, DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export type TemplateI = {
   pk: number;
@@ -385,7 +385,7 @@ export function TemplateTable({
           return <TemplateDrawer id={id ?? ''} templateProps={templateProps} />;
         }}
       />
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(templateEndpoint)}
         tableState={table}
         columns={columns}

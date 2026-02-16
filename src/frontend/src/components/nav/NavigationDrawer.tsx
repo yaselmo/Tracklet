@@ -10,7 +10,7 @@ import useInstanceName from '../../hooks/UseInstanceName';
 import * as classes from '../../main.css';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeLogo } from '../items/InvenTreeLogo';
+import { TrackletLogo } from '../items/TrackletLogo';
 import { type MenuLinkItem, MenuLinks } from '../items/MenuLinks';
 import { StylishText } from '../items/StylishText';
 
@@ -171,7 +171,7 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
   return (
     <Flex direction='column' mih='100vh' p={16}>
       <Group wrap='nowrap'>
-        <InvenTreeLogo />
+        <TrackletLogo />
         <StylishText size='xl'>{title}</StylishText>
       </Group>
       <Space h='xs' />

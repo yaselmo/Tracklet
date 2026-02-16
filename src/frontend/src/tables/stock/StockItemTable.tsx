@@ -42,7 +42,7 @@ import {
   StatusFilterOptions,
   SupplierFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Construct a list of columns for the stock item table
@@ -441,7 +441,7 @@ export function StockItemTable({
       {newStockItem.modal}
       {orderPartsWizard.wizard}
       {stockAdjustActions.modals.map((modal) => modal.modal)}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.stock_item_list)}
         tableState={table}
         columns={tableColumns}

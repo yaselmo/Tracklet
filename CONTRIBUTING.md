@@ -1,14 +1,9 @@
-### Contributing to InvenTree
-
-Hi there, thank you for your interest in contributing!
-Please read our contribution guidelines, before submitting your first pull request to the InvenTree codebase.
-
 ### Project File Structure
 
-The InvenTree project is split into two main components: frontend and backend. This source is located in the `src` directory. All other files are used for project management, documentation, and testing.
+The Tracklet project is split into two main components: frontend and backend. This source is located in the `src` directory. All other files are used for project management, documentation, and testing.
 
 ```bash
-InvenTree/
+Tracklet/
 ├─ .devops/                            # Files for Azure DevOps
 ├─ .github/                            # Files for GitHub
 │  ├─ actions/                         # Reused actions
@@ -26,7 +21,7 @@ InvenTree/
 │  ├─ docs/                            # Source for documentation
 ├─ src/                                # Source for application
 │  ├─ backend/                         # Directory for backend parts
-│  │  ├─ InvenTree/                    # Source for backend
+│  │  ├─ Tracklet/                     # Source for backend
 │  │  ├─ requirements.txt              # Dependencies for backend
 │  │  ├─ package.json                  # Dependencies for backend HTML linting
 │  ├─ frontend/                        # Directory for frontend parts
@@ -43,8 +38,5 @@ InvenTree/
 ├─ Procfile                            # Process definition for Debian/Ubuntu packages
 ├─ README.md                           # General project information and overview
 ├─ runtime.txt                         # Python runtime settings for Debian/Ubuntu packages build
-├─ SECURITY.md                         # Project security policy
 ├─ tasks.py                            # Action definitions for development, testing and deployment
 ```
-
-Refer to our [contribution guidelines](https://docs.inventree.org/en/latest/develop/contributing/) for more information!

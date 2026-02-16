@@ -1,4 +1,4 @@
-"""Tasks for automating certain actions and interacting with InvenTree from the CLI."""
+"""Tasks for automating certain actions and interacting with Tracklet from the CLI."""
 
 import datetime
 import json
@@ -24,22 +24,22 @@ def is_true(x):
 
 
 def is_devcontainer_environment():
-    """Check if the InvenTree environment is running in a development container."""
+    """Check if the Tracklet environment is running in a development container."""
     return is_true(os.environ.get('INVENTREE_DEVCONTAINER', 'False'))
 
 
 def is_docker_environment():
-    """Check if the InvenTree environment is running in a Docker container."""
+    """Check if the Tracklet environment is running in a Docker container."""
     return is_true(os.environ.get('INVENTREE_DOCKER', 'False'))
 
 
 def is_rtd_environment():
-    """Check if the InvenTree environment is running on ReadTheDocs."""
+    """Check if the Tracklet environment is running on ReadTheDocs."""
     return is_true(os.environ.get('READTHEDOCS', 'False'))
 
 
 def is_debug_environment():
-    """Check if the InvenTree environment is running in a debug environment."""
+    """Check if the Tracklet environment is running in a debug environment."""
     return is_true(os.environ.get('INVENTREE_DEBUG', 'False')) or is_true(
         os.environ.get('RUNNER_DEBUG', 'False')
     )
@@ -172,7 +172,7 @@ def envcheck_invoke_version():
 
     if invoke_version < min_version:
         error(f'The installed invoke version ({invoke.__version__}) is not supported!')
-        error(f'InvenTree requires invoke version {MIN_INVOKE_VERSION} or above')
+        error(f'Tracklet requires invoke version {MIN_INVOKE_VERSION} or above')
         sys.exit(1)
 
 
@@ -213,7 +213,7 @@ def envcheck_python_version():
 
     if not valid:
         error(f'The installed python version ({version}) is not supported!')
-        error(f'InvenTree requires Python {REQ_MAJOR}.{REQ_MINOR} or above')
+        error(f'Tracklet requires Python {REQ_MAJOR}.{REQ_MINOR} or above')
         sys.exit(1)
 
 
@@ -263,7 +263,7 @@ def apps():
         'stock',
         'users',
         'plugin',
-        'InvenTree',
+        'Tracklet',
         'generic',
         'machine',
         'web',
@@ -350,7 +350,7 @@ def local_dir() -> Path:
 
 def manage_py_dir():
     """Returns the directory of the manage.py file."""
-    return local_dir().joinpath('src', 'backend', 'InvenTree')
+    return local_dir().joinpath('src', 'backend', 'Tracklet')
 
 
 def manage_py_path():
@@ -400,7 +400,7 @@ def run(c, cmd, path: Optional[Path] = None, pty=False, env=None):
     try:
         c.run(f'cd "{path}" && {cmd}', pty=pty, env=env)
     except UnexpectedExit as e:
-        error(f"ERROR: InvenTree command failed: '{cmd}'")
+        error(f"ERROR: Tracklet command failed: '{cmd}'")
         warning('- Refer to the error messages in the log above for more information')
         raise e
 
@@ -536,7 +536,7 @@ def check_file_existence(filename: Path, overwrite: bool = False):
 @state_logger('TASK01')
 def plugins(c, uv=False):
     """Installs all plugins as specified in 'plugins.txt'."""
-    from src.backend.InvenTree.InvenTree.config import (  # type: ignore[import]
+    from src.backend.Tracklet.Tracklet.config import (  # type: ignore[import]
         get_plugin_file,
     )
 
@@ -576,7 +576,7 @@ def install(c, uv=False, skip_plugins=False, dev=False):
         plugins(c, uv=uv)
 
     # Compile license information
-    lic_path = manage_py_dir().joinpath('InvenTree', 'licenses.txt')
+    lic_path = manage_py_dir().joinpath('Tracklet', 'licenses.txt')
     run(
         c,
         f'pip-licenses --format=json --with-license-file --no-license-path > {lic_path}',
@@ -630,7 +630,7 @@ def rebuild_models(c):
 @task
 def rebuild_thumbnails(c):
     """Rebuild missing image thumbnails."""
-    from src.backend.InvenTree.InvenTree.config import (  # type: ignore[import]
+    from src.backend.Tracklet.Tracklet.config import (  # type: ignore[import]
         get_media_dir,
     )
 
@@ -763,13 +763,13 @@ def backup(
     if skip_db:
         info('Skipping database backup...')
     else:
-        info('Backing up InvenTree database...')
+        info('Backing up Tracklet database...')
         manage(c, f'dbbackup {cmd}')
 
     if skip_media:
         info('Skipping media backup...')
     else:
-        info('Backing up InvenTree media files...')
+        info('Backing up Tracklet media files...')
         manage(c, f'mediabackup {cmd}')
 
     if not skip_db or not skip_media:
@@ -817,7 +817,7 @@ def restore(
     if skip_db:
         info('Skipping database archive...')
     else:
-        info('Restoring InvenTree database')
+        info('Restoring Tracklet database')
         cmd = f'dbrestore {base_cmd}'
 
         if db_file:
@@ -828,7 +828,7 @@ def restore(
     if skip_media:
         info('Skipping media restore...')
     else:
-        info('Restoring InvenTree media files')
+        info('Restoring Tracklet media files')
         cmd = f'mediarestore {base_cmd}'
 
         if media_file:
@@ -852,7 +852,7 @@ def migrate(c):
 
     This is a critical step if the database schema have been altered!
     """
-    info('Running InvenTree database migrations...')
+    info('Running Tracklet database migrations...')
 
     # Run custom management command which wraps migrations in "maintenance mode"
     manage(c, 'makemigrations')
@@ -860,7 +860,7 @@ def migrate(c):
     manage(c, 'migrate --run-syncdb')
     manage(c, 'remove_stale_contenttypes --include-stale-apps --no-input', pty=True)
 
-    success('InvenTree database migrations completed')
+    success('Tracklet database migrations completed')
 
 
 @task(help={'app': 'Specify an app to show migrations for (leave blank for all apps)'})
@@ -888,7 +888,7 @@ def update(
     skip_static: bool = False,
     uv: bool = False,
 ):
-    """Update InvenTree installation.
+    """Update Tracklet installation.
 
     This command should be invoked after source code has been updated,
     e.g. downloading new code from GitHub.
@@ -902,7 +902,7 @@ def update(
     - static (optional)
     - clean_settings
     """
-    info('Updating InvenTree installation...')
+    info('Updating Tracklet installation...')
 
     # Ensure required components are installed
     install(c, uv=uv)
@@ -938,7 +938,7 @@ def update(
         # Note: frontend has already been compiled if required
         static(c, frontend=False)
 
-    success('InvenTree update complete!')
+    success('Tracklet update complete!')
 
 
 # Data tasks
@@ -1146,7 +1146,7 @@ def delete_data(c, force: bool = False, migrate: bool = False):
 
     Warning: This will REALLY delete all records in the database!!
     """
-    info('Deleting all data from InvenTree database...')
+    info('Deleting all data from Tracklet database...')
 
     if migrate:
         manage(c, 'migrate --run-syncdb')
@@ -1220,7 +1220,7 @@ def gunicorn(c, address='0.0.0.0:8000', workers=None):
     Note: This server will not auto-reload in response to code changes.
     """
     config_file = local_dir().joinpath('contrib', 'container', 'gunicorn.conf.py')
-    cmd = f'gunicorn -c {config_file} InvenTree.wsgi -b {address} --chdir {manage_py_dir()}'
+    cmd = f'gunicorn -c {config_file} Tracklet.wsgi -b {address} --chdir {manage_py_dir()}'
 
     if workers:
         cmd += f' --workers={workers}'
@@ -1256,7 +1256,7 @@ def server(c, address='0.0.0.0:8000', no_reload=False, no_threading=False):
 
 @task(pre=[wait])
 def worker(c):
-    """Run the InvenTree background worker process."""
+    """Run the Tracklet background worker process."""
     manage(c, 'qcluster', pty=True)
 
 
@@ -1268,10 +1268,10 @@ def test_translations(c):
 
     # setup django
     base_path = Path.cwd()
-    new_base_path = pathlib.Path('InvenTree').resolve()
+    new_base_path = manage_py_dir().resolve()
     sys.path.append(str(new_base_path))
     os.chdir(new_base_path)
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'InvenTree.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'Tracklet.settings')
     django.setup()
 
     # Add language
@@ -1430,7 +1430,7 @@ def setup_test(
     branch='main',
 ):
     """Setup a testing environment."""
-    from src.backend.InvenTree.InvenTree.config import (  # type: ignore[import]
+    from src.backend.Tracklet.Tracklet.config import (  # type: ignore[import]
         get_media_dir,
     )
 
@@ -1581,9 +1581,9 @@ def export_definitions(c, basedir: str = ''):
 
 @task(default=True)
 def version(c):
-    """Show the current version of InvenTree."""
-    import src.backend.InvenTree.InvenTree.version as InvenTreeVersion  # type: ignore[import]
-    from src.backend.InvenTree.InvenTree.config import (  # type: ignore[import]
+    """Show the current version of Tracklet."""
+    import src.backend.Tracklet.Tracklet.version as TrackletVersion  # type: ignore[import]
+    from src.backend.Tracklet.Tracklet.config import (  # type: ignore[import]
         get_backup_dir,
         get_config_file,
         get_media_dir,
@@ -1620,8 +1620,8 @@ def version(c):
 
     print(
         f"""
-InvenTree - inventree.org
-The Open-Source Inventory Management System\n
+Tracklet
+Inventory + Operations Management\n
 
 Python paths:
 Executable  {sys.executable}
@@ -1637,10 +1637,10 @@ Static      {get_value(lambda: get_static_dir(error=False)) or NOT_SPECIFIED}
 Backup      {get_value(lambda: get_backup_dir(error=False)) or NOT_SPECIFIED}
 
 Versions:
-InvenTree   {InvenTreeVersion.inventreeVersion()}
-API         {InvenTreeVersion.inventreeApiVersion()}
+Tracklet    {TrackletVersion.inventreeVersion()}
+API         {TrackletVersion.inventreeApiVersion()}
 Python      {python_version()}
-Django      {get_value(InvenTreeVersion.inventreeDjangoVersion)}
+Django      {get_value(TrackletVersion.inventreeDjangoVersion)}
 Node        {node if node else NA}
 Yarn        {yarn if yarn else NA}
 
@@ -1648,8 +1648,8 @@ Environment:
 Platform    {platform}
 Debug       {is_debug_environment()}
 
-Commit hash: {InvenTreeVersion.inventreeCommitHash()}
-Commit date: {InvenTreeVersion.inventreeCommitDate()}"""
+Commit hash: {TrackletVersion.inventreeCommitHash()}
+Commit date: {TrackletVersion.inventreeCommitDate()}"""
     )
     if is_pkg_installer_by_path():
         print(
@@ -1726,11 +1726,11 @@ def frontend_build(c):
 
     # Write version marker
     try:
-        import src.backend.InvenTree.InvenTree.version as InvenTreeVersion  # type: ignore[import]
+        import src.backend.Tracklet.Tracklet.version as TrackletVersion  # type: ignore[import]
 
-        if version_hash := InvenTreeVersion.inventreeCommitHash():
+        if version_hash := TrackletVersion.inventreeCommitHash():
             write_info(version_sha_pth(), version_hash)
-        elif version_tag := InvenTreeVersion.inventreeVersion():
+        elif version_tag := TrackletVersion.inventreeVersion():
             write_info(version_target_pth(), version_tag)
         else:
             warning('No version information available to write frontend version marker')
@@ -1776,9 +1776,9 @@ def frontend_test(c, host: str = '0.0.0.0'):
         'ref': 'git ref, default: current git ref',
         'tag': 'git tag to look for release',
         'file': 'destination to frontend-build.zip file',
-        'repo': 'GitHub repository, default: InvenTree/inventree',
+        'repo': 'GitHub repository, default: yaselmo/Tracklet',
         'extract': 'Also extract and place at the correct destination, default: True',
-        'clean': 'Delete old files from InvenTree/web/static/web first, default: True',
+        'clean': 'Delete old files from Tracklet/web/static/web first, default: True',
     }
 )
 @state_logger('TASK07')
@@ -1787,7 +1787,7 @@ def frontend_download(
     ref=None,
     tag=None,
     file=None,
-    repo='InvenTree/inventree',
+    repo='yaselmo/Tracklet',
     extract=True,
     clean=True,
 ):

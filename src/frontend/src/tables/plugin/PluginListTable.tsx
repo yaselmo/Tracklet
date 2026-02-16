@@ -31,7 +31,7 @@ import { useTable } from '../../hooks/UseTable';
 import { useServerApiState } from '../../states/ServerApiState';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn, LinkColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Construct an indicator icon for a single plugin
@@ -400,7 +400,7 @@ export default function PluginListTable() {
           );
         }}
       />
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.plugin_list)}
         tableState={table}
         columns={pluginTableColumns}

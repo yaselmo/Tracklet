@@ -11,7 +11,7 @@ import { tooltipFormatter } from '../../../components/charts/tooltipFormatter';
 import { formatCurrency } from '../../../defaults/formatters';
 import { useTable } from '../../../hooks/UseTable';
 import { DateColumn, PartColumn } from '../../../tables/ColumnRenderers';
-import { InvenTreeTable } from '../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../tables/TrackletTable';
 import { NoPricingData } from './PricingPanel';
 
 export default function VariantPricingPanel({
@@ -74,7 +74,7 @@ export default function VariantPricingPanel({
   return (
     <Stack gap='xs'>
       <SimpleGrid cols={{ base: 1, md: 2 }}>
-        <InvenTreeTable
+        <TrackletTable
           tableState={table}
           url={apiUrl(ApiEndpoints.part_list)}
           columns={columns}

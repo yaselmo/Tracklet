@@ -53,4 +53,4 @@ Enabling the `INVENTREE_DB_LOGGING` setting will log all database queries to the
 
 In addition to the above third-party tools, InvenTree includes some internal profiling tools that can be enabled in debug mode. These tools can be used to provide additional insights into the performance of various components of the InvenTree server.
 
-These profiling tools can be found in `./src/backend/InvenTree/profiling.py`.
+These profiling tools can be found in `./src/backend/Tracklet/profiling.py`.

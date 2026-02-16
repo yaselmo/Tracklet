@@ -88,7 +88,7 @@ export const QuickAction = () => {
       buttonText: t`Open Issue`,
       action: () =>
         window.open(
-          'https://github.com/inventree/inventree/issues/new',
+          'https://github.com/yaselmo/Tracklet/issues/new',
           '_blank'
         )
     },

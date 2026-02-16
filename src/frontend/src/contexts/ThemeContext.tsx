@@ -5,7 +5,7 @@ import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { ContextMenuProvider } from 'mantine-contextmenu';
 import { useShallow } from 'zustand/react/shallow';
-import { AboutInvenTreeModal } from '../components/modals/AboutInvenTreeModal';
+import { AboutTrackletModal } from '../components/modals/AboutTrackletModal';
 import { LicenseModal } from '../components/modals/LicenseModal';
 import { QrModal } from '../components/modals/QrModal';
 import { ServerInfoModal } from '../components/modals/ServerInfoModal';
@@ -46,7 +46,7 @@ export function ThemeContext({
             }}
             modals={{
               info: ServerInfoModal,
-              about: AboutInvenTreeModal,
+              about: AboutTrackletModal,
               license: LicenseModal,
               qr: QrModal
             }}

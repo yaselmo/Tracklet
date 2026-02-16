@@ -35,7 +35,7 @@ export enum PluginUIFeatureType {
 
 /**
  * Type definition for a UI component which can be loaded via plugin.
- * Ref: src/backend/InvenTree/plugin/base/ui/serializers.py:PluginUIFeatureSerializer
+ * Ref: src/backend/Tracklet/plugin/base/ui/serializers.py:PluginUIFeatureSerializer
  *
  * @param plugin_name: The name of the plugin
  * @param feature_type: The type of the UI feature (see PluginUIFeatureType)

@@ -48,7 +48,7 @@ import {
   RenderPartColumn
 } from '../ColumnRenderers';
 import { PartCategoryFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import RowExpansionIcon from '../RowExpansionIcon';
 import { TableHoverCard } from '../TableHoverCard';
 
@@ -130,7 +130,7 @@ export function BuildLineSubTable({
 
   return (
     <Paper p='xs'>
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         columns={tableColumns}
         tableData={lineItem.filteredAllocations ?? lineItem.allocations}
@@ -964,7 +964,7 @@ export default function BuildLineTable({
       {deleteAllocation.modal}
       {consumeLines.modal}
       {orderPartsWizard.wizard}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.build_line_list)}
         tableState={table}
         columns={tableColumns}

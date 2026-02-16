@@ -9,7 +9,7 @@ import type { TableColumn } from '@lib/types/Tables';
 import { formatCurrency } from '../../../defaults/formatters';
 import { useTable } from '../../../hooks/UseTable';
 import { DateColumn } from '../../../tables/ColumnRenderers';
-import { InvenTreeTable } from '../../../tables/InvenTreeTable';
+import { TrackletTable } from '../../../tables/TrackletTable';
 import { NoPricingData } from './PricingPanel';
 
 export default function SaleHistoryPanel({
@@ -64,7 +64,7 @@ export default function SaleHistoryPanel({
 
   return (
     <SimpleGrid cols={{ base: 1, md: 2 }}>
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         url={apiUrl(ApiEndpoints.sales_order_line_list)}
         columns={columns}

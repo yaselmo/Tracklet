@@ -28,7 +28,7 @@ import {
   LinkColumn,
   PartColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /*
  * Construct a table listing manufacturer parts
@@ -196,7 +196,7 @@ export function ManufacturerPartTable({
       {duplicateManufacturerPart.modal}
       {editManufacturerPart.modal}
       {deleteManufacturerPart.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.manufacturer_part_list)}
         tableState={table}
         columns={tableColumns}

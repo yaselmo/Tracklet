@@ -20,7 +20,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { DescriptionColumn, ResponsibleColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Table for displaying list of project codes
@@ -104,7 +104,7 @@ export default function ProjectCodeTable() {
       {newProjectCode.modal}
       {editProjectCode.modal}
       {deleteProjectCode.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.project_code_list)}
         tableState={table}
         columns={columns}

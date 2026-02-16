@@ -1,6 +1,6 @@
 import { UnstyledButton } from '@mantine/core';
 
-import { InvenTreeLogo } from '../items/InvenTreeLogo';
+import { TrackletLogo } from '../items/TrackletLogo';
 
 export function NavHoverMenu({
   openDrawer
@@ -9,7 +9,7 @@ export function NavHoverMenu({
 }>) {
   return (
     <UnstyledButton onClick={() => openDrawer()} aria-label='navigation-menu'>
-      <InvenTreeLogo />
+      <TrackletLogo />
     </UnstyledButton>
   );
 }

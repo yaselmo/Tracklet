@@ -21,7 +21,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function LocationTypesTable() {
   const table = useTable('location-types');
@@ -120,7 +120,7 @@ export default function LocationTypesTable() {
       {newLocationType.modal}
       {editLocationType.modal}
       {deleteLocationType.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.stock_location_type_list)}
         tableState={table}
         columns={tableColumns}

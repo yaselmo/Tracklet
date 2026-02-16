@@ -41,7 +41,7 @@ import {
   LinkColumn,
   StatusColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function SalesOrderShipmentTable({
   showOrderInfo = false,
@@ -320,7 +320,7 @@ export default function SalesOrderShipmentTable({
       {deleteShipment.modal}
       {uncheckShipment.modal}
       {completeShipment.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.sales_order_shipment_list)}
         tableState={table}
         columns={tableColumns}

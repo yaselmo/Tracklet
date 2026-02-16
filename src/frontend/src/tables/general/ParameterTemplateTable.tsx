@@ -21,7 +21,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { BooleanColumn, DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Render a table of ParameterTemplate objects
@@ -207,7 +207,7 @@ export default function ParameterTemplateTable() {
       {editTemplate.modal}
       {duplicateTemplate.modal}
       {deleteTemplate.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.parameter_template_list)}
         tableState={table}
         columns={tableColumns}

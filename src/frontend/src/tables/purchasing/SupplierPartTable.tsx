@@ -36,7 +36,7 @@ import {
   NoteColumn,
   PartColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 /*
@@ -302,7 +302,7 @@ export function SupplierPartTable({
       {duplicateSupplierPart.modal}
       {deleteSupplierPart.modal}
       {importPartWizard.wizard}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.supplier_part_list)}
         tableState={table}
         columns={tableColumns}

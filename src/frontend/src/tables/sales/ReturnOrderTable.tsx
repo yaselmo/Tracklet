@@ -47,7 +47,7 @@ import {
   TargetDateAfterFilter,
   TargetDateBeforeFilter
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export function ReturnOrderTable({
   partId,
@@ -174,7 +174,7 @@ export function ReturnOrderTable({
   return (
     <>
       {newReturnOrder.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.return_order_list)}
         tableState={table}
         columns={tableColumns}

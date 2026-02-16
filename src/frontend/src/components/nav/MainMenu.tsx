@@ -19,7 +19,7 @@ import {
 } from '@tabler/icons-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { aboutInvenTree } from '../../defaults/links';
+import { aboutTracklet } from '../../defaults/links';
 import { doLogout } from '../../functions/auth';
 import * as classes from '../../main.css';
 import { useUserState } from '../../states/UserState';
@@ -93,10 +93,10 @@ export function MainMenu() {
             <Trans>Change Color Mode</Trans>
           </Menu.Item>
           <Menu.Item
-            onClick={() => aboutInvenTree()}
+            onClick={() => aboutTracklet()}
             leftSection={<IconInfoCircle />}
           >
-            <Trans>About InvenTree</Trans>
+            <Trans>About Tracklet</Trans>
           </Menu.Item>
           <Menu.Divider />
           <Menu.Item

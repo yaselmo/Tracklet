@@ -7,7 +7,7 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
 import type { TableColumn } from '@lib/types/Tables';
 import { useTable } from '../../hooks/UseTable';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export default function ScheduledTasksTable() {
   const table = useTable('tasks-scheduled');
@@ -55,7 +55,7 @@ export default function ScheduledTasksTable() {
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.task_scheduled_list)}
       tableState={table}
       columns={columns}

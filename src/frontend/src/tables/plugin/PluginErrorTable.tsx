@@ -6,7 +6,7 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
 import type { TableColumn } from '@lib/types/Tables';
 import { useTable } from '../../hooks/UseTable';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export interface PluginRegistryErrorI {
   id: number;
@@ -42,7 +42,7 @@ export default function PluginErrorTable() {
     );
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.plugin_registry_status)}
       tableState={table}
       columns={registryErrorTableColumns}

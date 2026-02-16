@@ -19,7 +19,7 @@ import {
 } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Table for displaying list of custom physical units
@@ -114,7 +114,7 @@ export default function CustomUnitsTable() {
       {newUnit.modal}
       {editUnit.modal}
       {deleteUnit.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.custom_unit_list)}
         tableState={table}
         columns={columns}

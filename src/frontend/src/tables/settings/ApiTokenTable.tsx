@@ -17,7 +17,7 @@ import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { BooleanColumn, UserColumn } from '../ColumnRenderers';
 import { UserFilter } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 export function ApiTokenTable({
   only_myself = true
@@ -193,7 +193,7 @@ export function ApiTokenTable({
           </Modal>
         </>
       )}
-      <InvenTreeTable
+      <TrackletTable
         tableState={table}
         url={apiUrl(ApiEndpoints.user_tokens)}
         columns={tableColumns}

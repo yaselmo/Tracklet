@@ -51,7 +51,7 @@ import {
   ProjectCodeColumn,
   RenderPartColumn
 } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import RowExpansionIcon from '../RowExpansionIcon';
 import { TableHoverCard } from '../TableHoverCard';
 import SalesOrderAllocationTable from './SalesOrderAllocationTable';
@@ -534,7 +534,7 @@ export default function SalesOrderLineItemTable({
       {allocateBySerials.modal}
       {allocateStock.modal}
       {orderPartsWizard.wizard}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.sales_order_line_list)}
         tableState={table}
         columns={tableColumns}

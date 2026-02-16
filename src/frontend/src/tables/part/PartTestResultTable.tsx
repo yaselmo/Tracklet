@@ -37,7 +37,7 @@ import {
   SerialLTEFilter,
   StatusFilterOptions
 } from '../Filter';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { TableHoverCard } from '../TableHoverCard';
 
 /**
@@ -353,7 +353,7 @@ export default function PartTestResultTable({
     <>
       {createTestResult.modal}
       {createTestResultMultiple.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.stock_item_list)}
         tableState={table}
         columns={tableColumns}

@@ -1,13 +1,11 @@
 {
     "name": "@inventreedb/ui",
-    "description": "UI components for the InvenTree project",
+    "description": "UI components for the Tracklet project",
     "version": "0.7.0",
-    "private": false,
+    "private": true,
     "type": "module",
     "license": "MIT",
-    "keywords": [
-        "inventree"
-    ],
+    "keywords": ["tracklet", "inventory", "operations"],
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
@@ -20,16 +18,15 @@
         "README.md",
         "CHANGELOG.md"
     ],
-    "homepage": "https://inventree.org",
+    "homepage": "https://github.com/yaselmo/Tracklet",
     "repository": {
         "type": "git",
-        "url": "https://github.com/inventree/inventree"
+        "url": "https://github.com/yaselmo/Tracklet"
     },
     "author": {
-        "name": "InvenTree Developers",
-        "email": "support@inventree.org",
-        "url": "https://inventree.org",
-        "org": "InvenTree"
+        "name": "Tracklet",
+        "url": "https://github.com/yaselmo/Tracklet",
+        "org": "Tracklet"
     },
     "scripts": {
         "dev": "vite",

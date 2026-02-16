@@ -27,7 +27,7 @@ import { StylishText } from '../../components/items/StylishText';
 import { DetailDrawer } from '../../components/nav/DetailDrawer';
 import { useTable } from '../../hooks/UseTable';
 import { BooleanColumn, DescriptionColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 import { MachineListTable, useMachineTypeDriver } from './MachineListTable';
 
 export interface MachineTypeI {
@@ -79,7 +79,7 @@ export function MachineDriverTable({
   }, []);
 
   return (
-    <InvenTreeTable
+    <TrackletTable
       url={apiUrl(ApiEndpoints.machine_driver_list)}
       tableState={table}
       columns={tableColumns}
@@ -387,7 +387,7 @@ export function MachineTypeListTable({
           );
         }}
       />
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.machine_types_list)}
         tableState={table}
         columns={machineTypeTableColumns}

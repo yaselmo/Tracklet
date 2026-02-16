@@ -23,7 +23,7 @@ import {
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
 import { NoteColumn } from '../ColumnRenderers';
-import { InvenTreeTable } from '../InvenTreeTable';
+import { TrackletTable } from '../TrackletTable';
 
 /**
  * Construct a table listing related parts for a given part
@@ -168,7 +168,7 @@ export function RelatedPartTable({
       {newRelatedPart.modal}
       {editRelatedPart.modal}
       {deleteRelatedPart.modal}
-      <InvenTreeTable
+      <TrackletTable
         url={apiUrl(ApiEndpoints.related_part_list)}
         tableState={table}
         columns={tableColumns}
