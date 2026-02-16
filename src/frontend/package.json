@@ -29,7 +29,9 @@
         "org": "Tracklet"
     },
     "scripts": {
+        "predev": "yarn compile",
         "dev": "vite",
+        "prebuild": "yarn compile",
         "build": "tsc && vite build --emptyOutDir",
         "lib": "tsc --p ./tsconfig.lib.json && vite --config vite.lib.config.ts build",
         "preview": "vite preview",
