@@ -1,6 +1,8 @@
 import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import ModuleDisabled from './components/errors/ModuleDisabled';
+import { isModuleEnabled } from './defaults/featureFlags';
 import { Loadable } from './functions/loading';
 
 // Lazy loaded pages
@@ -88,6 +90,22 @@ export const ReturnOrderDetail = Loadable(
   lazy(() => import('./pages/sales/ReturnOrderDetail'))
 );
 
+export const EventsIndex = Loadable(
+  lazy(() => import('./pages/events/EventsIndex'))
+);
+
+export const EventDetail = Loadable(
+  lazy(() => import('./pages/events/EventDetail'))
+);
+
+export const RentalsIndex = Loadable(
+  lazy(() => import('./pages/rentals/RentalsIndex'))
+);
+
+export const RentalOrderDetail = Loadable(
+  lazy(() => import('./pages/rentals/RentalOrderDetail'))
+);
+
 export const Scan = Loadable(lazy(() => import('./pages/Index/Scan')));
 
 export const ErrorPage = Loadable(lazy(() => import('./pages/ErrorPage')));
@@ -171,30 +189,181 @@ export const routes = (
         <Route path='item/:id/*' element={<StockDetail />} />
       </Route>
       <Route path='manufacturing/'>
-        <Route index element={<Navigate to='index/' />} />
-        <Route path='index/*' element={<BuildIndex />} />
-        <Route path='build-order/:id/*' element={<BuildDetail />} />
+        <Route
+          index
+          element={
+            isModuleEnabled('manufacturing') ? (
+              <Navigate to='index/' />
+            ) : (
+              <ModuleDisabled moduleName='Manufacturing' />
+            )
+          }
+        />
+        <Route
+          path='index/*'
+          element={
+            isModuleEnabled('manufacturing') ? (
+              <BuildIndex />
+            ) : (
+              <ModuleDisabled moduleName='Manufacturing' />
+            )
+          }
+        />
+        <Route
+          path='build-order/:id/*'
+          element={
+            isModuleEnabled('manufacturing') ? (
+              <BuildDetail />
+            ) : (
+              <ModuleDisabled moduleName='Manufacturing' />
+            )
+          }
+        />
       </Route>
       <Route path='purchasing/'>
-        <Route index element={<Navigate to='index/' />} />
-        <Route path='index/*' element={<PurchasingIndex />} />
-        <Route path='purchase-order/:id/*' element={<PurchaseOrderDetail />} />
-        <Route path='supplier/:id/*' element={<SupplierDetail />} />
-        <Route path='supplier-part/:id/*' element={<SupplierPartDetail />} />
-        <Route path='manufacturer/:id/*' element={<ManufacturerDetail />} />
+        <Route
+          index
+          element={
+            isModuleEnabled('purchasing') ? (
+              <Navigate to='index/' />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
+        />
+        <Route
+          path='index/*'
+          element={
+            isModuleEnabled('purchasing') ? (
+              <PurchasingIndex />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
+        />
+        <Route
+          path='purchase-order/:id/*'
+          element={
+            isModuleEnabled('purchasing') ? (
+              <PurchaseOrderDetail />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
+        />
+        <Route
+          path='supplier/:id/*'
+          element={
+            isModuleEnabled('purchasing') ? (
+              <SupplierDetail />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
+        />
+        <Route
+          path='supplier-part/:id/*'
+          element={
+            isModuleEnabled('purchasing') ? (
+              <SupplierPartDetail />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
+        />
+        <Route
+          path='manufacturer/:id/*'
+          element={
+            isModuleEnabled('purchasing') ? (
+              <ManufacturerDetail />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
+        />
         <Route
           path='manufacturer-part/:id/*'
-          element={<ManufacturerPartDetail />}
+          element={
+            isModuleEnabled('purchasing') ? (
+              <ManufacturerPartDetail />
+            ) : (
+              <ModuleDisabled moduleName='Purchasing' />
+            )
+          }
         />
       </Route>
       <Route path='company/:id/*' element={<CompanyDetail />} />
       <Route path='sales/'>
+        <Route
+          index
+          element={
+            isModuleEnabled('sales') ? (
+              <Navigate to='index/' />
+            ) : (
+              <ModuleDisabled moduleName='Sales' />
+            )
+          }
+        />
+        <Route
+          path='index/*'
+          element={
+            isModuleEnabled('sales') ? (
+              <SalesIndex />
+            ) : (
+              <ModuleDisabled moduleName='Sales' />
+            )
+          }
+        />
+        <Route
+          path='sales-order/:id/*'
+          element={
+            isModuleEnabled('sales') ? (
+              <SalesOrderDetail />
+            ) : (
+              <ModuleDisabled moduleName='Sales' />
+            )
+          }
+        />
+        <Route
+          path='shipment/:id/*'
+          element={
+            isModuleEnabled('sales') ? (
+              <SalesOrderShipmentDetail />
+            ) : (
+              <ModuleDisabled moduleName='Sales' />
+            )
+          }
+        />
+        <Route
+          path='return-order/:id/*'
+          element={
+            isModuleEnabled('sales') ? (
+              <ReturnOrderDetail />
+            ) : (
+              <ModuleDisabled moduleName='Sales' />
+            )
+          }
+        />
+        <Route
+          path='customer/:id/*'
+          element={
+            isModuleEnabled('sales') ? (
+              <CustomerDetail />
+            ) : (
+              <ModuleDisabled moduleName='Sales' />
+            )
+          }
+        />
+      </Route>
+      <Route path='events/'>
         <Route index element={<Navigate to='index/' />} />
-        <Route path='index/*' element={<SalesIndex />} />
-        <Route path='sales-order/:id/*' element={<SalesOrderDetail />} />
-        <Route path='shipment/:id/*' element={<SalesOrderShipmentDetail />} />
-        <Route path='return-order/:id/*' element={<ReturnOrderDetail />} />
-        <Route path='customer/:id/*' element={<CustomerDetail />} />
+        <Route path='index/*' element={<EventsIndex />} />
+        <Route path='event/:id/*' element={<EventDetail />} />
+      </Route>
+      <Route path='rentals/'>
+        <Route index element={<Navigate to='index/' />} />
+        <Route path='index/*' element={<RentalsIndex />} />
+        <Route path='rental-order/:id/*' element={<RentalOrderDetail />} />
       </Route>
       <Route path='core/'>
         <Route index element={<Navigate to='index/' />} />

@@ -28,8 +28,10 @@ fi
 if test -f "$INVENTREE_CONFIG_FILE"; then
     echo "Loading config file : $INVENTREE_CONFIG_FILE"
 else
-    echo "Copying config file from $INVENTREE_BACKEND_DIR/InvenTree/config_template.yml to $INVENTREE_CONFIG_FILE"
-    cp $INVENTREE_BACKEND_DIR/InvenTree/config_template.yaml $INVENTREE_CONFIG_FILE
+    echo "Copying config file from $INVENTREE_BACKEND_DIR/Tracklet/config_template.yaml to $INVENTREE_CONFIG_FILE"
+    cp $INVENTREE_BACKEND_DIR/Tracklet/config_template.yaml $INVENTREE_CONFIG_FILE
+
+
 fi
 
 # Setup a python virtual environment
@@ -54,6 +56,20 @@ if [[ -n "$INVENTREE_PY_ENV" ]]; then
 fi
 
 cd ${INVENTREE_HOME}
+
+# Optionally run schema migrations before launching the web server command.
+# This keeps dev startup resilient when new app tables are introduced.
+should_auto_update=false
+if [[ "${INVENTREE_AUTO_UPDATE,,}" == "true" || "${INVENTREE_AUTO_UPDATE}" == "1" ]]; then
+    should_auto_update=true
+fi
+
+if [[ "${should_auto_update}" == "true" ]]; then
+    if [[ "$1" == "invoke" && ( "$2" == "dev.server" || "$2" == "server" || "$2" == "gunicorn" ) ]]; then
+        echo "INVENTREE_AUTO_UPDATE enabled - running migrations before startup"
+        invoke migrate
+    fi
+fi
 
 # Launch the CMD *after* the ENTRYPOINT completes
 exec "$@"

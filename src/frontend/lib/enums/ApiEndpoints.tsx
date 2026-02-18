@@ -197,6 +197,17 @@ export enum ApiEndpoints {
   return_order_line_list = 'order/ro-line/',
   return_order_extra_line_list = 'order/ro-extra-line/',
 
+  // Tracklet custom modules
+  tracklet_event_list = 'tracklet/events/',
+  tracklet_venue_list = 'tracklet/venues/',
+  tracklet_planner_list = 'tracklet/planners/',
+  tracklet_event_type_list = 'tracklet/event-types/',
+  tracklet_furniture_item_list = 'tracklet/furniture-items/',
+  tracklet_event_furniture_list = 'tracklet/event-furniture/',
+  tracklet_rental_asset_list = 'tracklet/rental-assets/',
+  tracklet_rental_order_list = 'tracklet/rental-orders/',
+  tracklet_rental_line_list = 'tracklet/rental-lines/',
+
   // Template API endpoints
   label_list = 'label/template/',
   label_print = 'label/print/',

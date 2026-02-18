@@ -345,7 +345,7 @@ export function RelatedModelField({
       const data = option.data ?? option;
 
       if (definition.modelRenderer) {
-        return <definition.modelRenderer instance={data} />;
+        return definition.modelRenderer(data);
       }
 
       return (
@@ -440,6 +440,21 @@ export function RelatedModelField({
     return colors;
   }, [theme]);
 
+  const isSelectLoading =
+    selectQuery.isFetching || selectQuery.isLoading || selectQuery.isRefetching;
+
+  const noOptionsText = useMemo(() => {
+    if (isSelectLoading) {
+      return `${t`Loading`}...`;
+    }
+
+    if (selectQuery.isFetched) {
+      return t`No results found`;
+    }
+
+    return '';
+  }, [isSelectLoading, selectQuery.isFetched]);
+
   return (
     <Input.Wrapper
       {...fieldDefinition}
@@ -468,18 +483,14 @@ export function RelatedModelField({
             onMenuClose={() => {
               setIsOpen(false);
             }}
-            isLoading={
-              selectQuery.isFetching ||
-              selectQuery.isLoading ||
-              selectQuery.isRefetching
-            }
+            isLoading={isSelectLoading}
             isClearable={!definition.required}
             isDisabled={definition.disabled}
             isSearchable={true}
             placeholder={definition.placeholder || `${t`Search`}...`}
             loadingMessage={() => `${t`Loading`}...`}
             menuPortalTarget={document.body}
-            noOptionsMessage={() => t`No results found`}
+            noOptionsMessage={() => noOptionsText}
             menuPosition='fixed'
             styles={{
               menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),

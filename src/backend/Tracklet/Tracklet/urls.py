@@ -22,6 +22,7 @@ import company.api
 import importer.api
 import machine.api
 import order.api
+import operations.api
 import part.api
 import plugin.api
 import report.api
@@ -60,6 +61,7 @@ apipatterns = [
     path('machine/', include(machine.api.machine_api_urls)),
     path('order/', include(order.api.order_api_urls)),
     path('part/', include(part.api.part_api_urls)),
+    path('tracklet/', include(operations.api.tracklet_api_urls)),
     path('report/', include(report.api.report_api_urls)),
     path('search/', APISearchView.as_view(), name='api-search'),
     path('settings/', include(common.api.settings_api_urls)),

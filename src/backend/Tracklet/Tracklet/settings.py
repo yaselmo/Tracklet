@@ -290,6 +290,7 @@ INSTALLED_APPS = [
     'common.apps.CommonConfig',
     'plugin.apps.PluginAppConfig',  # Plugin app runs before all apps that depend on the isPluginRegistryLoaded function
     'company.apps.CompanyConfig',
+    'operations.apps.OperationsConfig',
     'order.apps.OrderConfig',
     'part.apps.PartConfig',
     'report.apps.ReportConfig',

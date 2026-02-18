@@ -101,6 +101,9 @@ function FilterElement({
             filters: filterProps.apiFilter,
             placeholder: t`Select filter value`,
             model: filterProps.model,
+            modelRenderer: filterProps.modelRenderer
+              ? ({ instance }) => filterProps.modelRenderer?.(instance)
+              : undefined,
             label: t`Select filter value`,
             onValueChange: (value: any, instance: any) => {
               onValueChange(value, filterProps.modelRenderer?.(instance));

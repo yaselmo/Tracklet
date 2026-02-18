@@ -7,7 +7,9 @@ import type { SettingsStateProps } from '@lib/types/Settings';
 import type { UserStateProps } from '@lib/types/User';
 import {
   IconBox,
+  IconCalendarEvent,
   IconBuildingFactory2,
+  IconClipboardList,
   IconDashboard,
   IconPackages,
   IconShoppingCart,
@@ -16,6 +18,7 @@ import {
 import type { ReactNode } from 'react';
 import type { MenuLinkItem } from '../components/items/MenuLinks';
 import { StylishText } from '../components/items/StylishText';
+import { isModuleEnabled } from './featureFlags';
 
 type NavTab = {
   name: string;
@@ -60,10 +63,42 @@ export function getNavTabs(user: UserStateProps): NavTab[] {
       title: t`Sales`,
       icon: <IconTruckDelivery />,
       role: UserRoles.sales_order
+    },
+    {
+      name: 'events',
+      title: t`Events`,
+      icon: <IconCalendarEvent />,
+      role: UserRoles.sales_order
+    },
+    {
+      name: 'rentals',
+      title: t`Rentals`,
+      icon: <IconClipboardList />,
+      role: UserRoles.sales_order
     }
   ];
 
   return navTabs.filter((tab) => {
+    if (tab.name === 'manufacturing' && !isModuleEnabled('manufacturing')) {
+      return false;
+    }
+
+    if (tab.name === 'purchasing' && !isModuleEnabled('purchasing')) {
+      return false;
+    }
+
+    if (tab.name === 'sales' && !isModuleEnabled('sales')) {
+      return false;
+    }
+
+    if (tab.name === 'events' && !isModuleEnabled('events')) {
+      return false;
+    }
+
+    if (tab.name === 'rentals' && !isModuleEnabled('rentals')) {
+      return false;
+    }
+
     if (!tab.role) return true;
     return user.hasViewRole(tab.role);
   });

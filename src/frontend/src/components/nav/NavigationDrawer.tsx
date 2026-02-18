@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
 import { AboutLinks, DocumentationLinks } from '../../defaults/links';
+import { isModuleEnabled } from '../../defaults/featureFlags';
 import useInstanceName from '../../hooks/UseInstanceName';
 import * as classes from '../../main.css';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
@@ -83,22 +84,40 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         id: 'build',
         title: t`Manufacturing`,
         link: '/manufacturing/',
-        hidden: !user.hasViewRole(UserRoles.build),
+        hidden: !isModuleEnabled('manufacturing') || !user.hasViewRole(UserRoles.build),
         icon: 'build'
       },
       {
         id: 'purchasing',
         title: t`Purchasing`,
         link: '/purchasing/',
-        hidden: !user.hasViewRole(UserRoles.purchase_order),
+        hidden:
+          !isModuleEnabled('purchasing') ||
+          !user.hasViewRole(UserRoles.purchase_order),
         icon: 'purchase_orders'
       },
       {
         id: 'sales',
         title: t`Sales`,
         link: '/sales/',
-        hidden: !user.hasViewRole(UserRoles.sales_order),
+        hidden: !isModuleEnabled('sales') || !user.hasViewRole(UserRoles.sales_order),
         icon: 'sales_orders'
+      },
+      {
+        id: 'events',
+        title: t`Events`,
+        link: '/events/',
+        hidden:
+          !isModuleEnabled('events') || !user.hasViewRole(UserRoles.sales_order),
+        icon: 'calendar'
+      },
+      {
+        id: 'rentals',
+        title: t`Rentals`,
+        link: '/rentals/',
+        hidden:
+          !isModuleEnabled('rentals') || !user.hasViewRole(UserRoles.sales_order),
+        icon: 'packaging'
       },
       {
         id: 'users',

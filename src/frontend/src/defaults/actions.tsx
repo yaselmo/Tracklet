@@ -19,6 +19,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useLocalState } from '../states/LocalState';
 import { useGlobalSettingsState } from '../states/SettingsStates';
 import { useUserState } from '../states/UserState';
+import { isModuleEnabled } from './featureFlags';
 import { aboutTracklet, docLinks, licenseInfo, serverInfo } from './links';
 
 export function openQrModal(navigate: NavigateFunction) {
@@ -100,7 +101,8 @@ export function getActions(navigate: NavigateFunction) {
       });
 
     // Page Actions
-    user?.hasViewRole(UserRoles.purchase_order) &&
+    isModuleEnabled('purchasing') &&
+      user?.hasViewRole(UserRoles.purchase_order) &&
       _actions.push({
         id: 'purchase-orders',
         label: t`Purchase Orders`,
@@ -110,7 +112,8 @@ export function getActions(navigate: NavigateFunction) {
         leftSection: <IconLink size='1.2rem' />
       });
 
-    user?.hasViewRole(UserRoles.sales_order) &&
+    isModuleEnabled('sales') &&
+      user?.hasViewRole(UserRoles.sales_order) &&
       _actions.push({
         id: 'sales-orders',
         label: t`Sales Orders`,
@@ -140,7 +143,8 @@ export function getActions(navigate: NavigateFunction) {
         leftSection: <IconBarcode size='1.2rem' />
       });
 
-    user?.hasViewRole(UserRoles.build) &&
+    isModuleEnabled('manufacturing') &&
+      user?.hasViewRole(UserRoles.build) &&
       _actions.push({
         id: 'builds',
         label: t`Build Orders`,

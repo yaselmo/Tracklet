@@ -151,6 +151,13 @@ def get_ruleset_models() -> dict:
             'order_salesorderlineitem',
             'order_salesorderextraline',
             'order_salesordershipment',
+            'operations_event',
+            'operations_eventtype',
+            'operations_venue',
+            'operations_planner',
+            'operations_rentalorder',
+            'operations_rentallineitem',
+            'operations_rentalasset',
         ],
         RuleSetEnum.RETURN_ORDER: [
             'company_company',
