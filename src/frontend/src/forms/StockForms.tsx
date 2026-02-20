@@ -245,6 +245,10 @@ export function useStockFields({
         label: t`Stock Status`,
         default: stockItemStatusCodes.OK
       },
+      availability: {
+        label: t`Availability`,
+        default: stockItem?.availability ?? 'AVAILABLE'
+      },
       expiry_date: {
         icon: <IconCalendarExclamation />,
         hidden: !globalSettings.isSet('STOCK_ENABLE_EXPIRY'),

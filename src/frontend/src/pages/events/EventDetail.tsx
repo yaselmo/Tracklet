@@ -15,10 +15,10 @@ import InstanceDetail from '../../components/nav/InstanceDetail';
 import { PageDetail } from '../../components/nav/PageDetail';
 import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
+import { useEventFields } from '../../forms/EventRentalForms';
 import { useEditApiFormModal } from '../../hooks/UseForm';
 import { useInstance } from '../../hooks/UseInstance';
 import { useUserState } from '../../states/UserState';
-import { useEventFields } from '../../forms/EventRentalForms';
 import { EventFurnitureTable } from '../../tables/events/EventFurnitureTable';
 
 export default function EventDetail() {
@@ -190,14 +190,19 @@ export default function EventDetail() {
       {editEvent.modal}
       {changeStatus.modal}
       {addNote.modal}
-      <InstanceDetail query={instanceQuery} requiredRole={UserRoles.sales_order}>
+      <InstanceDetail
+        query={instanceQuery}
+        requiredRole={UserRoles.sales_order}
+      >
         <Stack gap='xs'>
           <PageDetail
             title={`${t`Event`}: ${event.reference}`}
             subtitle={event.title}
             actions={actions}
             breadcrumbs={[{ name: t`Events`, url: '/events/' }]}
-            lastCrumb={[{ name: event.reference, url: `/events/event/${event.pk}` }]}
+            lastCrumb={[
+              { name: event.reference, url: `/events/event/${event.pk}` }
+            ]}
             badges={
               event.status_name
                 ? [

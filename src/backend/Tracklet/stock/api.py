@@ -20,15 +20,32 @@ from rest_framework.serializers import ValidationError
 
 import common.models
 import common.settings
+import stock.serializers as StockSerializers
 import Tracklet.helpers
 import Tracklet.permissions
-import stock.serializers as StockSerializers
 from build.models import Build
 from build.serializers import BuildSerializer
 from company.models import Company, ManufacturerPart, SupplierPart
 from company.serializers import CompanySerializer
 from data_exporter.mixins import DataExportViewMixin
 from generic.states.api import StatusView
+from order.models import PurchaseOrder, ReturnOrder, SalesOrder
+from order.serializers import (
+    PurchaseOrderSerializer,
+    ReturnOrderSerializer,
+    SalesOrderSerializer,
+)
+from part.models import BomItem, Part, PartCategory
+from part.serializers import PartBriefSerializer
+from stock.generators import generate_batch_code, generate_serial_number
+from stock.models import (
+    StockItem,
+    StockItemTestResult,
+    StockItemTracking,
+    StockLocation,
+    StockLocationType,
+)
+from stock.status_codes import StockHistoryCode, StockStatus
 from Tracklet.api import (
     BulkCreateMixin,
     BulkUpdateMixin,
@@ -54,23 +71,6 @@ from Tracklet.mixins import (
     RetrieveUpdateDestroyAPI,
     SerializerContextMixin,
 )
-from order.models import PurchaseOrder, ReturnOrder, SalesOrder
-from order.serializers import (
-    PurchaseOrderSerializer,
-    ReturnOrderSerializer,
-    SalesOrderSerializer,
-)
-from part.models import BomItem, Part, PartCategory
-from part.serializers import PartBriefSerializer
-from stock.generators import generate_batch_code, generate_serial_number
-from stock.models import (
-    StockItem,
-    StockItemTestResult,
-    StockItemTracking,
-    StockLocation,
-    StockLocationType,
-)
-from stock.status_codes import StockHistoryCode, StockStatus
 
 
 class GenerateBatchCode(GenericAPIView):
@@ -652,6 +652,10 @@ class StockFilter(FilterSet):
 
     status = rest_filters.NumberFilter(label=_('Status Code'), method='filter_status')
 
+    availability = rest_filters.CharFilter(
+        label=_('Availability'), method='filter_availability'
+    )
+
     def filter_status(self, queryset, name, value):
         """Filter by integer status code.
 
@@ -661,6 +665,14 @@ class StockFilter(FilterSet):
         q2 = Q(status_custom_key=value)
 
         return queryset.filter(q1 | q2).distinct()
+
+    def filter_availability(self, queryset, name, value):
+        """Filter by stock item availability."""
+        if value is None:
+            return queryset
+
+        availability_key = str(value).strip().upper().replace(' ', '_')
+        return queryset.filter(availability=availability_key)
 
     allocated = rest_filters.BooleanFilter(
         label='Is Allocated', method='filter_allocated'
@@ -1153,6 +1165,12 @@ class StockList(
         status_raw = data.pop('status', None)
         status_custom = data.pop('status_custom_key', None)
         status_value = status_custom or status_raw
+        availability_value = data.get('availability', None)
+
+        if availability_value is not None:
+            data['availability'] = (
+                str(availability_value).strip().upper().replace(' ', '_')
+            )
 
         # Assign serial numbers for a trackable part
         if serial_numbers:
@@ -1219,6 +1237,8 @@ class StockList(
                 for item in items:
                     if status_value and not item.compare_status(status_value):
                         item.set_status(status_value)
+                        if availability_value is None:
+                            item.availability = item.infer_availability()
                         item.save()
 
                     if entry := item.add_tracking_entry(
@@ -1249,6 +1269,8 @@ class StockList(
 
                 if status_value and not item.compare_status(status_value):
                     item.set_status(status_value)
+                    if availability_value is None:
+                        item.availability = item.infer_availability()
 
                 item.save(user=user)
 
@@ -1284,6 +1306,7 @@ class StockList(
         'quantity',
         'stock',
         'status',
+        'availability',
         'IPN',
         'SKU',
         'MPN',

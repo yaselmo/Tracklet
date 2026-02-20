@@ -1,6 +1,10 @@
 import { t } from '@lingui/core/macro';
 import { Stack } from '@mantine/core';
-import { IconBuildingStore, IconClipboardList, IconPackage } from '@tabler/icons-react';
+import {
+  IconBuildingStore,
+  IconClipboardList,
+  IconPackage
+} from '@tabler/icons-react';
 import { useMemo } from 'react';
 
 import { UserRoles } from '@lib/enums/Roles';
@@ -34,7 +38,10 @@ export default function RentalsIndex() {
         label: t`Customers`,
         icon: <IconBuildingStore />,
         content: (
-          <CompanyTable path='rentals/customer' params={{ is_customer: true }} />
+          <CompanyTable
+            path='rentals/customer'
+            params={{ is_customer: true }}
+          />
         )
       }
     ];

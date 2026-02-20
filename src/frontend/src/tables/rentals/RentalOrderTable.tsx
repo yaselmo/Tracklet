@@ -117,7 +117,9 @@ export function RentalOrderTable({
         accessor: 'customer__name',
         title: t`Customer`,
         sortable: true,
-        render: (record: any) => <CompanyColumn company={record.customer_detail} />
+        render: (record: any) => (
+          <CompanyColumn company={record.customer_detail} />
+        )
       },
       DateColumn({
         accessor: 'rental_start',
@@ -139,7 +141,9 @@ export function RentalOrderTable({
         title: t`Status`,
         sortable: true,
         render: (record: any) => (
-          <Badge color={record.overdue ? 'yellow' : undefined}>{record.status_name}</Badge>
+          <Badge color={record.overdue ? 'yellow' : undefined}>
+            {record.status_name}
+          </Badge>
         )
       },
       {
@@ -157,7 +161,9 @@ export function RentalOrderTable({
       {
         accessor: 'notes_preview',
         title: t`Notes`,
-        render: (record: any) => <Text size='sm'>{record.notes_preview || '-'}</Text>
+        render: (record: any) => (
+          <Text size='sm'>{record.notes_preview || '-'}</Text>
+        )
       },
       DateColumn({
         accessor: 'last_updated',
@@ -184,7 +190,11 @@ export function RentalOrderTable({
           enableSelection: true,
           enableDownload: true,
           onRowClick: (record, index, event) => {
-            navigateToLink(`/rentals/rental-order/${record.pk}`, navigate, event);
+            navigateToLink(
+              `/rentals/rental-order/${record.pk}`,
+              navigate,
+              event
+            );
           }
         }}
       />

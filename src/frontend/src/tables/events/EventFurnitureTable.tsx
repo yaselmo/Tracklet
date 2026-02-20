@@ -1,7 +1,19 @@
 import { t } from '@lingui/core/macro';
-import { Badge, Button, Group, SegmentedControl, Stack, Text } from '@mantine/core';
+import {
+  Badge,
+  Button,
+  Group,
+  SegmentedControl,
+  Stack,
+  Text
+} from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import { IconArmchair, IconCheck, IconEdit, IconTrash } from '@tabler/icons-react';
+import {
+  IconArmchair,
+  IconCheck,
+  IconEdit,
+  IconTrash
+} from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useCallback, useMemo, useState } from 'react';
@@ -52,7 +64,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
   const user = useUserState();
   const navigate = useNavigate();
   const [selectedAssignment, setSelectedAssignment] = useState<number>(-1);
-  const [defaultFilter, setDefaultFilter] = useState<'in-use' | 'all'>('in-use');
+  const [defaultFilter, setDefaultFilter] = useState<'in-use' | 'all'>(
+    'in-use'
+  );
   const [usageFilter, setUsageFilter] = useState<'active' | 'all'>('active');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
@@ -73,7 +87,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
           <SegmentedControl
             size='xs'
             value={usageFilter}
-            onChange={(value: string) => setUsageFilter(value as 'active' | 'all')}
+            onChange={(value: string) =>
+              setUsageFilter(value as 'active' | 'all')
+            }
             data={[
               { label: t`Active only`, value: 'active' },
               { label: t`All history`, value: 'all' }
@@ -100,7 +116,8 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
                     );
                   }}
                 >
-                  {record.event_detail?.reference} - {record.event_detail?.title}
+                  {record.event_detail?.reference} -{' '}
+                  {record.event_detail?.title}
                 </Button>
               )
             },
@@ -108,7 +125,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
               accessor: 'status_name',
               title: t`Status`,
               render: (record: any) => (
-                <Badge color={statusBadgeColor(record.status)}>{record.status_name}</Badge>
+                <Badge color={statusBadgeColor(record.status)}>
+                  {record.status_name}
+                </Badge>
               )
             },
             {
@@ -318,7 +337,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
         <SegmentedControl
           size='xs'
           value={defaultFilter}
-          onChange={(value: string) => setDefaultFilter(value as 'in-use' | 'all')}
+          onChange={(value: string) =>
+            setDefaultFilter(value as 'in-use' | 'all')
+          }
           data={[
             { label: t`In use only`, value: 'in-use' },
             { label: t`Show all`, value: 'all' }
@@ -391,7 +412,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
         sortable: true,
         ordering: 'part__category__pathstring',
         render: (record: any) =>
-          record.part_detail?.category_path || record.item_detail?.category || '-'
+          record.part_detail?.category_path ||
+          record.item_detail?.category ||
+          '-'
       },
       {
         accessor: 'quantity',
@@ -403,7 +426,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
         title: t`Status`,
         sortable: true,
         render: (record: any) => (
-          <Badge color={statusBadgeColor(record.status)}>{record.status_name}</Badge>
+          <Badge color={statusBadgeColor(record.status)}>
+            {record.status_name}
+          </Badge>
         )
       },
       DateColumn({

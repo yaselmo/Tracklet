@@ -7,8 +7,8 @@ import type { SettingsStateProps } from '@lib/types/Settings';
 import type { UserStateProps } from '@lib/types/User';
 import {
   IconBox,
-  IconCalendarEvent,
   IconBuildingFactory2,
+  IconCalendarEvent,
   IconClipboardList,
   IconDashboard,
   IconPackages,

@@ -13,11 +13,9 @@ import { useEventFields } from '../../forms/EventRentalForms';
 import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import {
-  DateColumn,
-  ReferenceColumn
-} from '../ColumnRenderers';
+import { DateColumn, ReferenceColumn } from '../ColumnRenderers';
 import { TrackletTable } from '../TrackletTable';
+import { getEventStatusBadgeStyle } from './eventStatusStyles';
 
 export function EventTable() {
   const table = useTable('events-index');
@@ -151,12 +149,31 @@ export function EventTable() {
         accessor: 'status_name',
         title: t`Status`,
         sortable: true,
-        render: (record: any) => <Badge>{record.status_name}</Badge>
+        render: (record: any) => {
+          const style = getEventStatusBadgeStyle(
+            record.status_name ?? record.status
+          );
+
+          return (
+            <Badge
+              styles={{
+                root: {
+                  backgroundColor: style.bg,
+                  color: style.fg
+                }
+              }}
+            >
+              {record.status_name}
+            </Badge>
+          );
+        }
       },
       {
         accessor: 'notes_preview',
         title: t`Notes`,
-        render: (record: any) => <Text size='sm'>{record.notes_preview || '-'}</Text>
+        render: (record: any) => (
+          <Text size='sm'>{record.notes_preview || '-'}</Text>
+        )
       },
       DateColumn({
         accessor: 'last_updated',

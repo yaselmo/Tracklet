@@ -14,7 +14,9 @@ from users.models import Owner
 from .status_codes import EventStatus, FurnitureAssignmentStatus, RentalOrderStatus
 
 
-class ReferenceTrackedModel(Tracklet.models.ReferenceIndexingMixin, Tracklet.models.InvenTreeModel):
+class ReferenceTrackedModel(
+    Tracklet.models.ReferenceIndexingMixin, Tracklet.models.InvenTreeModel
+):
     """Abstract model with generated reference, create/update timestamps."""
 
     REFERENCE_PREFIX = ''
@@ -38,7 +40,8 @@ class ReferenceTrackedModel(Tracklet.models.ReferenceIndexingMixin, Tracklet.mod
     def generate_reference(cls):
         """Generate a reference with a numeric suffix."""
         latest = (
-            cls.objects.filter(reference__startswith=cls.REFERENCE_PREFIX)
+            cls.objects
+            .filter(reference__startswith=cls.REFERENCE_PREFIX)
             .order_by('-reference_int', '-pk')
             .first()
         )
@@ -130,10 +133,7 @@ class Event(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
     )
 
     venue = models.ForeignKey(
-        Venue,
-        on_delete=models.PROTECT,
-        related_name='events',
-        verbose_name=_('Venue'),
+        Venue, on_delete=models.PROTECT, related_name='events', verbose_name=_('Venue')
     )
 
     planner = models.ForeignKey(
@@ -149,8 +149,7 @@ class Event(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
     end_datetime = models.DateTimeField(verbose_name=_('End DateTime'))
 
     late_night_takedown = models.BooleanField(
-        default=False,
-        verbose_name=_('Late Night Takedown'),
+        default=False, verbose_name=_('Late Night Takedown')
     )
 
     status = models.IntegerField(
@@ -172,7 +171,9 @@ class Event(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
         return f'{self.reference}: {self.title}'
 
 
-class FurnitureItem(Tracklet.models.InvenTreeNotesMixin, Tracklet.models.InvenTreeModel):
+class FurnitureItem(
+    Tracklet.models.InvenTreeNotesMixin, Tracklet.models.InvenTreeModel
+):
     class Meta:
         verbose_name = _('Furniture Item')
         verbose_name_plural = _('Furniture Items')
@@ -244,15 +245,11 @@ class EventFurnitureAssignment(
     )
 
     checked_out_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name=_('Checked Out At'),
+        null=True, blank=True, verbose_name=_('Checked Out At')
     )
 
     checked_in_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name=_('Checked In At'),
+        null=True, blank=True, verbose_name=_('Checked In At')
     )
 
     def clean(self):
@@ -262,7 +259,9 @@ class EventFurnitureAssignment(
             raise ValidationError({'quantity': _('Quantity must be greater than zero')})
 
         if not self.part_id and not self.item_id:
-            raise ValidationError({'part': _('Either part or furniture item is required')})
+            raise ValidationError({
+                'part': _('Either part or furniture item is required')
+            })
 
         if self.checked_in_at and self.checked_out_at:
             if self.checked_in_at < self.checked_out_at:
@@ -288,10 +287,7 @@ class RentalAsset(Tracklet.models.InvenTreeNotesMixin, Tracklet.models.InvenTree
 
     name = models.CharField(max_length=120, verbose_name=_('Name'))
     asset_tag = models.CharField(
-        max_length=80,
-        unique=True,
-        blank=True,
-        verbose_name=_('Asset Tag'),
+        max_length=80, unique=True, blank=True, verbose_name=_('Asset Tag')
     )
     serial = models.CharField(max_length=80, blank=True, verbose_name=_('Serial'))
     active = models.BooleanField(default=True, verbose_name=_('Active'))
@@ -320,9 +316,7 @@ class RentalOrder(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
     rental_end = models.DateTimeField(verbose_name=_('Rental End'))
 
     returned_date = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name=_('Returned Date'),
+        null=True, blank=True, verbose_name=_('Returned Date')
     )
 
     status = models.IntegerField(
@@ -343,8 +337,14 @@ class RentalOrder(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
     def clean(self):
         super().clean()
 
-        if self.rental_end and self.rental_start and self.rental_end <= self.rental_start:
-            raise ValidationError({'rental_end': _('Rental end must be after rental start')})
+        if (
+            self.rental_end
+            and self.rental_start
+            and self.rental_end <= self.rental_start
+        ):
+            raise ValidationError({
+                'rental_end': _('Rental end must be after rental start')
+            })
 
         if self.returned_date and self.returned_date < self.rental_start:
             raise ValidationError({
@@ -358,18 +358,24 @@ class RentalOrder(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
 
         now = timezone.now()
 
-        return (
-            self.rental_end < now
-            and self.status
-            in [RentalOrderStatus.ACTIVE.value, RentalOrderStatus.OVERDUE.value]
-        )
+        return self.rental_end < now and self.status in [
+            RentalOrderStatus.ACTIVE.value,
+            RentalOrderStatus.OVERDUE.value,
+        ]
 
     def save(self, *args, **kwargs):
         if self.status == RentalOrderStatus.RETURNED.value and not self.returned_date:
             self.returned_date = timezone.now()
 
-        if self.status in [RentalOrderStatus.ACTIVE.value, RentalOrderStatus.OVERDUE.value]:
-            if self.rental_end and self.rental_end < timezone.now() and not self.returned_date:
+        if self.status in [
+            RentalOrderStatus.ACTIVE.value,
+            RentalOrderStatus.OVERDUE.value,
+        ]:
+            if (
+                self.rental_end
+                and self.rental_end < timezone.now()
+                and not self.returned_date
+            ):
                 self.status = RentalOrderStatus.OVERDUE.value
 
         super().save(*args, **kwargs)
@@ -378,7 +384,9 @@ class RentalOrder(Tracklet.models.InvenTreeNotesMixin, ReferenceTrackedModel):
         return f'{self.reference}: {self.customer}'
 
 
-class RentalLineItem(Tracklet.models.InvenTreeNotesMixin, Tracklet.models.InvenTreeModel):
+class RentalLineItem(
+    Tracklet.models.InvenTreeNotesMixin, Tracklet.models.InvenTreeModel
+):
     """Line items assigned to a rental order."""
 
     class Meta:
@@ -423,9 +431,12 @@ class RentalLineItem(Tracklet.models.InvenTreeNotesMixin, Tracklet.models.InvenT
         ]
 
         overlapping = (
-            RentalLineItem.objects.filter(asset=self.asset, order__status__in=active_statuses)
+            RentalLineItem.objects
+            .filter(asset=self.asset, order__status__in=active_statuses)
             .exclude(pk=self.pk)
-            .filter(Q(order__rental_start__lt=end_dt) & Q(order__rental_end__gt=start_dt))
+            .filter(
+                Q(order__rental_start__lt=end_dt) & Q(order__rental_end__gt=start_dt)
+            )
         )
 
         if overlapping.exists():

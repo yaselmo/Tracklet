@@ -35,10 +35,7 @@ class ImportRentalPdfCommandTests(TestCase):
                 return_value=rows,
             ):
                 call_command(
-                    'import_rental_pdf',
-                    pdf=str(pdf_path),
-                    no_stock=True,
-                    verbosity=0,
+                    'import_rental_pdf', pdf=str(pdf_path), no_stock=True, verbosity=0
                 )
 
         rentals = PartCategory.objects.get(parent=None, name='Rentals')
@@ -72,7 +69,9 @@ class ImportRentalPdfCommandTests(TestCase):
         tablecloth_part = Part.objects.get(IPN='RENTAL-1002')
         self.assertEqual(tablecloth_part.category.name, 'Tablecloths')
         self.assertEqual(tablecloth_part.category.parent.name, 'Linens')
-        self.assertEqual(PartCategory.objects.filter(parent=tablecloth_part.category).count(), 0)
+        self.assertEqual(
+            PartCategory.objects.filter(parent=tablecloth_part.category).count(), 0
+        )
         self.assertEqual(StockItem.objects.count(), 0)
 
     def test_import_is_idempotent_and_stock_creation_is_safe(self):

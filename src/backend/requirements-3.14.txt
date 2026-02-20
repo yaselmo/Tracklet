@@ -432,6 +432,7 @@ charset-normalizer==3.4.4 \
     --hash=sha256:fd44c878ea55ba351104cb93cc85e74916eb8fa440ca7903e57575e97394f608
     # via
     #   -c src/backend/requirements.txt
+    #   pdfminer-six
     #   requests
 cryptography==46.0.5 \
     --hash=sha256:02f547fce831f5096c9a567fd41bc12ca8f11df260959ecc7c3202555cc47a72 \
@@ -491,6 +492,7 @@ cryptography==46.0.5 \
     #   fido2
     #   jwcrypto
     #   paramiko
+    #   pdfminer-six
     #   pyjwt
 cssselect2==0.8.0 \
     --hash=sha256:46fc70ebc41ced7a32cd42d58b1884d72ade23d21e5a4eaaf022401c13f0e76e \
@@ -1435,6 +1437,18 @@ pdf2image==1.17.0 \
     # via
     #   -c src/backend/requirements.txt
     #   -r src/backend/requirements.in
+pdfminer-six==20251230 \
+    --hash=sha256:9ff2e3466a7dfc6de6fd779478850b6b7c2d9e9405aa2a5869376a822771f485 \
+    --hash=sha256:e8f68a14c57e00c2d7276d26519ea64be1b48f91db1cdc776faa80528ca06c1e
+    # via
+    #   -c src/backend/requirements.txt
+    #   pdfplumber
+pdfplumber==0.11.9 \
+    --hash=sha256:33ec5580959ba524e9100138746e090879504c42955df1b8a997604dd326c443 \
+    --hash=sha256:481224b678b2bbdbf376e2c39bf914144eef7c3d301b4a28eebf0f7f6109d6dc
+    # via
+    #   -c src/backend/requirements.txt
+    #   -r src/backend/requirements.in
 pillow==12.1.1 \
     --hash=sha256:02f84dfad02693676692746df05b89cf25597560db2857363a208e393429f5e9 \
     --hash=sha256:0330d233c1a0ead844fc097a7d16c0abff4c12e856c0b325f231820fee1f39da \
@@ -1532,6 +1546,7 @@ pillow==12.1.1 \
     #   -r src/backend/requirements.in
     #   django-stdimage
     #   pdf2image
+    #   pdfplumber
     #   python-barcode
     #   qrcode
     #   weasyprint
@@ -1665,6 +1680,32 @@ pypdf==6.6.2 \
     # via
     #   -c src/backend/requirements.txt
     #   -r src/backend/requirements.in
+pypdfium2==5.4.0 \
+    --hash=sha256:0698c9a002f839127e74ec0185147e08b64e47a1e6caeaee95df434c05b26e8c \
+    --hash=sha256:0a1526e2a2bde7f2f13bec0f471d9fd475f7bbac2c0c860d48c35af8394d5931 \
+    --hash=sha256:0e83657db8da5971434ff5683bf3faa007ee1f3a56b61f245b8aa5b60442c23a \
+    --hash=sha256:16b9c6b07f3dbe7eda209bf7aaf131ca9614e1dae527e9764180dd58bcbaf411 \
+    --hash=sha256:22e9d4c73fc48b18b022977ea6fe78df43adf95440e1135020ed35fea9595017 \
+    --hash=sha256:2b78ea216fb92e7709b61c46241ebf2cc0c60cf18ad2fb4633af665d7b4e21e6 \
+    --hash=sha256:35c643827ed0f4dae9cedf3caf836f94cba5b31bd2c115b80a7c85f004636de9 \
+    --hash=sha256:3b08d48b7cca3b51aefaad7855bc0e9e251432a6eef1356d532ff438be84855e \
+    --hash=sha256:40cea0bceb1e60a71b3855e2b04d175d2199b7da06212bb80f0c78067d065810 \
+    --hash=sha256:4c0a48ede7180f804c029c509c2b6ea0c66813a3fde9eb9afc390183f947164d \
+    --hash=sha256:4f0619f8a8ae3eb71b2cdc1fbd2a8f5d43f0fc6bee66d1b3aac2c9c23e44a3bf \
+    --hash=sha256:50124415d815c41de8ce7e21cee5450f74f6f1240a140573bb71ccac804d5e5f \
+    --hash=sha256:55c7fc894718db5fa2981d46dee45fe3a4fcd60d26f5095ad8f7779600fa8b6f \
+    --hash=sha256:7219e55048fb3999fc8adcaea467088507207df4676ff9e521a3ae15a67d99c4 \
+    --hash=sha256:7a116f8fbeae7aa3a18ff2d1fa331ac647831cc16b589d4fbbbb66d64ecc8793 \
+    --hash=sha256:8bc51a12a8c8eabbdbd7499d3e5ec47bcf56ba18e07b52bdd07d321cc1252c90 \
+    --hash=sha256:a414ef5b685824cc6c7acbe19b7dbc735de2023cf473321a8ebfe8d7f5d8a41f \
+    --hash=sha256:ce482d76e5447e745d761307401eaa366616ca44032b86cf7fbe6be918ade64e \
+    --hash=sha256:dea22d15c44a275702fd95ad664ba6eaa3c493d53d58b4d69272a04bdfb0df70 \
+    --hash=sha256:dfc1c0c7e6e7ba258ebb338aaf664eb933bff1854cda76e4ee530886ea39b31a \
+    --hash=sha256:e42b1d14db642e96bb3a57167f620b4247e9c843d22b9fb569b16a7c35a18f47 \
+    --hash=sha256:f9d9ce3c6901294d6984004d4a797dea110f8248b1bde33a823d25b45d3c2685
+    # via
+    #   -c src/backend/requirements.txt
+    #   pdfplumber
 pyphen==0.17.2 \
     --hash=sha256:3a07fb017cb2341e1d9ff31b8634efb1ae4dc4b130468c7c39dd3d32e7c3affd \
     --hash=sha256:f60647a9c9b30ec6c59910097af82bc5dd2d36576b918e44148d8b07ef3b4aa3

@@ -5,15 +5,15 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
-import { AboutLinks, DocumentationLinks } from '../../defaults/links';
 import { isModuleEnabled } from '../../defaults/featureFlags';
+import { AboutLinks, DocumentationLinks } from '../../defaults/links';
 import useInstanceName from '../../hooks/UseInstanceName';
 import * as classes from '../../main.css';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
-import { TrackletLogo } from '../items/TrackletLogo';
 import { type MenuLinkItem, MenuLinks } from '../items/MenuLinks';
 import { StylishText } from '../items/StylishText';
+import { TrackletLogo } from '../items/TrackletLogo';
 
 // TODO @matmair #1: implement plugin loading and menu item generation see #5269
 const plugins: MenuLinkItem[] = [];
@@ -84,7 +84,9 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         id: 'build',
         title: t`Manufacturing`,
         link: '/manufacturing/',
-        hidden: !isModuleEnabled('manufacturing') || !user.hasViewRole(UserRoles.build),
+        hidden:
+          !isModuleEnabled('manufacturing') ||
+          !user.hasViewRole(UserRoles.build),
         icon: 'build'
       },
       {
@@ -100,7 +102,8 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         id: 'sales',
         title: t`Sales`,
         link: '/sales/',
-        hidden: !isModuleEnabled('sales') || !user.hasViewRole(UserRoles.sales_order),
+        hidden:
+          !isModuleEnabled('sales') || !user.hasViewRole(UserRoles.sales_order),
         icon: 'sales_orders'
       },
       {
@@ -108,7 +111,8 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         title: t`Events`,
         link: '/events/',
         hidden:
-          !isModuleEnabled('events') || !user.hasViewRole(UserRoles.sales_order),
+          !isModuleEnabled('events') ||
+          !user.hasViewRole(UserRoles.sales_order),
         icon: 'calendar'
       },
       {
@@ -116,7 +120,8 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         title: t`Rentals`,
         link: '/rentals/',
         hidden:
-          !isModuleEnabled('rentals') || !user.hasViewRole(UserRoles.sales_order),
+          !isModuleEnabled('rentals') ||
+          !user.hasViewRole(UserRoles.sales_order),
         icon: 'packaging'
       },
       {

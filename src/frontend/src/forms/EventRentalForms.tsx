@@ -111,10 +111,13 @@ export function useEventFurnitureAssignmentFields({
           category_detail: true
         },
         required: true,
-        onValueChange: (pk: number | null, data: any) => onPartChange?.(pk, data),
+        onValueChange: (pk: number | null, data: any) =>
+          onPartChange?.(pk, data),
         modelRenderer: (instance) => {
           const categoryPath =
-            instance?.category_detail?.pathstring || instance?.category_name || '';
+            instance?.category_detail?.pathstring ||
+            instance?.category_name ||
+            '';
           if (categoryPath) {
             return `${instance?.name || ''} — ${categoryPath}`;
           }

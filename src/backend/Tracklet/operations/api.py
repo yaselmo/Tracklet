@@ -88,11 +88,15 @@ class RentalOrderFilter(FilterSet):
     def filter_overdue(self, queryset, name, value):
         now = timezone.now()
 
-        criteria = Q(returned_date__isnull=True) & Q(rental_end__lt=now) & Q(
-            status__in=[
-                RentalOrderStatus.ACTIVE.value,
-                RentalOrderStatus.OVERDUE.value,
-            ]
+        criteria = (
+            Q(returned_date__isnull=True)
+            & Q(rental_end__lt=now)
+            & Q(
+                status__in=[
+                    RentalOrderStatus.ACTIVE.value,
+                    RentalOrderStatus.OVERDUE.value,
+                ]
+            )
         )
 
         if value:
@@ -151,7 +155,8 @@ class PlannerDetail(RetrieveUpdateDestroyAPI):
 
 class EventList(ListCreateAPI):
     queryset = (
-        models.Event.objects.select_related('event_type', 'venue', 'planner')
+        models.Event.objects
+        .select_related('event_type', 'venue', 'planner')
         .all()
         .order_by('-last_updated')
     )
@@ -172,7 +177,9 @@ class EventList(ListCreateAPI):
 
 
 class EventDetail(RetrieveUpdateDestroyAPI):
-    queryset = models.Event.objects.select_related('event_type', 'venue', 'planner').all()
+    queryset = models.Event.objects.select_related(
+        'event_type', 'venue', 'planner'
+    ).all()
     serializer_class = serializers.EventSerializer
 
 
@@ -190,14 +197,7 @@ class FurnitureItemList(ListCreateAPI):
         try:
             return super().list(request, *args, **kwargs)
         except (ProgrammingError, OperationalError):
-            return Response(
-                {
-                    'count': 0,
-                    'next': None,
-                    'previous': None,
-                    'results': [],
-                }
-            )
+            return Response({'count': 0, 'next': None, 'previous': None, 'results': []})
 
 
 class FurnitureItemDetail(RetrieveUpdateDestroyAPI):
@@ -206,11 +206,9 @@ class FurnitureItemDetail(RetrieveUpdateDestroyAPI):
 
 
 class EventFurnitureAssignmentList(ListCreateAPI):
-    queryset = (
-        models.EventFurnitureAssignment.objects.select_related(
-            'event', 'item', 'part', 'part__category'
-        ).all()
-    )
+    queryset = models.EventFurnitureAssignment.objects.select_related(
+        'event', 'item', 'part', 'part__category'
+    ).all()
     serializer_class = serializers.EventFurnitureAssignmentSerializer
 
     filter_backends = SEARCH_ORDER_FILTER
@@ -253,22 +251,13 @@ class EventFurnitureAssignmentList(ListCreateAPI):
         try:
             return super().list(request, *args, **kwargs)
         except (ProgrammingError, OperationalError):
-            return Response(
-                {
-                    'count': 0,
-                    'next': None,
-                    'previous': None,
-                    'results': [],
-                }
-            )
+            return Response({'count': 0, 'next': None, 'previous': None, 'results': []})
 
 
 class EventFurnitureAssignmentDetail(RetrieveUpdateDestroyAPI):
-    queryset = (
-        models.EventFurnitureAssignment.objects.select_related(
-            'event', 'item', 'part', 'part__category'
-        ).all()
-    )
+    queryset = models.EventFurnitureAssignment.objects.select_related(
+        'event', 'item', 'part', 'part__category'
+    ).all()
     serializer_class = serializers.EventFurnitureAssignmentSerializer
 
 
@@ -305,7 +294,9 @@ class RentalOrderList(ListCreateAPI):
     ordering = ['-last_updated']
 
     def get_queryset(self):
-        queryset = models.RentalOrder.objects.select_related('customer', 'responsible').all()
+        queryset = models.RentalOrder.objects.select_related(
+            'customer', 'responsible'
+        ).all()
 
         queryset = queryset.annotate(line_items=Count('lines', distinct=True))
 
@@ -321,7 +312,9 @@ class RentalOrderList(ListCreateAPI):
 
 
 class RentalOrderDetail(RetrieveUpdateDestroyAPI):
-    queryset = models.RentalOrder.objects.select_related('customer', 'responsible').all()
+    queryset = models.RentalOrder.objects.select_related(
+        'customer', 'responsible'
+    ).all()
     serializer_class = serializers.RentalOrderSerializer
 
 
@@ -360,9 +353,7 @@ tracklet_api_urls = [
         'planners/',
         include([
             path(
-                '<int:pk>/',
-                PlannerDetail.as_view(),
-                name='api-tracklet-planner-detail',
+                '<int:pk>/', PlannerDetail.as_view(), name='api-tracklet-planner-detail'
             ),
             path('', PlannerList.as_view(), name='api-tracklet-planner-list'),
         ]),
@@ -387,9 +378,7 @@ tracklet_api_urls = [
                 name='api-tracklet-furniture-item-detail',
             ),
             path(
-                '',
-                FurnitureItemList.as_view(),
-                name='api-tracklet-furniture-item-list',
+                '', FurnitureItemList.as_view(), name='api-tracklet-furniture-item-list'
             ),
         ]),
     ),
@@ -453,7 +442,9 @@ tracklet_api_urls = [
                 RentalLineItemDetail.as_view(),
                 name='api-tracklet-rental-line-detail',
             ),
-            path('', RentalLineItemList.as_view(), name='api-tracklet-rental-line-list'),
+            path(
+                '', RentalLineItemList.as_view(), name='api-tracklet-rental-line-list'
+            ),
         ]),
     ),
 ]

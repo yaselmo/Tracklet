@@ -15,10 +15,10 @@ import InstanceDetail from '../../components/nav/InstanceDetail';
 import { PageDetail } from '../../components/nav/PageDetail';
 import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
+import { useRentalOrderFields } from '../../forms/EventRentalForms';
 import { useEditApiFormModal } from '../../hooks/UseForm';
 import { useInstance } from '../../hooks/UseInstance';
 import { useUserState } from '../../states/UserState';
-import { useRentalOrderFields } from '../../forms/EventRentalForms';
 import { RentalLineItemTable } from '../../tables/rentals/RentalLineItemTable';
 
 export default function RentalOrderDetail() {
@@ -188,7 +188,10 @@ export default function RentalOrderDetail() {
         label: t`Line Items`,
         icon: <IconList />,
         content: order.pk ? (
-          <RentalLineItemTable orderId={order.pk} refreshOrder={refreshInstance} />
+          <RentalLineItemTable
+            orderId={order.pk}
+            refreshOrder={refreshInstance}
+          />
         ) : (
           <></>
         )
@@ -263,7 +266,10 @@ export default function RentalOrderDetail() {
       {extendOrder.modal}
       {cancelOrder.modal}
       {addNote.modal}
-      <InstanceDetail query={instanceQuery} requiredRole={UserRoles.sales_order}>
+      <InstanceDetail
+        query={instanceQuery}
+        requiredRole={UserRoles.sales_order}
+      >
         <Stack gap='xs'>
           <PageDetail
             title={`${t`Rental Order`}: ${order.reference}`}

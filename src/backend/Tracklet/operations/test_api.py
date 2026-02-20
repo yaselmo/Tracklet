@@ -5,9 +5,9 @@ from datetime import timedelta
 from django.urls import reverse
 from django.utils import timezone
 
-from Tracklet.unit_test import InvenTreeAPITestCase
 from company.models import Company
 from part.models import Part, PartCategory
+from Tracklet.unit_test import InvenTreeAPITestCase
 
 from .models import (
     Event,
@@ -40,13 +40,10 @@ class OperationsApiTest(InvenTreeAPITestCase):
         cls.planner = Planner.objects.create(name='Alice Planner')
         rentals_category = PartCategory.objects.create(name='Rentals')
         tables_category = PartCategory.objects.create(
-            name='Tables',
-            parent=rentals_category,
+            name='Tables', parent=rentals_category
         )
         cls.rental_part = Part.objects.create(
-            name='Round Table',
-            IPN='RENTAL-0001',
-            category=tables_category,
+            name='Round Table', IPN='RENTAL-0001', category=tables_category
         )
         cls.asset = RentalAsset.objects.create(name='Speaker Set', asset_tag='SPK-01')
 
@@ -121,20 +118,22 @@ class OperationsApiTest(InvenTreeAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(
-            response.data['results'][0]['event_detail']['reference'],
-            event.reference,
+            response.data['results'][0]['event_detail']['reference'], event.reference
         )
 
-        active_response = self.get(list_url, {'part': self.rental_part.pk, 'active': True})
+        active_response = self.get(
+            list_url, {'part': self.rental_part.pk, 'active': True}
+        )
         self.assertEqual(active_response.status_code, 200)
         self.assertEqual(active_response.data['count'], 1)
 
-        assignment = EventFurnitureAssignment.objects.get(event=event, part=self.rental_part)
+        assignment = EventFurnitureAssignment.objects.get(
+            event=event, part=self.rental_part
+        )
         self.assertEqual(assignment.quantity, 15)
         self.assertEqual(assignment.status, 20)
         self.assertEqual(
-            assignment.notes,
-            'Main hall guest seating\nAdditional seating',
+            assignment.notes, 'Main hall guest seating\nAdditional seating'
         )
 
     def test_rental_order_create_and_line_validation(self):
@@ -182,11 +181,7 @@ class OperationsApiTest(InvenTreeAPITestCase):
 
         self.post(
             line_url,
-            {
-                'order': second_order.data['pk'],
-                'asset': self.asset.pk,
-                'quantity': 1,
-            },
+            {'order': second_order.data['pk'], 'asset': self.asset.pk, 'quantity': 1},
             expected_code=400,
         )
 

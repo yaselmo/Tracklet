@@ -1,4 +1,5 @@
 import { t } from '@lingui/core/macro';
+import { Badge } from '@mantine/core';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +27,6 @@ import {
   DescriptionColumn,
   LocationColumn,
   PartColumn,
-  StatusColumn,
   StockColumn
 } from '../ColumnRenderers';
 import {
@@ -39,10 +39,10 @@ import {
   SerialFilter,
   SerialGTEFilter,
   SerialLTEFilter,
-  StatusFilterOptions,
   SupplierFilter
 } from '../Filter';
 import { TrackletTable } from '../TrackletTable';
+import { getStockAvailabilityStyle } from './stockAvailabilityStyles';
 
 /**
  * Construct a list of columns for the stock item table
@@ -80,7 +80,30 @@ function stockItemTableColumns({
       sortable: true,
       ordering: 'stock'
     }),
-    StatusColumn({ model: ModelType.stockitem }),
+    {
+      accessor: 'availability',
+      title: t`Availability`,
+      sortable: true,
+      render: (record: any) => {
+        const availability = getStockAvailabilityStyle(
+          record.availability,
+          record.availability_text
+        );
+
+        return (
+          <Badge
+            styles={{
+              root: {
+                backgroundColor: availability.bg,
+                color: availability.fg
+              }
+            }}
+          >
+            {availability.label}
+          </Badge>
+        );
+      }
+    },
     {
       accessor: 'batch',
       sortable: true
@@ -178,10 +201,16 @@ function stockItemTableFilters({
       description: t`Show stock for active parts`
     },
     {
-      name: 'status',
-      label: t`Status`,
-      description: t`Filter by stock status`,
-      choiceFunction: StatusFilterOptions(ModelType.stockitem)
+      name: 'availability',
+      label: t`Availability`,
+      description: t`Filter by stock availability`,
+      type: 'choice',
+      choices: [
+        { value: 'AVAILABLE', label: t`Available` },
+        { value: 'UNAVAILABLE', label: t`Unavailable` },
+        { value: 'MISSING', label: t`Missing` },
+        { value: 'BROKEN', label: t`Broken` }
+      ]
     },
     {
       name: 'assembly',

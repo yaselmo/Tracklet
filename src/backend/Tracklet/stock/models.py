@@ -27,19 +27,23 @@ from taggit.managers import TaggableManager
 
 import build.models
 import common.models
+import order.models
+import report.mixins
+import stock.tasks
 import Tracklet.exceptions
 import Tracklet.helpers
 import Tracklet.models
 import Tracklet.ready
 import Tracklet.tasks
-import order.models
-import report.mixins
-import stock.tasks
 from common.icons import validate_icon
 from common.settings import get_global_setting
 from company import models as CompanyModels
 from generic.states import StatusCodeMixin
 from generic.states.fields import InvenTreeCustomStatusModelField
+from part import models as PartModels
+from plugin.events import trigger_event
+from stock.events import StockEvents
+from stock.generators import generate_batch_code
 from Tracklet.fields import InvenTreeModelMoneyField, InvenTreeURLField
 from Tracklet.status_codes import (
     SalesOrderStatusGroups,
@@ -47,10 +51,6 @@ from Tracklet.status_codes import (
     StockStatus,
     StockStatusGroups,
 )
-from part import models as PartModels
-from plugin.events import trigger_event
-from stock.events import StockEvents
-from stock.generators import generate_batch_code
 from users.models import Owner
 
 logger = structlog.get_logger('inventree')
@@ -436,6 +436,12 @@ class StockItem(
 
     STATUS_CLASS = StockStatus
 
+    class Availability(models.TextChoices):
+        AVAILABLE = 'AVAILABLE', _('Available')
+        UNAVAILABLE = 'UNAVAILABLE', _('Unavailable')
+        MISSING = 'MISSING', _('Missing')
+        BROKEN = 'BROKEN', _('Broken')
+
     class Meta:
         """Model meta options."""
 
@@ -777,6 +783,17 @@ class StockItem(
 
         self.update_serial_number()
 
+        availability_key = (
+            str(self.availability or '').strip().upper().replace(' ', '_')
+        )
+
+        if not availability_key:
+            self.availability = self.infer_availability()
+        elif availability_key in self.Availability.values:
+            self.availability = availability_key
+        else:
+            self.availability = self.Availability.UNAVAILABLE
+
         user = kwargs.pop('user', None)
 
         if user is None:
@@ -817,6 +834,10 @@ class StockItem(
                     else:
                         deltas['old_status'] = old.status
                         deltas['old_status_logical'] = old.status
+
+                if old.availability != self.availability:
+                    deltas['availability'] = self.availability
+                    deltas['old_availability'] = old.availability
 
                 if add_note and len(deltas) > 0:
                     self.add_tracking_entry(
@@ -886,9 +907,7 @@ class StockItem(
             except ValidationError as exc:
                 raise ValidationError({'batch': exc.message})
             except Exception:
-                Tracklet.exceptions.log_error(
-                    'validate_batch_code', plugin=plugin.slug
-                )
+                Tracklet.exceptions.log_error('validate_batch_code', plugin=plugin.slug)
 
     def clean(self):
         """Validate the StockItem object (separate to field validation).
@@ -1190,10 +1209,43 @@ class StockItem(
         validators=[MinValueValidator(0)],
     )
 
+    availability = models.CharField(
+        max_length=20,
+        choices=Availability.choices,
+        default=Availability.AVAILABLE,
+        db_index=True,
+        verbose_name=_('Availability'),
+    )
+
     @property
     def status_text(self):
         """Return the text representation of the status field."""
         return StockStatus.text(self.status)
+
+    def infer_availability(self):
+        """Infer availability from existing stock state and status values."""
+        if self.status == StockStatus.LOST.value:
+            return self.Availability.MISSING
+
+        if self.status in [
+            StockStatus.DAMAGED.value,
+            StockStatus.DESTROYED.value,
+            StockStatus.REJECTED.value,
+        ]:
+            return self.Availability.BROKEN
+
+        if (
+            self.quantity <= 0
+            or self.sales_order_id is not None
+            or self.belongs_to_id is not None
+            or self.customer_id is not None
+            or self.consumed_by_id is not None
+            or self.is_building
+            or self.status not in StockStatusGroups.AVAILABLE_CODES
+        ):
+            return self.Availability.UNAVAILABLE
+
+        return self.Availability.AVAILABLE
 
     purchase_price = InvenTreeModelMoneyField(
         max_digits=19,

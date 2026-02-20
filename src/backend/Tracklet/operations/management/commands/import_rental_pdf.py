@@ -12,7 +12,6 @@ from django.db.models import Q
 from part.models import Part, PartCategory
 from stock.models import StockItem, StockLocation
 
-
 KNOWN_PRODUCT_TYPES = [
     'Charger plates',
     'Glassware',
@@ -140,10 +139,7 @@ class Command(BaseCommand):
         if 'charger' in ptype:
             return True
 
-        if 'lounge' in ptype:
-            return True
-
-        return False
+        return 'lounge' in ptype
 
     @staticmethod
     def _extract_model_family(product_name: str) -> str:
@@ -157,9 +153,7 @@ class Command(BaseCommand):
         return family.title()
 
     @staticmethod
-    def _should_use_model_level(
-        *, level_one: str, level_two: str, mode: str
-    ) -> bool:
+    def _should_use_model_level(*, level_one: str, level_two: str, mode: str) -> bool:
         if mode == 'all':
             return True
         if mode == 'none':
@@ -191,8 +185,7 @@ class Command(BaseCommand):
             re.escape(t) for t in sorted(KNOWN_PRODUCT_TYPES, key=len, reverse=True)
         )
         return re.compile(
-            rf'^\s*(\d+)\s+(.+?)\s+({type_expr})\s*$',
-            flags=re.IGNORECASE,
+            rf'^\s*(\d+)\s+(.+?)\s+({type_expr})\s*$', flags=re.IGNORECASE
         )
 
     def _extract_rows_from_lines(self, lines: list[str]) -> list[dict]:
@@ -214,13 +207,11 @@ class Command(BaseCommand):
                 if buffer:
                     match = regex.match(buffer)
                     if match:
-                        rows.append(
-                            {
-                                'product_id': int(match.group(1)),
-                                'product_name': self._normalize_spaces(match.group(2)),
-                                'product_type': self._normalize_spaces(match.group(3)),
-                            }
-                        )
+                        rows.append({
+                            'product_id': int(match.group(1)),
+                            'product_name': self._normalize_spaces(match.group(2)),
+                            'product_type': self._normalize_spaces(match.group(3)),
+                        })
                 buffer = line
             elif buffer:
                 buffer = f'{buffer} {line}'
@@ -229,25 +220,21 @@ class Command(BaseCommand):
 
             match = regex.match(buffer)
             if match:
-                rows.append(
-                    {
-                        'product_id': int(match.group(1)),
-                        'product_name': self._normalize_spaces(match.group(2)),
-                        'product_type': self._normalize_spaces(match.group(3)),
-                    }
-                )
+                rows.append({
+                    'product_id': int(match.group(1)),
+                    'product_name': self._normalize_spaces(match.group(2)),
+                    'product_type': self._normalize_spaces(match.group(3)),
+                })
                 buffer = ''
 
         if buffer:
             match = regex.match(buffer)
             if match:
-                rows.append(
-                    {
-                        'product_id': int(match.group(1)),
-                        'product_name': self._normalize_spaces(match.group(2)),
-                        'product_type': self._normalize_spaces(match.group(3)),
-                    }
-                )
+                rows.append({
+                    'product_id': int(match.group(1)),
+                    'product_name': self._normalize_spaces(match.group(2)),
+                    'product_type': self._normalize_spaces(match.group(3)),
+                })
 
         unique_rows: dict[int, dict] = {}
         for row in rows:
@@ -327,7 +314,9 @@ class Command(BaseCommand):
         skipped_parts = 0
         purged_stock = 0
 
-        queryset = Part.objects.filter(Q(IPN__isnull=True) | ~Q(IPN__startswith='RENTAL-'))
+        queryset = Part.objects.filter(
+            Q(IPN__isnull=True) | ~Q(IPN__startswith='RENTAL-')
+        )
 
         for part in queryset.iterator():
             stock_qs = StockItem.objects.filter(part=part)
@@ -381,14 +370,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         pdf_path = self._resolve_pdf_path(options['pdf'])
-        create_stock = bool(options.get('create_stock', False))
-        purge_non_rental = bool(options.get('purge_non_rental', False))
+        create_stock = bool(options.get('create_stock'))
+        purge_non_rental = bool(options.get('purge_non_rental'))
         model_level_mode = options.get('model_level', 'furniture')
 
         rows = self._extract_rows_from_pdf(pdf_path)
 
         if not rows:
-            self.stdout.write(self.style.WARNING('No matching product rows found in PDF'))
+            self.stdout.write(
+                self.style.WARNING('No matching product rows found in PDF')
+            )
             return
 
         warehouse = self._get_or_create_warehouse()
@@ -436,7 +427,7 @@ class Command(BaseCommand):
                     )
                     category_created += int(created)
                     category_updated += int(updated)
-                    subcategory_map[(level_one, level_two)] = leaf_category
+                    subcategory_map[level_one, level_two] = leaf_category
 
             for row in rows:
                 product_id = int(row['product_id'])
@@ -444,22 +435,23 @@ class Command(BaseCommand):
                 product_type = self._normalize_spaces(row['product_type'])
 
                 level_one, level_two = self._map_product_type(product_type)
-                if (level_one, level_two) == ('Decor', 'Decor') and not self._is_known_product_type(product_type):
+                if (level_one, level_two) == (
+                    'Decor',
+                    'Decor',
+                ) and not self._is_known_product_type(product_type):
                     unknown_type_fallbacks += 1
                     self.stdout.write(
                         self.style.WARNING(
                             f"Unknown product type '{product_type}' for "
-                            f"Product ID {product_id}; mapped to Rentals/Decor/Decor"
+                            f'Product ID {product_id}; mapped to Rentals/Decor/Decor'
                         )
                     )
 
-                level_two_category = subcategory_map[(level_one, level_two)]
+                level_two_category = subcategory_map[level_one, level_two]
                 target_category = level_two_category
 
                 if self._should_use_model_level(
-                    level_one=level_one,
-                    level_two=level_two,
-                    mode=model_level_mode,
+                    level_one=level_one, level_two=level_two, mode=model_level_mode
                 ):
                     model_family = self._extract_model_family(product_name)
                     model_category, created, updated = self._get_or_create_category(
@@ -472,13 +464,13 @@ class Command(BaseCommand):
                     target_category = model_category
 
                 ipn = f'RENTAL-{product_id}'
-                description = (
-                    f'Imported from Inventory_Rental_System.pdf (Product ID: {product_id})'
-                )
+                description = f'Imported from Inventory_Rental_System.pdf (Product ID: {product_id})'
 
                 part = Part.objects.filter(IPN=ipn).first()
                 if part is None:
-                    part = Part.objects.filter(name=product_name, category=target_category).first()
+                    part = Part.objects.filter(
+                        name=product_name, category=target_category
+                    ).first()
 
                 if part is None:
                     Part.objects.create(
@@ -522,7 +514,11 @@ class Command(BaseCommand):
                         part.save()
                         parts_updated += 1
 
-                if create_stock and part and not StockItem.objects.filter(part=part).exists():
+                if (
+                    create_stock
+                    and part
+                    and not StockItem.objects.filter(part=part).exists()
+                ):
                     StockItem.objects.create(
                         part=part,
                         location=warehouse,
@@ -545,5 +541,9 @@ class Command(BaseCommand):
         if purge_non_rental:
             self.stdout.write(f'Purged non-rental parts: {non_rental_parts_purged}')
             self.stdout.write(f'Skipped non-rental parts: {non_rental_parts_skipped}')
-            self.stdout.write(f'Purged non-rental stock items: {non_rental_stock_purged}')
-            self.stdout.write(f'Cleaned empty non-rentals categories: {categories_cleaned}')
+            self.stdout.write(
+                f'Purged non-rental stock items: {non_rental_stock_purged}'
+            )
+            self.stdout.write(
+                f'Cleaned empty non-rentals categories: {categories_cleaned}'
+            )

@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro';
 import {
   Accordion,
+  Badge,
   Button,
   Grid,
   Group,
@@ -87,6 +88,7 @@ import InstalledItemsTable from '../../tables/stock/InstalledItemsTable';
 import { StockItemTable } from '../../tables/stock/StockItemTable';
 import StockItemTestResultTable from '../../tables/stock/StockItemTestResultTable';
 import { StockTrackingTable } from '../../tables/stock/StockTrackingTable';
+import { getStockAvailabilityStyle } from '../../tables/stock/stockAvailabilityStyles';
 
 export default function StockDetail() {
   const { id } = useParams();
@@ -179,6 +181,30 @@ export default function StockDetail() {
         hidden:
           !stockitem.status_custom_key ||
           stockitem.status_custom_key == stockitem.status
+      },
+      {
+        type: 'text',
+        name: 'availability',
+        label: t`Availability`,
+        value_formatter: () => {
+          const availability = getStockAvailabilityStyle(
+            stockitem.availability,
+            stockitem.availability_text
+          );
+
+          return (
+            <Badge
+              styles={{
+                root: {
+                  backgroundColor: availability.bg,
+                  color: availability.fg
+                }
+              }}
+            >
+              {availability.label}
+            </Badge>
+          );
+        }
       },
       {
         type: 'link',
@@ -665,6 +691,19 @@ export default function StockDetail() {
     onFormSuccess: refreshInstance
   });
 
+  const editAvailability = useEditApiFormModal({
+    url: ApiEndpoints.stock_item_list,
+    pk: stockitem.pk,
+    title: t`Change Availability`,
+    fields: {
+      availability: {}
+    },
+    initialData: {
+      availability: stockitem.availability
+    },
+    onFormSuccess: refreshInstance
+  });
+
   const duplicateStockItemFields = useStockFields({
     create: true,
     modalId: 'duplicate-stock-item'
@@ -901,6 +940,13 @@ export default function StockDetail() {
             hidden: !user.hasAddRole(UserRoles.stock),
             onClick: () => duplicateStockItem.open()
           }),
+          {
+            name: t`Change Availability`,
+            tooltip: t`Change stock item availability`,
+            icon: <InvenTreeIcon icon='status' />,
+            hidden: !user.hasChangeRole(UserRoles.stock),
+            onClick: () => editAvailability.open()
+          },
           EditItemAction({
             hidden: !user.hasChangeRole(UserRoles.stock),
             onClick: () => editStockItem.open()
@@ -912,11 +958,15 @@ export default function StockDetail() {
         ]}
       />
     ];
-  }, [id, stockitem, user, stockAdjustActions.menuActions]);
+  }, [id, stockitem, user, stockAdjustActions.menuActions, editAvailability]);
 
   const stockBadges: ReactNode[] = useMemo(() => {
     let available = (stockitem?.quantity ?? 0) - (stockitem?.allocated ?? 0);
     available = Math.max(0, available);
+    const availability = getStockAvailabilityStyle(
+      stockitem.availability,
+      stockitem.availability_text
+    );
 
     return instanceQuery.isLoading
       ? []
@@ -954,6 +1004,18 @@ export default function StockDetail() {
             visible={!!stockitem.batch}
             key='batch'
           />,
+          <Badge
+            key='availability'
+            size='lg'
+            styles={{
+              root: {
+                backgroundColor: availability.bg,
+                color: availability.fg
+              }
+            }}
+          >
+            {`${t`Availability`}: ${availability.label}`}
+          </Badge>,
           <StatusRenderer
             status={stockitem.status_custom_key || stockitem.status}
             fallbackStatus={stockitem.status}
@@ -1036,6 +1098,7 @@ export default function StockDetail() {
         </Stack>
       </InstanceDetail>
       {editStockItem.modal}
+      {editAvailability.modal}
       {duplicateStockItem.modal}
       {deleteStockItem.modal}
       {serializeStockItem.modal}

@@ -19,15 +19,15 @@ import build.models
 import common.filters
 import company.models
 import company.serializers as company_serializers
-import Tracklet.helpers
-import Tracklet.ready
-import Tracklet.serializers
 import order.models
 import part.filters as part_filters
 import part.models as part_models
 import part.serializers as part_serializers
 import stock.filters
 import stock.status_codes
+import Tracklet.helpers
+import Tracklet.ready
+import Tracklet.serializers
 from common.settings import get_global_setting
 from generic.states.fields import InvenTreeCustomStatusSerializerMixin
 from importer.registry import register_importer
@@ -358,6 +358,8 @@ class StockItemSerializer(
             'status',
             'status_text',
             'status_custom_key',
+            'availability',
+            'availability_text',
             'supplier_part',
             'SKU',
             'MPN',
@@ -460,6 +462,12 @@ class StockItemSerializer(
         """Custom update method to pass the user information through to the instance."""
         instance._user = self.context.get('user', None)
 
+        availability = validated_data.get('availability', None)
+        if availability is not None:
+            validated_data['availability'] = (
+                str(availability).strip().upper().replace(' ', '_')
+            )
+
         status_custom_key = validated_data.pop('status_custom_key', None)
         status = validated_data.pop('status', None)
 
@@ -471,6 +479,8 @@ class StockItemSerializer(
             validated_data['status_custom_key'] = (
                 status_code  # for compatibility with custom "leader/follower" concept in super().update()
             )
+            if availability is None:
+                validated_data['availability'] = instance.infer_availability()
 
         instance = super().update(instance, validated_data=validated_data)
 
@@ -549,6 +559,10 @@ class StockItemSerializer(
 
     status_text = serializers.CharField(
         source='get_status_display', read_only=True, label=_('Status')
+    )
+
+    availability_text = serializers.CharField(
+        source='get_availability_display', read_only=True, label=_('Availability')
     )
 
     SKU = serializers.CharField(
@@ -1084,11 +1098,14 @@ class StockChangeStatusSerializer(serializers.Serializer):
             else:
                 deltas['old_status'] = item.status
 
+            deltas['old_availability'] = item.availability
             item.set_status(status, custom_values=custom_status_codes)
+            item.availability = item.infer_availability()
             item.save(add_note=False)
 
             # after save, can track new status_logical
             deltas['status_logical'] = item.status
+            deltas['availability'] = item.availability
 
             # Create a new transaction note for each item
             transaction_notes.append(

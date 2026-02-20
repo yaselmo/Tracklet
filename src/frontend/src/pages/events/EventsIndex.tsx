@@ -13,8 +13,8 @@ import PermissionDenied from '../../components/errors/PermissionDenied';
 import { PageDetail } from '../../components/nav/PageDetail';
 import { PanelGroup } from '../../components/panels/PanelGroup';
 import { useUserState } from '../../states/UserState';
-import { EventTypeTable } from '../../tables/events/EventTypeTable';
 import { EventTable } from '../../tables/events/EventTable';
+import { EventTypeTable } from '../../tables/events/EventTypeTable';
 import { PlannerTable } from '../../tables/events/PlannerTable';
 import { VenueTable } from '../../tables/events/VenueTable';
 

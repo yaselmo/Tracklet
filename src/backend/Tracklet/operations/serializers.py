@@ -6,9 +6,9 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import serializers
 
-from Tracklet.serializers import InvenTreeModelSerializer
 from company.serializers import CompanySerializer
 from part.models import Part
+from Tracklet.serializers import InvenTreeModelSerializer
 from users.serializers import OwnerSerializer
 
 from . import models
@@ -72,7 +72,12 @@ class EventSerializer(InvenTreeModelSerializer):
             'creation_date',
             'last_updated',
         ]
-        read_only_fields = ['reference', 'reference_int', 'creation_date', 'last_updated']
+        read_only_fields = [
+            'reference',
+            'reference_int',
+            'creation_date',
+            'last_updated',
+        ]
 
     def get_notes_preview(self, obj):
         text = (obj.notes or '').strip()
@@ -179,22 +184,24 @@ class EventFurnitureAssignmentSerializer(InvenTreeModelSerializer):
 
         if not event or not part:
             instance = super().create(validated_data)
-            setattr(instance, '_updated_existing', False)
+            instance._updated_existing = False
             return instance
 
         try:
             with transaction.atomic():
-                instance, created = models.EventFurnitureAssignment.objects.get_or_create(
-                    event=event,
-                    part=part,
-                    defaults=validated_data,
+                instance, created = (
+                    models.EventFurnitureAssignment.objects.get_or_create(
+                        event=event, part=part, defaults=validated_data
+                    )
                 )
         except IntegrityError:
-            instance = models.EventFurnitureAssignment.objects.get(event=event, part=part)
+            instance = models.EventFurnitureAssignment.objects.get(
+                event=event, part=part
+            )
             created = False
 
         if created:
-            setattr(instance, '_updated_existing', False)
+            instance._updated_existing = False
             return instance
 
         submitted_quantity = validated_data.get('quantity')
@@ -223,7 +230,7 @@ class EventFurnitureAssignmentSerializer(InvenTreeModelSerializer):
 
         instance.item = None
         instance.save()
-        setattr(instance, '_updated_existing', True)
+        instance._updated_existing = True
 
         return instance
 
@@ -281,7 +288,12 @@ class RentalOrderSerializer(InvenTreeModelSerializer):
             'creation_date',
             'last_updated',
         ]
-        read_only_fields = ['reference', 'reference_int', 'creation_date', 'last_updated']
+        read_only_fields = [
+            'reference',
+            'reference_int',
+            'creation_date',
+            'last_updated',
+        ]
 
     def get_overdue(self, obj):
         return obj.is_overdue
@@ -344,9 +356,7 @@ class RentalLineItemSerializer(InvenTreeModelSerializer):
 
         if overlaps.exists():
             raise serializers.ValidationError({
-                'asset': _(
-                    'Asset is already booked for an overlapping rental period'
-                )
+                'asset': _('Asset is already booked for an overlapping rental period')
             })
 
         return attrs
