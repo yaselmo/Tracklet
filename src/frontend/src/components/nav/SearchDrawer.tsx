@@ -41,6 +41,12 @@ import { cancelEvent } from '@lib/functions/Events';
 import { eventModified, navigateToLink } from '@lib/functions/Navigation';
 import { showNotification } from '@mantine/notifications';
 import { api } from '../../App';
+import {
+  manufacturingEnabled,
+  purchasingEnabled,
+  salesEnabled
+} from '../../defaults/moduleFlags';
+import { useServerApiState } from '../../states/ServerApiState';
 import { useUserSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import { Boundary } from '../Boundary';
@@ -191,6 +197,7 @@ export function SearchDrawer({
   const [searchText] = useDebouncedValue(value, 500);
 
   const user = useUserState();
+  const server = useServerApiState((state) => state.server);
   const userSettings = useUserSettingsState();
 
   const [searchRegex, setSearchRegex] = useState<boolean>(false);
@@ -229,6 +236,7 @@ export function SearchDrawer({
           manufacturer_detail: true
         },
         enabled:
+          purchasingEnabled(server) &&
           user.hasViewRole(UserRoles.part) &&
           user.hasViewRole(UserRoles.purchase_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_SUPPLIER_PARTS')
@@ -241,6 +249,7 @@ export function SearchDrawer({
           manufacturer_detail: true
         },
         enabled:
+          purchasingEnabled(server) &&
           user.hasViewRole(UserRoles.part) &&
           user.hasViewRole(UserRoles.purchase_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_MANUFACTURER_PARTS')
@@ -278,6 +287,7 @@ export function SearchDrawer({
           part_detail: true
         },
         enabled:
+          manufacturingEnabled(server) &&
           user.hasViewRole(UserRoles.build) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_BUILD_ORDERS')
       },
@@ -288,6 +298,7 @@ export function SearchDrawer({
         title: t`Suppliers`,
         parameters: {},
         enabled:
+          purchasingEnabled(server) &&
           user.hasViewRole(UserRoles.purchase_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_COMPANIES')
       },
@@ -298,6 +309,7 @@ export function SearchDrawer({
         title: t`Manufacturers`,
         parameters: {},
         enabled:
+          purchasingEnabled(server) &&
           user.hasViewRole(UserRoles.purchase_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_COMPANIES')
       },
@@ -308,6 +320,7 @@ export function SearchDrawer({
         title: t`Customers`,
         parameters: {},
         enabled:
+          salesEnabled(server) &&
           user.hasViewRole(UserRoles.sales_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_COMPANIES')
       },
@@ -322,6 +335,7 @@ export function SearchDrawer({
             : undefined
         },
         enabled:
+          purchasingEnabled(server) &&
           user.hasViewRole(UserRoles.purchase_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_PURCHASE_ORDERS')
       },
@@ -336,6 +350,7 @@ export function SearchDrawer({
             : undefined
         },
         enabled:
+          salesEnabled(server) &&
           user.hasViewRole(UserRoles.sales_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_SALES_ORDERS')
       },
@@ -343,6 +358,7 @@ export function SearchDrawer({
         model: ModelType.salesordershipment,
         parameters: {},
         enabled:
+          salesEnabled(server) &&
           user.hasViewRole(UserRoles.sales_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_SALES_ORDER_SHIPMENTS')
       },
@@ -357,11 +373,12 @@ export function SearchDrawer({
             : undefined
         },
         enabled:
+          salesEnabled(server) &&
           user.hasViewRole(UserRoles.return_order) &&
           userSettings.isSet('SEARCH_PREVIEW_SHOW_RETURN_ORDERS')
       }
     ];
-  }, [user, userSettings]);
+  }, [user, userSettings, server]);
 
   // Construct a list of search queries based on user permissions
   const searchQueries: SearchQuery[] = useMemo(() => {

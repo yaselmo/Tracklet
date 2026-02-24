@@ -18,6 +18,7 @@ class RuleSetEnum(StringEnum):
     PURCHASE_ORDER = 'purchase_order'
     SALES_ORDER = 'sales_order'
     RETURN_ORDER = 'return_order'
+    PROJECT = 'project'
 
 
 # This is a list of all the ruleset choices available in the system.
@@ -32,6 +33,7 @@ RULESET_CHOICES = [
     (RuleSetEnum.PURCHASE_ORDER, _('Purchase Orders')),
     (RuleSetEnum.SALES_ORDER, _('Sales Orders')),
     (RuleSetEnum.RETURN_ORDER, _('Return Orders')),
+    (RuleSetEnum.PROJECT, _('Projects')),
 ]
 
 # Ruleset names available in the system.
@@ -159,6 +161,11 @@ def get_ruleset_models() -> dict:
             'order_returnorder',
             'order_returnorderlineitem',
             'order_returnorderextraline',
+        ],
+        RuleSetEnum.PROJECT: [
+            'projects_project',
+            'projects_projectstockallocation',
+            'projects_projectinstrument',
         ],
     }
 

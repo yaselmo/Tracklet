@@ -21,6 +21,7 @@ export const emptyServerAPI = {
   default_locale: null,
   django_admin: null,
   settings: null,
+  feature_flags: null,
   customize: null
 };
 

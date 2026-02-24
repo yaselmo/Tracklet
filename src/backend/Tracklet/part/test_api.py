@@ -2435,6 +2435,45 @@ class PartAPIAggregationTest(InvenTreeAPITestCase):
         self.assertEqual(part.total_stock, 91)
         self.assertEqual(part.available_stock, 56)
 
+    def test_available_stock_list_field(self):
+        """Ensure available stock is exposed on the part list endpoint."""
+        part = Part.objects.create(
+            name='Availability Check Part',
+            description='Part for available stock API test',
+            category=PartCategory.objects.get(pk=1),
+        )
+
+        item = StockItem.objects.create(part=part, quantity=17)
+
+        so = order.models.SalesOrder.objects.create(
+            reference='SO-AVAIL-001',
+            customer=Company.objects.get(pk=1),
+        )
+        line = order.models.SalesOrderLineItem.objects.create(
+            quantity=5,
+            order=so,
+            part=part,
+        )
+        shipment = order.models.SalesOrderShipment.objects.create(
+            order=so, reference='SHIP-AVAIL-001'
+        )
+        order.models.SalesOrderAllocation.objects.create(
+            line=line,
+            shipment=shipment,
+            item=item,
+            quantity=5,
+        )
+
+        response = self.get(reverse('api-part-list'), expected_code=200)
+        data = next((p for p in response.data if p['pk'] == part.pk), None)
+
+        self.assertIsNotNone(data)
+        self.assertEqual(data['in_stock'], 17)
+        self.assertEqual(data['allocated_to_build_orders'], 0)
+        self.assertEqual(data['allocated_to_sales_orders'], 5)
+        self.assertEqual(data['available_stock'], 12)
+        self.assertEqual(data['unallocated_stock'], 12)
+
     def test_on_order(self):
         """Test that the 'on_order' queryset annotation works as expected.
 

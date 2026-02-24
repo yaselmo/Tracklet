@@ -16,7 +16,13 @@ import { UserRoles } from '@lib/index';
 import { openContextModal } from '@mantine/modals';
 import { useMemo } from 'react';
 import { useShallow } from 'zustand/react/shallow';
+import {
+  manufacturingEnabled,
+  purchasingEnabled,
+  salesEnabled
+} from './moduleFlags';
 import { useLocalState } from '../states/LocalState';
+import { useServerApiState } from '../states/ServerApiState';
 import { useGlobalSettingsState } from '../states/SettingsStates';
 import { useUserState } from '../states/UserState';
 import { aboutTracklet, docLinks, licenseInfo, serverInfo } from './links';
@@ -32,6 +38,7 @@ export function getActions(navigate: NavigateFunction) {
   const setNavigationOpen = useLocalState(
     useShallow((state) => state.setNavigationOpen)
   );
+  const [server] = useServerApiState(useShallow((state) => [state.server]));
   const globalSettings = useGlobalSettingsState();
   const user = useUserState();
 
@@ -100,7 +107,8 @@ export function getActions(navigate: NavigateFunction) {
       });
 
     // Page Actions
-    user?.hasViewRole(UserRoles.purchase_order) &&
+    purchasingEnabled(server) &&
+      user?.hasViewRole(UserRoles.purchase_order) &&
       _actions.push({
         id: 'purchase-orders',
         label: t`Purchase Orders`,
@@ -110,13 +118,23 @@ export function getActions(navigate: NavigateFunction) {
         leftSection: <IconLink size='1.2rem' />
       });
 
-    user?.hasViewRole(UserRoles.sales_order) &&
+    salesEnabled(server) &&
+      user?.hasViewRole(UserRoles.sales_order) &&
       _actions.push({
         id: 'sales-orders',
         label: t`Sales Orders`,
         description: t`Go to Sales Orders`,
         onClick: () =>
           navigate(ModelInformationDict['salesorder'].url_overview!),
+        leftSection: <IconLink size='1.2rem' />
+      });
+
+    user?.hasViewRole(UserRoles.project) &&
+      _actions.push({
+        id: 'projects',
+        label: t`Projects`,
+        description: t`Go to Projects`,
+        onClick: () => navigate(ModelInformationDict['project'].url_overview!),
         leftSection: <IconLink size='1.2rem' />
       });
 
@@ -140,7 +158,8 @@ export function getActions(navigate: NavigateFunction) {
         leftSection: <IconBarcode size='1.2rem' />
       });
 
-    user?.hasViewRole(UserRoles.build) &&
+    manufacturingEnabled(server) &&
+      user?.hasViewRole(UserRoles.build) &&
       _actions.push({
         id: 'builds',
         label: t`Build Orders`,
@@ -177,7 +196,7 @@ export function getActions(navigate: NavigateFunction) {
       });
 
     return _actions;
-  }, [navigate, setNavigationOpen, globalSettings, user]);
+  }, [navigate, setNavigationOpen, globalSettings, user, server]);
 
   return actions.sort((a, b) => (a.label ?? '').localeCompare(b.label ?? ''));
 }

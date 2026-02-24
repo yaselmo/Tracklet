@@ -6,8 +6,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
 import { AboutLinks, DocumentationLinks } from '../../defaults/links';
+import {
+  manufacturingEnabled,
+  purchasingEnabled,
+  salesEnabled
+} from '../../defaults/moduleFlags';
 import useInstanceName from '../../hooks/UseInstanceName';
 import * as classes from '../../main.css';
+import { useServerApiState } from '../../states/ServerApiState';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import { TrackletLogo } from '../items/TrackletLogo';
@@ -41,6 +47,7 @@ export function NavigationDrawer({
 
 function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
   const user = useUserState();
+  const server = useServerApiState((state) => state.server);
 
   const globalSettings = useGlobalSettingsState();
 
@@ -83,22 +90,39 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         id: 'build',
         title: t`Manufacturing`,
         link: '/manufacturing/',
-        hidden: !user.hasViewRole(UserRoles.build),
+        hidden:
+          !manufacturingEnabled(server) || !user.hasViewRole(UserRoles.build),
         icon: 'build'
       },
       {
         id: 'purchasing',
         title: t`Purchasing`,
         link: '/purchasing/',
-        hidden: !user.hasViewRole(UserRoles.purchase_order),
+        hidden:
+          !purchasingEnabled(server) ||
+          !user.hasViewRole(UserRoles.purchase_order),
         icon: 'purchase_orders'
+      },
+      {
+        id: 'suppliers',
+        title: t`Suppliers`,
+        link: '/suppliers/',
+        hidden: !user.hasViewRole(UserRoles.purchase_order),
+        icon: 'suppliers'
       },
       {
         id: 'sales',
         title: t`Sales`,
         link: '/sales/',
-        hidden: !user.hasViewRole(UserRoles.sales_order),
+        hidden: !salesEnabled(server) || !user.hasViewRole(UserRoles.sales_order),
         icon: 'sales_orders'
+      },
+      {
+        id: 'projects',
+        title: t({ id: 'nav.projects', message: 'Projects' }),
+        link: '/projects/',
+        hidden: !user.hasViewRole(UserRoles.project),
+        icon: 'list_details'
       },
       {
         id: 'users',
@@ -113,17 +137,18 @@ function DrawerContent({ closeFunc }: Readonly<{ closeFunc?: () => void }>) {
         icon: 'group'
       }
     ];
-  }, [user]);
+  }, [user, server]);
 
   const menuItemsAction: MenuLinkItem[] = useMemo(() => {
     return [
-      {
-        id: 'barcode',
-        title: t`Scan Barcode`,
-        link: '/scan',
-        icon: 'barcode',
-        hidden: !globalSettings.isSet('BARCODE_ENABLE')
-      }
+      // Temporarily disabled:
+      // {
+      //   id: 'barcode',
+      //   title: t`Scan Barcode`,
+      //   link: '/scan',
+      //   icon: 'barcode',
+      //   hidden: !globalSettings.isSet('BARCODE_ENABLE')
+      // }
     ];
   }, [user, globalSettings]);
 

@@ -239,6 +239,13 @@ class InfoApiSerializer(serializers.Serializer):
         navbar_message = serializers.CharField(allow_null=True)
         disable_theme_storage = serializers.BooleanField(default=False)
 
+    class FeatureFlagsSerializer(serializers.Serializer):
+        """Serializer for frontend feature flags."""
+
+        enable_purchasing = serializers.BooleanField()
+        enable_manufacturing = serializers.BooleanField()
+        enable_sales = serializers.BooleanField()
+
     server = serializers.CharField(read_only=True)
     id = serializers.CharField(read_only=True, allow_null=True)
     version = serializers.CharField(read_only=True)
@@ -262,6 +269,7 @@ class InfoApiSerializer(serializers.Serializer):
     target = serializers.CharField(read_only=True, allow_null=True)
     django_admin = serializers.CharField(read_only=True)
     settings = SettingsSerializer(read_only=True, many=False)
+    feature_flags = FeatureFlagsSerializer(read_only=True, many=False)
 
 
 class InfoView(APIView):
@@ -330,6 +338,11 @@ class InfoView(APIView):
                 'password_forgotten_enabled': get_global_setting(
                     'LOGIN_ENABLE_PWD_FORGOT'
                 ),
+            },
+            'feature_flags': {
+                'enable_purchasing': settings.ENABLE_PURCHASING,
+                'enable_manufacturing': settings.ENABLE_MANUFACTURING,
+                'enable_sales': settings.ENABLE_SALES,
             },
         }
 

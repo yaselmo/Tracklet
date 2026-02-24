@@ -5,8 +5,7 @@ import {
   Indicator,
   Tabs,
   Text,
-  Tooltip,
-  UnstyledButton
+  Tooltip
 } from '@mantine/core';
 import {
   useDisclosure,
@@ -20,14 +19,12 @@ import { useMatch, useNavigate } from 'react-router-dom';
 
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
-import { getBaseUrl } from '@lib/functions/Navigation';
 import { navigateToLink } from '@lib/functions/Navigation';
 import { t } from '@lingui/core/macro';
 import { useShallow } from 'zustand/react/shallow';
 import { api } from '../../App';
 import type { NavigationUIFeature } from '../../components/plugins/PluginUIFeatureTypes';
 import { getNavTabs } from '../../defaults/links';
-import { generateUrl } from '../../functions/urls';
 import { usePluginUIFeature } from '../../hooks/UsePluginUIFeature';
 import * as classes from '../../main.css';
 import { useLocalState } from '../../states/LocalState';
@@ -59,20 +56,21 @@ export function Header() {
     { open: openSearchDrawer, close: closeSearchDrawer }
   ] = useDisclosure(false);
 
-  useHotkeys([
-    [
-      '/',
-      () => {
-        openSearchDrawer();
-      }
-    ],
-    [
-      'mod+/',
-      () => {
-        openSearchDrawer();
-      }
-    ]
-  ]);
+  // Temporarily disabled:
+  // useHotkeys([
+  //   [
+  //     '/',
+  //     () => {
+  //       openSearchDrawer();
+  //     }
+  //   ],
+  //   [
+  //     'mod+/',
+  //     () => {
+  //       openSearchDrawer();
+  //     }
+  //   ]
+  // ]);
 
   const [
     notificationDrawerOpened,
@@ -144,7 +142,9 @@ export function Header() {
 
   return (
     <div className={classes.layoutHeader} style={headerStyle}>
+      {/* Temporarily disabled:
       <SearchDrawer opened={searchDrawerOpened} onClose={closeSearchDrawer} />
+      */}
       <NavigationDrawer opened={navDrawerOpened} close={closeNavDrawer} />
       <NotificationDrawer
         opened={notificationDrawerOpened}
@@ -166,6 +166,7 @@ export function Header() {
             </Text>
           )}
           <Group>
+            {/* Temporarily disabled:
             <Tooltip position='bottom-end' label={t`Search`}>
               <ActionIcon
                 onClick={openSearchDrawer}
@@ -177,6 +178,7 @@ export function Header() {
             </Tooltip>
             {userSettings.isSet('SHOW_SPOTLIGHT') && <SpotlightButton />}
             {globalSettings.isSet('BARCODE_ENABLE') && <ScanButton />}
+            */}
             <Indicator
               radius='lg'
               size='18'
@@ -206,10 +208,11 @@ export function Header() {
 
 function NavTabs() {
   const user = useUserState();
+  const [server] = useServerApiState(useShallow((state) => [state.server]));
   const navigate = useNavigate();
   const match = useMatch(':tabName/*');
   const tabValue = match?.params.tabName;
-  const navTabs = getNavTabs(user);
+  const navTabs = getNavTabs(user, server);
   const userSettings = useUserSettingsState();
 
   const withIcons: boolean = useMemo(
@@ -225,7 +228,7 @@ function NavTabs() {
   const tabs: ReactNode[] = useMemo(() => {
     const _tabs: ReactNode[] = [];
 
-    const mainNavTabs = getNavTabs(user);
+    const mainNavTabs = getNavTabs(user, server);
 
     // static content
     mainNavTabs.forEach((tab) => {
@@ -240,19 +243,14 @@ function NavTabs() {
           leftSection={
             withIcons &&
             tab.icon && (
-              <ActionIcon variant='transparent'>{tab.icon}</ActionIcon>
+              <span aria-hidden='true'>{tab.icon}</span>
             )
           }
           onClick={(event: any) =>
             navigateToLink(`/${tab.name}`, navigate, event)
           }
         >
-          <UnstyledButton
-            component={'a'}
-            href={generateUrl(`/${getBaseUrl()}/${tab.name}`)}
-          >
-            {tab.title}
-          </UnstyledButton>
+          {tab.title}
         </Tabs.Tab>
       );
     });
@@ -272,7 +270,7 @@ function NavTabs() {
     });
 
     return _tabs;
-  }, [extraNavs, navTabs, user, withIcons]);
+  }, [extraNavs, navTabs, user, withIcons, server]);
 
   return (
     <Tabs

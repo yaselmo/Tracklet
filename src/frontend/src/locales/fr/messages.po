@@ -12535,3 +12535,21 @@ msgstr "Lire la documentation"
 msgid "Ignore and continue to Desktop view"
 msgstr "Ignorer et continuer vers la vue Bureau"
 
+#: src/defaults/links.tsx:80
+msgid "Projects"
+msgstr "Projets"
+#: src/pages/projects/ProjectsIndex.tsx:25
+msgid "Projects (All)"
+msgstr "Projets (Tous)"
+
+#: src/pages/projects/ProjectsIndex.tsx:31
+msgid "Future"
+msgstr "À venir"
+
+#: src/pages/projects/ProjectsIndex.tsx:37
+msgid "Ongoing"
+msgstr "En cours"
+
+#: src/pages/projects/ProjectsIndex.tsx:43
+msgid "Past Projects"
+msgstr "Projets passés"

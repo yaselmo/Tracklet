@@ -86,7 +86,10 @@ function partTableColumns(): TableColumn[] {
         const allocated =
           (record?.allocated_to_build_orders ?? 0) +
           (record?.allocated_to_sales_orders ?? 0);
-        const available = Math.max(0, stock - allocated);
+        const available =
+          record?.available_stock ??
+          record?.unallocated_stock ??
+          Math.max(0, stock - allocated);
         const min_stock = record?.minimum_stock ?? 0;
 
         let text = String(formatDecimal(stock));
@@ -173,6 +176,23 @@ function partTableColumns(): TableColumn[] {
           />
         );
       }
+    },
+    {
+      accessor: 'available_stock',
+      title: t`Available Stock`,
+      sortable: true,
+      ordering: 'available_stock',
+      render: (record) =>
+        formatDecimal(
+          record?.available_stock ??
+            record?.unallocated_stock ??
+            Math.max(
+              0,
+              (record?.total_in_stock ?? 0) -
+                ((record?.allocated_to_build_orders ?? 0) +
+                  (record?.allocated_to_sales_orders ?? 0))
+            )
+        )
     },
     {
       accessor: 'price_range',

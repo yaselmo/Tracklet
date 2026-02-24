@@ -267,6 +267,52 @@ def annotate_sales_order_allocations(reference: str = '', location=None) -> Quer
     )
 
 
+def annotate_project_instrument_allocations(
+    reference: str = '', location=None
+) -> QuerySet:
+    """Annotate total quantity allocated to project instruments."""
+    project_filter = Q()
+
+    if location is not None:
+        project_filter &= Q(
+            stock_item__location__tree_id=location.tree_id,
+            stock_item__location__lft__gte=location.lft,
+            stock_item__location__rght__lte=location.rght,
+            stock_item__location__level__gte=location.level,
+        )
+
+    return Coalesce(
+        SubquerySum(
+            f'{reference}stock_items__project_instruments__quantity',
+            filter=project_filter,
+        ),
+        Decimal(0),
+        output_field=models.DecimalField(),
+    )
+
+
+def annotate_project_stock_allocations(reference: str = '', location=None) -> QuerySet:
+    """Annotate total quantity allocated in project stock allocations."""
+    project_filter = Q()
+
+    if location is not None:
+        project_filter &= Q(
+            stock_item__location__tree_id=location.tree_id,
+            stock_item__location__lft__gte=location.lft,
+            stock_item__location__rght__lte=location.rght,
+            stock_item__location__level__gte=location.level,
+        )
+
+    return Coalesce(
+        SubquerySum(
+            f'{reference}stock_items__project_allocations__quantity',
+            filter=project_filter,
+        ),
+        Decimal(0),
+        output_field=models.DecimalField(),
+    )
+
+
 def variant_stock_query(reference: str = '', filter: Optional[Q] = None) -> QuerySet:
     """Create a queryset to retrieve all stock items for variant parts under the specified part.
 
@@ -420,6 +466,10 @@ def annotate_bom_item_can_build(queryset: QuerySet, reference: str = '') -> Quer
         allocated_to_sales_orders=annotate_sales_order_allocations(sub_part_ref),
         # Total allocated to build orders
         allocated_to_build_orders=annotate_build_order_allocations(sub_part_ref),
+        # Total allocated to project instruments
+        allocated_to_project_instruments=annotate_project_instrument_allocations(
+            sub_part_ref
+        ),
     )
 
     # Annotate the "available" stock, based on the total stock and allocations
@@ -428,7 +478,8 @@ def annotate_bom_item_can_build(queryset: QuerySet, reference: str = '') -> Quer
             ExpressionWrapper(
                 F('total_stock')
                 - F('allocated_to_sales_orders')
-                - F('allocated_to_build_orders'),
+                - F('allocated_to_build_orders')
+                - F('allocated_to_project_instruments'),
                 output_field=models.DecimalField(),
             ),
             Decimal(0),

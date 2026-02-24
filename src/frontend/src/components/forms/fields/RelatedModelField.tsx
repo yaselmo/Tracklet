@@ -379,6 +379,8 @@ export function RelatedModelField({
       modelRenderer: undefined,
       onValueChange: undefined,
       adjustFilters: undefined,
+      allow_null: undefined,
+      allow_blank: undefined,
       exclude: undefined,
       read_only: undefined
     };
@@ -483,6 +485,7 @@ export function RelatedModelField({
             menuPosition='fixed'
             styles={{
               menuPortal: (base: any) => ({ ...base, zIndex: 9999 }),
+              menu: (base: any) => ({ ...base, zIndex: 9999 }),
               clearIndicator: (base: any) => ({
                 ...base,
                 color: 'red',

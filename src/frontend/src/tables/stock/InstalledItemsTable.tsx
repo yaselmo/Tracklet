@@ -16,7 +16,8 @@ import {
 import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
 import { useUserState } from '../../states/UserState';
-import { PartColumn, StatusColumn, StockColumn } from '../ColumnRenderers';
+import { getTrackletStatusPill } from '../../components/render/TrackletStatus';
+import { PartColumn, StockColumn } from '../ColumnRenderers';
 import { TrackletTable } from '../TrackletTable';
 
 export default function InstalledItemsTable({
@@ -70,7 +71,11 @@ export default function InstalledItemsTable({
         accessor: 'batch',
         switchable: false
       },
-      StatusColumn({ model: ModelType.stockitem })
+      {
+        accessor: 'tracklet_status',
+        title: t`Status`,
+        render: (record: any) => getTrackletStatusPill(record)
+      }
     ];
   }, []);
 

@@ -1,7 +1,13 @@
 import { lazy } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import {
+  manufacturingEnabled,
+  purchasingEnabled,
+  salesEnabled
+} from './defaults/moduleFlags';
 import { Loadable } from './functions/loading';
+import { useServerApiState } from './states/ServerApiState';
 
 // Lazy loaded pages
 export const LayoutComponent = Loadable(
@@ -27,6 +33,9 @@ export const CustomerDetail = Loadable(
 
 export const SupplierDetail = Loadable(
   lazy(() => import('./pages/company/SupplierDetail'))
+);
+export const SuppliersIndex = Loadable(
+  lazy(() => import('./pages/company/SuppliersIndex'))
 );
 
 export const ManufacturerDetail = Loadable(
@@ -88,6 +97,14 @@ export const ReturnOrderDetail = Loadable(
   lazy(() => import('./pages/sales/ReturnOrderDetail'))
 );
 
+export const ProjectsIndex = Loadable(
+  lazy(() => import('./pages/projects/ProjectsIndex'))
+);
+
+export const ProjectDetail = Loadable(
+  lazy(() => import('./pages/projects/ProjectDetail'))
+);
+
 export const Scan = Loadable(lazy(() => import('./pages/Index/Scan')));
 
 export const ErrorPage = Loadable(lazy(() => import('./pages/ErrorPage')));
@@ -145,6 +162,28 @@ export const VerifyEmail = Loadable(
   true
 );
 
+function ModuleRoute({
+  module,
+  children
+}: Readonly<{
+  module: 'purchasing' | 'manufacturing' | 'sales';
+  children: JSX.Element;
+}>) {
+  const server = useServerApiState((state) => state.server);
+
+  let enabled = false;
+
+  if (module === 'purchasing') {
+    enabled = purchasingEnabled(server);
+  } else if (module === 'manufacturing') {
+    enabled = manufacturingEnabled(server);
+  } else {
+    enabled = salesEnabled(server);
+  }
+
+  return enabled ? children : <NotFound />;
+}
+
 // Routes
 export const routes = (
   <Routes>
@@ -171,30 +210,149 @@ export const routes = (
         <Route path='item/:id/*' element={<StockDetail />} />
       </Route>
       <Route path='manufacturing/'>
-        <Route index element={<Navigate to='index/' />} />
-        <Route path='index/*' element={<BuildIndex />} />
-        <Route path='build-order/:id/*' element={<BuildDetail />} />
+        <Route
+          index
+          element={
+            <ModuleRoute module='manufacturing'>
+              <Navigate to='index/' />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='index/*'
+          element={
+            <ModuleRoute module='manufacturing'>
+              <BuildIndex />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='build-order/:id/*'
+          element={
+            <ModuleRoute module='manufacturing'>
+              <BuildDetail />
+            </ModuleRoute>
+          }
+        />
       </Route>
       <Route path='purchasing/'>
-        <Route index element={<Navigate to='index/' />} />
-        <Route path='index/*' element={<PurchasingIndex />} />
-        <Route path='purchase-order/:id/*' element={<PurchaseOrderDetail />} />
-        <Route path='supplier/:id/*' element={<SupplierDetail />} />
-        <Route path='supplier-part/:id/*' element={<SupplierPartDetail />} />
-        <Route path='manufacturer/:id/*' element={<ManufacturerDetail />} />
+        <Route
+          index
+          element={
+            <ModuleRoute module='purchasing'>
+              <Navigate to='index/' />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='index/*'
+          element={
+            <ModuleRoute module='purchasing'>
+              <PurchasingIndex />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='purchase-order/:id/*'
+          element={
+            <ModuleRoute module='purchasing'>
+              <PurchaseOrderDetail />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='supplier/:id/*'
+          element={
+            <ModuleRoute module='purchasing'>
+              <SupplierDetail />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='supplier-part/:id/*'
+          element={
+            <ModuleRoute module='purchasing'>
+              <SupplierPartDetail />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='manufacturer/:id/*'
+          element={
+            <ModuleRoute module='purchasing'>
+              <ManufacturerDetail />
+            </ModuleRoute>
+          }
+        />
         <Route
           path='manufacturer-part/:id/*'
-          element={<ManufacturerPartDetail />}
+          element={
+            <ModuleRoute module='purchasing'>
+              <ManufacturerPartDetail />
+            </ModuleRoute>
+          }
         />
       </Route>
       <Route path='company/:id/*' element={<CompanyDetail />} />
-      <Route path='sales/'>
+      <Route path='suppliers/'>
         <Route index element={<Navigate to='index/' />} />
-        <Route path='index/*' element={<SalesIndex />} />
-        <Route path='sales-order/:id/*' element={<SalesOrderDetail />} />
-        <Route path='shipment/:id/*' element={<SalesOrderShipmentDetail />} />
-        <Route path='return-order/:id/*' element={<ReturnOrderDetail />} />
-        <Route path='customer/:id/*' element={<CustomerDetail />} />
+        <Route path='index/*' element={<SuppliersIndex />} />
+        <Route path='supplier/:id/*' element={<SupplierDetail />} />
+      </Route>
+      <Route path='sales/'>
+        <Route
+          index
+          element={
+            <ModuleRoute module='sales'>
+              <Navigate to='index/' />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='index/*'
+          element={
+            <ModuleRoute module='sales'>
+              <SalesIndex />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='sales-order/:id/*'
+          element={
+            <ModuleRoute module='sales'>
+              <SalesOrderDetail />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='shipment/:id/*'
+          element={
+            <ModuleRoute module='sales'>
+              <SalesOrderShipmentDetail />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='return-order/:id/*'
+          element={
+            <ModuleRoute module='sales'>
+              <ReturnOrderDetail />
+            </ModuleRoute>
+          }
+        />
+        <Route
+          path='customer/:id/*'
+          element={
+            <ModuleRoute module='sales'>
+              <CustomerDetail />
+            </ModuleRoute>
+          }
+        />
+      </Route>
+      <Route path='projects/'>
+        <Route index element={<Navigate to='index/' />} />
+        <Route path='index/*' element={<ProjectsIndex />} />
+        <Route path=':id/*' element={<ProjectDetail />} />
       </Route>
       <Route path='core/'>
         <Route index element={<Navigate to='index/' />} />

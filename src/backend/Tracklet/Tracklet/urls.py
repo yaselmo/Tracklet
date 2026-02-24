@@ -24,6 +24,7 @@ import machine.api
 import order.api
 import part.api
 import plugin.api
+import projects.api
 import report.api
 import stock.api
 import users.api
@@ -60,6 +61,9 @@ apipatterns = [
     path('machine/', include(machine.api.machine_api_urls)),
     path('order/', include(order.api.order_api_urls)),
     path('part/', include(part.api.part_api_urls)),
+    path('projects/', include(projects.api.project_api_urls)),
+    path('project-allocations/', include(projects.api.project_allocation_api_urls)),
+    path('project-instruments/', include(projects.api.project_instrument_api_urls)),
     path('report/', include(report.api.report_api_urls)),
     path('search/', APISearchView.as_view(), name='api-search'),
     path('settings/', include(common.api.settings_api_urls)),

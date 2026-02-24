@@ -18,11 +18,20 @@ export const useModalState = create<ModalStateProps>()((set, get) => ({
   },
 
   setModalOpen: (modalKey: string, isOpen: boolean) => {
-    set((state) => ({
-      openModals: {
-        ...state.openModals,
-        [modalKey]: isOpen
+    set((state) => {
+      const current = state.openModals[modalKey] ?? false;
+
+      // No-op when value is unchanged to avoid unnecessary render cascades.
+      if (current === isOpen) {
+        return state;
       }
-    }));
+
+      return {
+        openModals: {
+          ...state.openModals,
+          [modalKey]: isOpen
+        }
+      };
+    });
   }
 }));

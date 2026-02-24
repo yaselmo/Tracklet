@@ -21,7 +21,7 @@ import { i18n } from '@lingui/core';
 import {
   useAddStockItem,
   useAssignStockItem,
-  useChangeStockStatus,
+  useChangeTrackletStatus,
   useCountStockItem,
   useDeleteStockItem,
   useMergeStockItem,
@@ -75,7 +75,7 @@ export const useInvenTreeContext = () => {
         stockActions: {
           addStock: useAddStockItem,
           assignStock: useAssignStockItem,
-          changeStatus: useChangeStockStatus,
+          changeStatus: useChangeTrackletStatus,
           countStock: useCountStockItem,
           deleteStock: useDeleteStockItem,
           mergeStock: useMergeStockItem,

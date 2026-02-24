@@ -128,6 +128,7 @@ export default function LayoutComponent() {
         </Container>
         <Space h='xl' />
         <Footer />
+        {/* Temporarily disabled:
         {userSettings.isSet('SHOW_SPOTLIGHT') && (
           <Spotlight
             actions={actions}
@@ -142,6 +143,7 @@ export default function LayoutComponent() {
             nothingFound={t`Nothing found...`}
           />
         )}
+        */}
       </Flex>
     </ProtectedRoute>
   );

@@ -199,6 +199,12 @@ class StockChangeStatus(StockAdjustView):
     serializer_class = StockSerializers.StockChangeStatusSerializer
 
 
+class StockChangeTrackletStatus(StockAdjustView):
+    """API endpoint to change tracklet status of multiple StockItem objects."""
+
+    serializer_class = StockSerializers.StockChangeTrackletStatusSerializer
+
+
 class StockCount(StockAdjustView):
     """Endpoint for counting stock (performing a stocktake)."""
 
@@ -650,17 +656,16 @@ class StockFilter(FilterSet):
         label=_('Maximum stock'), field_name='quantity', lookup_expr='lte'
     )
 
-    status = rest_filters.NumberFilter(label=_('Status Code'), method='filter_status')
+    status = rest_filters.CharFilter(label=_('Status Code'), method='filter_status')
 
     def filter_status(self, queryset, name, value):
-        """Filter by integer status code.
+        """Filter by Tracklet stock status."""
+        value = str(value or '').upper()
 
-        Note: Also account for the possibility of a custom status code.
-        """
-        q1 = Q(status=value, status_custom_key__isnull=True)
-        q2 = Q(status_custom_key=value)
+        if value == '':
+            return queryset
 
-        return queryset.filter(q1 | q2).distinct()
+        return queryset.filter(tracklet_status=value).distinct()
 
     allocated = rest_filters.BooleanFilter(
         label='Is Allocated', method='filter_allocated'
@@ -669,13 +674,17 @@ class StockFilter(FilterSet):
     def filter_allocated(self, queryset, name, value):
         """Filter by whether or not the stock item is 'allocated'."""
         if str2bool(value):
-            # Filter StockItem with either build allocations or sales order allocations
+            # Filter StockItem with build, sales order, or project instrument allocations
             return queryset.filter(
-                Q(sales_order_allocations__isnull=False) | Q(allocations__isnull=False)
+                Q(sales_order_allocations__isnull=False)
+                | Q(allocations__isnull=False)
+                | Q(project_instruments__isnull=False)
             ).distinct()
-        # Filter StockItem without build allocations or sales order allocations
+        # Filter StockItem without build, sales order, or project instrument allocations
         return queryset.filter(
-            Q(sales_order_allocations__isnull=True) & Q(allocations__isnull=True)
+            Q(sales_order_allocations__isnull=True)
+            & Q(allocations__isnull=True)
+            & Q(project_instruments__isnull=True)
         )
 
     expired = rest_filters.BooleanFilter(label='Expired', method='filter_expired')
@@ -716,12 +725,18 @@ class StockFilter(FilterSet):
         """
         if str2bool(value):
             # The 'quantity' field is greater than the calculated 'allocated' field
-            # Note that the item must also be "in stock"
-            return queryset.filter(StockItem.IN_STOCK_FILTER).filter(
-                Q(quantity__gt=F('allocated'))
+            # Note that the item must also be "in stock" and available in Tracklet lifecycle.
+            return queryset.filter(
+                StockItem.IN_STOCK_FILTER,
+                tracklet_status='IN_STOCK',
+                quantity__gt=F('allocated'),
             )
         # The 'quantity' field is less than (or equal to) the calculated 'allocated' field
-        return queryset.filter(Q(quantity__lte=F('allocated')))
+        return queryset.exclude(
+            StockItem.IN_STOCK_FILTER
+            & Q(tracklet_status='IN_STOCK')
+            & Q(quantity__gt=F('allocated'))
+        )
 
     batch = rest_filters.CharFilter(
         label='Batch code filter (case insensitive)', lookup_expr='iexact'
@@ -1279,11 +1294,15 @@ class StockList(
         'part__IPN',
         'updated',
         'stocktake_date',
+        'last_calibration_date',
+        'last_factory_calibration_date',
         'expiry_date',
         'packaging',
         'quantity',
+        'available',
         'stock',
         'status',
+        'tracklet_status',
         'IPN',
         'SKU',
         'MPN',
@@ -1701,6 +1720,11 @@ stock_api_urls = [
     path('assign/', StockAssign.as_view(), name='api-stock-assign'),
     path('merge/', StockMerge.as_view(), name='api-stock-merge'),
     path('change_status/', StockChangeStatus.as_view(), name='api-stock-change-status'),
+    path(
+        'change_tracklet_status/',
+        StockChangeTrackletStatus.as_view(),
+        name='api-stock-change-tracklet-status',
+    ),
     # StockItemTestResult API endpoints
     path(
         'test/',

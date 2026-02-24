@@ -21,6 +21,7 @@ import {
   IconUsersGroup
 } from '@tabler/icons-react';
 import { lazy, useMemo } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 import { UserRoles } from '@lib/enums/Roles';
 import PermissionDenied from '../../../../components/errors/PermissionDenied';
@@ -33,7 +34,16 @@ import type {
 import { PanelGroup } from '../../../../components/panels/PanelGroup';
 import { GlobalSettingList } from '../../../../components/settings/SettingList';
 import { Loadable } from '../../../../functions/loading';
+import {
+  canViewSettingsRoot,
+  getAdminPanelAccess
+} from '../../../../functions/settingsPermissions';
 import { useUserState } from '../../../../states/UserState';
+
+// Keep Admin Center intentionally minimal for this deployment.
+// Edit this list to control which admin sidebar panels are visible.
+const ALLOWED_ADMIN_MENU = ['home', 'user', 'import', 'export'] as const;
+const DEFAULT_ADMIN_PANEL = 'user';
 
 const ReportTemplatePanel = Loadable(
   lazy(() => import('./ReportTemplatePanel'))
@@ -107,6 +117,7 @@ const LocationTypesTable = Loadable(
 
 export default function AdminCenter() {
   const user = useUserState();
+  const location = useLocation();
 
   const adminCenterPanels: PanelType[] = useMemo(() => {
     return [
@@ -288,10 +299,87 @@ export default function AdminCenter() {
     ];
   }, []);
 
+  const gatedAdminPanels = useMemo(
+    () =>
+      adminCenterPanels.map((panel) => {
+        const access = getAdminPanelAccess(user, panel.name);
+        return {
+          ...panel,
+          hidden: panel.hidden || !access.view
+        };
+      }),
+    [adminCenterPanels, user]
+  );
+
+  const allowedAdminPanelSet = useMemo(
+    () => new Set<string>(ALLOWED_ADMIN_MENU),
+    []
+  );
+
+  const filteredAdminPanels = useMemo(
+    () => gatedAdminPanels.filter((panel) => allowedAdminPanelSet.has(panel.name)),
+    [gatedAdminPanels, allowedAdminPanelSet]
+  );
+
+  const filteredGrouping = useMemo(
+    () =>
+      grouping
+        .map((group) => ({
+          ...group,
+          panelIDs: group.panelIDs?.filter((panelID) =>
+            allowedAdminPanelSet.has(panelID)
+          )
+        }))
+        .filter((group) => (group.panelIDs?.length ?? 0) > 0),
+    [grouping, allowedAdminPanelSet]
+  );
+
+  const fallbackAdminPanel = useMemo(() => {
+    const firstVisiblePanel = filteredAdminPanels.find(
+      (panel) => !panel.hidden && !panel.disabled
+    );
+    const defaultVisible = filteredAdminPanels.find(
+      (panel) =>
+        panel.name === DEFAULT_ADMIN_PANEL && !panel.hidden && !panel.disabled
+    );
+    return defaultVisible?.name ?? firstVisiblePanel?.name ?? '';
+  }, [filteredAdminPanels]);
+
+  const hasAdminAccess =
+    canViewSettingsRoot(user, 'admin') &&
+    filteredAdminPanels.some((panel) => !panel.hidden && !panel.disabled);
+
+  const blockedPanelPath = useMemo(() => {
+    const adminPath = location.pathname.split('/settings/admin/')[1] ?? '';
+    const targetPanel = adminPath.split('/')[0] ?? '';
+
+    if (!targetPanel) {
+      return false;
+    }
+
+    return !filteredAdminPanels.some(
+      (panel) =>
+        panel.name === targetPanel && panel.hidden !== true && !panel.disabled
+    );
+  }, [location.pathname, filteredAdminPanels]);
+
+  if (hasAdminAccess && blockedPanelPath) {
+    return (
+      <Navigate
+        to={
+          fallbackAdminPanel
+            ? `/settings/admin/${fallbackAdminPanel}`
+            : '/settings/admin'
+        }
+        replace
+      />
+    );
+  }
+
   return (
     <>
       <PageTitle title={t`Admin Center`} />
-      {user.isStaff() ? (
+      {hasAdminAccess ? (
         <Stack gap='xs'>
           <SettingsHeader
             label='admin'
@@ -300,8 +388,8 @@ export default function AdminCenter() {
           />
           <PanelGroup
             pageKey='admin-center'
-            panels={adminCenterPanels}
-            groups={grouping}
+            panels={filteredAdminPanels}
+            groups={filteredGrouping}
             collapsible={true}
             model='admincenter'
             id={null}

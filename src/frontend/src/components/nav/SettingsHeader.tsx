@@ -3,6 +3,7 @@ import { Group, SegmentedControl, Stack, Text } from '@mantine/core';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { canViewSettingsRoot } from '../../functions/settingsPermissions';
 import { useUserState } from '../../states/UserState';
 import { StylishText } from '../items/StylishText';
 
@@ -25,6 +26,18 @@ export function SettingsHeader({
   const user = useUserState();
   const navigate = useNavigate();
 
+  const settingOptions = [
+    { value: 'user', label: t`User Settings` },
+    { value: 'system', label: t`System Settings` },
+    { value: 'admin', label: t`Admin Center` }
+  ].filter((option) =>
+    canViewSettingsRoot(user, option.value as 'user' | 'system' | 'admin')
+  );
+
+  const selectedValue = settingOptions.some((option) => option.value === label)
+    ? label
+    : (settingOptions[0]?.value ?? label);
+
   return (
     <Group justify='space-between'>
       <Stack gap='0' ml={'sm'}>
@@ -34,15 +47,11 @@ export function SettingsHeader({
         </Group>
         <Group>{subtitle ? <Text c='dimmed'>{subtitle}</Text> : null}</Group>
       </Stack>
-      {user.isStaff() && (
+      {settingOptions.length > 0 && (
         <SegmentedControl
-          data={[
-            { value: 'user', label: t`User Settings` },
-            { value: 'system', label: t`System Settings` },
-            { value: 'admin', label: t`Admin Center` }
-          ]}
+          data={settingOptions}
           onChange={(value) => navigate(`/settings/${value}`)}
-          value={label}
+          value={selectedValue}
         />
       )}
     </Group>

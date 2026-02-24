@@ -276,6 +276,22 @@ INVENTREE_ADMIN_ENABLED = get_boolean_setting(
     'INVENTREE_ADMIN_ENABLED', config_key='admin_enabled', default_value=True
 )
 
+# Module feature flags (default disabled)
+ENABLE_PURCHASING = get_boolean_setting(
+    'ENABLE_PURCHASING', config_key='enable_purchasing', default_value=False
+)
+ENABLE_MANUFACTURING = get_boolean_setting(
+    'ENABLE_MANUFACTURING', config_key='enable_manufacturing', default_value=False
+)
+ENABLE_SALES = get_boolean_setting(
+    'ENABLE_SALES', config_key='enable_sales', default_value=False
+)
+
+# Optional administrator override for disabled modules
+MODULES_ADMIN_OVERRIDE = get_boolean_setting(
+    'MODULES_ADMIN_OVERRIDE', config_key='modules_admin_override', default_value=False
+)
+
 # Base URL for admin pages (default="admin")
 INVENTREE_ADMIN_URL = get_setting(
     'INVENTREE_ADMIN_URL', config_key='admin_url', default_value='admin'
@@ -291,6 +307,7 @@ INSTALLED_APPS = [
     'plugin.apps.PluginAppConfig',  # Plugin app runs before all apps that depend on the isPluginRegistryLoaded function
     'company.apps.CompanyConfig',
     'order.apps.OrderConfig',
+    'projects.apps.ProjectsConfig',
     'part.apps.PartConfig',
     'report.apps.ReportConfig',
     'stock.apps.StockConfig',
@@ -362,6 +379,7 @@ MIDDLEWARE = CONFIG.get(
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
         'Tracklet.middleware.AuthRequiredMiddleware',
+        'Tracklet.middleware.ModuleAccessMiddleware',
         'Tracklet.middleware.Check2FAMiddleware',  # Check if the user should be forced to use MFA
         'oauth2_provider.middleware.OAuth2TokenMiddleware',  # oauth2_provider
         'maintenance_mode.middleware.MaintenanceModeMiddleware',

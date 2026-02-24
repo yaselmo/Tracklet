@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro';
 import {
   Alert,
+  Badge,
   Flex,
   Group,
   List,
@@ -35,7 +36,6 @@ import { apiUrl } from '@lib/functions/Api';
 import { getDetailUrl } from '@lib/functions/Navigation';
 import type {
   ApiFormAdjustFilterType,
-  ApiFormFieldChoice,
   ApiFormFieldSet,
   ApiFormModalProps,
   StockOperationProps
@@ -46,7 +46,10 @@ import {
 } from '../components/forms/fields/TableField';
 import { Thumbnail } from '../components/images/Thumbnail';
 import { StylishText } from '../components/items/StylishText';
-import { StatusRenderer } from '../components/render/StatusRenderer';
+import {
+  getTrackletStatusLabel,
+  TRACKLET_STATUS_OPTIONS
+} from '../components/render/TrackletStatus';
 import { RenderStockLocation } from '../components/render/Stock';
 import { InvenTreeIcon } from '../functions/icons';
 import {
@@ -58,9 +61,7 @@ import {
   useBatchCodeGenerator,
   useSerialNumberGenerator
 } from '../hooks/UseGenerator';
-import useStatusCodes from '../hooks/UseStatusCodes';
 import { useGlobalSettingsState } from '../states/SettingsStates';
-import { StatusFilterOptions } from '../tables/Filter';
 
 /**
  * Construct a set of fields for creating / editing a StockItem instance
@@ -136,10 +137,6 @@ export function useStockFields({
       globalSettings.getSetting('INVENTREE_DEFAULT_CURRENCY')
     );
   }, [globalSettings]);
-
-  const stockItemStatusCodes = useStatusCodes({
-    modelType: ModelType.stockitem
-  });
 
   return useMemo(() => {
     const fields: ApiFormFieldSet = {
@@ -241,9 +238,16 @@ export function useStockFields({
         placeholderAutofill: true,
         placeholder: batchGenerator.result
       },
-      status_custom_key: {
+      tracklet_status: {
         label: t`Stock Status`,
-        default: stockItemStatusCodes.OK
+        default: 'IN_STOCK',
+        choices: [
+          { value: 'IN_STOCK', display_name: 'IN STOCK' },
+          { value: 'IN_USE', display_name: 'IN USE' },
+          { value: 'BROKEN', display_name: 'BROKEN' },
+          { value: 'MISSING', display_name: 'MISSING' },
+          { value: 'UNAVAILABLE', display_name: 'UNAVAILABLE' }
+        ]
       },
       expiry_date: {
         icon: <IconCalendarExclamation />,
@@ -277,6 +281,8 @@ export function useStockFields({
       owner: {
         icon: <IconUsersGroup />
       },
+      last_calibration_date: {},
+      last_factory_calibration_date: {},
       delete_on_deplete: {}
     };
 
@@ -305,6 +311,49 @@ export function useStockFields({
     batchGenerator.result,
     create
   ]);
+}
+
+export function processStockItemPatchPayload(
+  data: Record<string, any>,
+  options?: {
+    fallbackCurrency?: string | null;
+  }
+): Record<string, any> {
+  const payload: Record<string, any> = { ...data };
+
+  // Normalize string booleans for PATCH payloads.
+  for (const [key, value] of Object.entries(payload)) {
+    if (value === 'true') {
+      payload[key] = true;
+    } else if (value === 'false') {
+      payload[key] = false;
+    }
+  }
+
+  const rawPrice = payload.purchase_price;
+  const hasPrice =
+    rawPrice !== undefined &&
+    rawPrice !== null &&
+    String(rawPrice).trim().length > 0;
+
+  if (!hasPrice) {
+    // If price is empty, omit both fields to avoid null currency PATCH errors.
+    delete payload.purchase_price;
+    delete payload.purchase_price_currency;
+    return payload;
+  }
+
+  const rawCurrency = payload.purchase_price_currency;
+  const hasCurrency =
+    rawCurrency !== undefined &&
+    rawCurrency !== null &&
+    String(rawCurrency).trim().length > 0;
+
+  if (!hasCurrency) {
+    payload.purchase_price_currency = options?.fallbackCurrency || 'CAD';
+  }
+
+  return payload;
 }
 
 /**
@@ -541,7 +590,6 @@ type StockRow = {
 function StockOperationsRow({
   props,
   transfer = false,
-  changeStatus = false,
   add = false,
   setMax = false,
   merge = false,
@@ -549,28 +597,14 @@ function StockOperationsRow({
 }: {
   props: TableFieldRowProps;
   transfer?: boolean;
-  changeStatus?: boolean;
   add?: boolean;
   setMax?: boolean;
   merge?: boolean;
   record?: any;
 }) {
-  const statusOptions: ApiFormFieldChoice[] = useMemo(() => {
-    return (
-      StatusFilterOptions(ModelType.stockitem)()?.map((choice) => {
-        return {
-          value: choice.value,
-          display_name: choice.label
-        };
-      }) ?? []
-    );
-  }, []);
-
   const [quantity, setQuantity] = useState<StockItemQuantity>(
     add ? 0 : (props.item?.quantity ?? 0)
   );
-
-  const [status, setStatus] = useState<number | undefined>(undefined);
 
   const removeAndRefresh = () => {
     props.removeFn(props.idx);
@@ -590,17 +624,6 @@ function StockOperationsRow({
       if (transfer) {
         callChangeFn(props.idx, 'packaging', undefined);
       }
-    }
-  });
-
-  const [statusOpen, statusHandlers] = useDisclosure(false, {
-    onOpen: () => {
-      setStatus(record?.status_custom_key || record?.status || undefined);
-      props.changeFn(props.idx, 'status', record?.status || undefined);
-    },
-    onClose: () => {
-      setStatus(undefined);
-      callChangeFn(props.idx, 'status', undefined);
     }
   });
 
@@ -645,11 +668,9 @@ function StockOperationsRow({
         <Table.Td>
           <Group grow justify='space-between' wrap='nowrap'>
             <Text>{stockString}</Text>
-            <StatusRenderer
-              status={record.status_custom_key || record.status}
-              fallbackStatus={record.status}
-              type={ModelType.stockitem}
-            />
+            <Badge color='gray'>
+              {getTrackletStatusLabel(record.tracklet_status)}
+            </Badge>
           </Group>
         </Table.Td>
         {!merge && (
@@ -684,15 +705,6 @@ function StockOperationsRow({
                 }
               />
             )}
-            {changeStatus && (
-              <ActionButton
-                size='sm'
-                icon={<InvenTreeIcon icon='status' />}
-                tooltip={t`Change Status`}
-                onClick={() => statusHandlers.toggle()}
-                variant={statusOpen ? 'filled' : 'transparent'}
-              />
-            )}
             {transfer && (
               <ActionButton
                 size='sm'
@@ -706,23 +718,6 @@ function StockOperationsRow({
           </Flex>
         </Table.Td>
       </Table.Tr>
-      {changeStatus && (
-        <TableFieldExtraRow
-          visible={statusOpen}
-          onValueChange={(value: any) => {
-            setStatus(value);
-            props.changeFn(props.idx, 'status', value || undefined);
-          }}
-          fieldName='status'
-          fieldDefinition={{
-            field_type: 'choice',
-            label: t`Status`,
-            choices: statusOptions,
-            value: status
-          }}
-          defaultValue={status}
-        />
-      )}
       {transfer && (
         <TableFieldExtraRow
           visible={transfer && packagingOpen}
@@ -748,6 +743,7 @@ type StockAdjustmentItem = {
   quantity: StockItemQuantity;
   batch?: string;
   status?: number | '' | null;
+  tracklet_status?: string;
   packaging?: string;
 };
 
@@ -758,6 +754,7 @@ function mapAdjustmentItems(items: any[]) {
       quantity: elem.quantity,
       batch: elem.batch || undefined,
       status: elem.status || undefined,
+      tracklet_status: elem.tracklet_status || undefined,
       packaging: elem.packaging || undefined,
       obj: elem
     };
@@ -787,7 +784,6 @@ function stockTransferFields(items: any[]): ApiFormFieldSet {
           <StockOperationsRow
             props={row}
             transfer
-            changeStatus
             setMax
             key={record.pk}
             record={record}
@@ -837,7 +833,6 @@ function stockReturnFields(items: any[]): ApiFormFieldSet {
             key={record.pk}
             record={record}
             transfer
-            changeStatus
           />
         );
       },
@@ -884,14 +879,7 @@ function stockRemoveFields(items: any[]): ApiFormFieldSet {
         const record = records[row.item.pk];
 
         return (
-          <StockOperationsRow
-            props={row}
-            setMax
-            changeStatus
-            add
-            key={record.pk}
-            record={record}
-          />
+          <StockOperationsRow props={row} setMax add key={record.pk} record={record} />
         );
       },
       headers: [
@@ -931,13 +919,7 @@ function stockAddFields(items: any[]): ApiFormFieldSet {
         const record = records[row.item.pk];
 
         return (
-          <StockOperationsRow
-            changeStatus
-            props={row}
-            add
-            key={record.pk}
-            record={record}
-          />
+          <StockOperationsRow props={row} add key={record.pk} record={record} />
         );
       },
       headers: [
@@ -970,12 +952,7 @@ function stockCountFields(items: any[]): ApiFormFieldSet {
       value: initialValue,
       modelRenderer: (row: TableFieldRowProps) => {
         return (
-          <StockOperationsRow
-            props={row}
-            changeStatus
-            key={row.item.pk}
-            record={records[row.item.pk]}
-          />
+          <StockOperationsRow props={row} key={row.item.pk} record={records[row.item.pk]} />
         );
       },
       headers: [
@@ -993,7 +970,7 @@ function stockCountFields(items: any[]): ApiFormFieldSet {
   return fields;
 }
 
-function stockChangeStatusFields(items: any[]): ApiFormFieldSet {
+function stockChangeTrackletStatusFields(items: any[]): ApiFormFieldSet {
   if (!items) {
     return {};
   }
@@ -1001,9 +978,7 @@ function stockChangeStatusFields(items: any[]): ApiFormFieldSet {
   const records = Object.fromEntries(items.map((item) => [item.pk, item]));
 
   // Extract all status values from the items
-  const statusValues = [
-    ...new Set(items.map((item) => item.status_custom_key ?? item.status))
-  ];
+  const statusValues = [...new Set(items.map((item) => item.tracklet_status))];
 
   const fields: ApiFormFieldSet = {
     items: {
@@ -1029,7 +1004,12 @@ function stockChangeStatusFields(items: any[]): ApiFormFieldSet {
         { title: '', style: { width: '50px' } }
       ]
     },
-    status: {
+    tracklet_status: {
+      field_type: 'choice',
+      choices: TRACKLET_STATUS_OPTIONS.map((choice) => ({
+        value: choice.value,
+        display_name: choice.label
+      })),
       value: statusValues.length === 1 ? statusValues[0] : undefined
     },
     note: {}
@@ -1360,20 +1340,22 @@ export function useCountStockItem(props: StockOperationProps) {
   });
 }
 
-export function useChangeStockStatus(props: StockOperationProps) {
+export function useChangeTrackletStatus(props: StockOperationProps) {
   return useStockOperationModal({
     ...props,
-    fieldGenerator: stockChangeStatusFields,
-    endpoint: ApiEndpoints.stock_change_status,
-    title: t`Change Stock Status`,
-    successMessage: t`Stock status changed`,
+    fieldGenerator: stockChangeTrackletStatusFields,
+    endpoint: ApiEndpoints.stock_change_tracklet_status,
+    title: t`Change Tracklet Status`,
+    successMessage: t`Tracklet status changed`,
     preFormContent: (
       <Alert color='blue'>
-        {t`Change the status of the selected stock items.`}
+        {t`Change the tracklet status of the selected stock items.`}
       </Alert>
     )
   });
 }
+
+export const useChangeStockStatus = useChangeTrackletStatus;
 
 export function useMergeStockItem(props: StockOperationProps) {
   return useStockOperationModal({

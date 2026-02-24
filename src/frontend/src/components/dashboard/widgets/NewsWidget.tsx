@@ -123,19 +123,23 @@ export default function NewsWidget() {
       <StylishText size='xl'>{t`News Updates`}</StylishText>
       <ScrollArea h={400}>
         <Container>
-          <Table>
-            <Table.Tbody>
-              {hasNews ? (
-                newsItems.data?.map((item: any) => (
-                  <NewsItem key={item.pk} item={item} onMarkRead={markRead} />
-                ))
-              ) : (
-                <Alert color='green' title={t`No News`}>
-                  <Text>{t`There are no unread news items`}</Text>
-                </Alert>
-              )}
-            </Table.Tbody>
-          </Table>
+            <Table>
+              <Table.Tbody>
+                {hasNews ? (
+                  newsItems.data?.map((item: any) => (
+                    <NewsItem key={item.pk} item={item} onMarkRead={markRead} />
+                  ))
+                ) : (
+                  <Table.Tr>
+                    <Table.Td colSpan={3}>
+                      <Alert color='green' title={t`No News`}>
+                        <Text>{t`There are no unread news items`}</Text>
+                      </Alert>
+                    </Table.Td>
+                  </Table.Tr>
+                )}
+              </Table.Tbody>
+            </Table>
         </Container>
       </ScrollArea>
     </Stack>

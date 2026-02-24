@@ -32,6 +32,11 @@ export interface ServerAPIProps {
     registration_enabled: null | boolean;
     password_forgotten_enabled: null | boolean;
   } | null;
+  feature_flags: {
+    enable_purchasing: null | boolean;
+    enable_manufacturing: null | boolean;
+    enable_sales: null | boolean;
+  } | null;
   customize: null | {
     logo: string;
     splash: string;

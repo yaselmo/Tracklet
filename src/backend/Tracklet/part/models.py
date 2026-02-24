@@ -64,6 +64,7 @@ from order.status_codes import (
     SalesOrderStatusGroups,
 )
 from stock import models as StockModels
+from stock.status_codes import StockStatus
 
 logger = structlog.get_logger('inventree')
 
@@ -1382,10 +1383,28 @@ class Part(
     def available_stock(self):
         """Return the total available stock.
 
-        - This subtracts stock which is already allocated to builds
+        Available stock for Tracklet instrumentation lifecycle:
+        - core stock status must be OK
+        - tracklet_status must be IN_STOCK
+        - subtract sales/build/project allocations
         """
-        total = self.total_stock
-        total -= self.allocation_count()
+        entries = self.stock_entries(in_stock=True, include_variants=True).filter(
+            status=StockStatus.OK.value,
+            tracklet_status='IN_STOCK',
+        )
+
+        total = entries.aggregate(
+            t=Coalesce(Sum('quantity', output_field=models.DecimalField()), Decimal(0))
+        )['t']
+
+        allocated = (
+            self.allocation_count()
+            + max(
+                self.project_stock_allocation_count(),
+                self.project_instrument_allocation_count(),
+            )
+        )
+        total -= allocated
 
         return max(total, 0)
 
@@ -1793,6 +1812,38 @@ class Part(
             self.build_order_allocation_count(**kwargs),
             self.sales_order_allocation_count(**kwargs),
         ])
+
+    def project_stock_allocation_count(self, **kwargs):
+        """Return total quantity allocated to project stock allocations."""
+        if self.id is None:
+            return 0
+
+        entries = self.stock_entries(in_stock=True, include_variants=True)
+        query = entries.filter(project_allocations__isnull=False).aggregate(
+            total=Coalesce(
+                Sum('project_allocations__quantity', output_field=models.DecimalField()),
+                Decimal(0),
+                output_field=models.DecimalField(),
+            )
+        )
+
+        return query['total']
+
+    def project_instrument_allocation_count(self, **kwargs):
+        """Return total quantity allocated to project instruments."""
+        if self.id is None:
+            return 0
+
+        entries = self.stock_entries(in_stock=True, include_variants=True)
+        query = entries.filter(project_instruments__isnull=False).aggregate(
+            total=Coalesce(
+                Sum('project_instruments__quantity', output_field=models.DecimalField()),
+                Decimal(0),
+                output_field=models.DecimalField(),
+            )
+        )
+
+        return query['total']
 
     def stock_entries(
         self, include_variants=True, include_external=True, in_stock=None, location=None

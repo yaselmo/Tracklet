@@ -56,6 +56,18 @@ from users.models import Owner
 logger = structlog.get_logger('inventree')
 
 
+class TrackletStockStatus(models.TextChoices):
+    """Tracklet-specific stock status values."""
+
+    IN_STOCK = 'IN_STOCK', _('In Stock')
+    EMPTY = 'EMPTY', _('Empty')
+    IN_USE = 'IN_USE', _('In Use')
+    MISSING = 'MISSING', _('Missing')
+    BROKEN = 'BROKEN', _('Broken')
+    CALIBRATION = 'CALIBRATION', _('Calibration')
+    REPAIR = 'REPAIR', _('Repair')
+
+
 class StockLocationType(Tracklet.models.MetadataMixin, models.Model):
     """A type of stock location like Warehouse, room, shelf, drawer.
 
@@ -826,6 +838,9 @@ class StockItem(
             except (ValueError, StockItem.DoesNotExist):
                 pass
 
+        # Keep Tracklet lifecycle status synchronized for auto-managed states.
+        self.sync_tracklet_status(save=False)
+
         super().save(*args, **kwargs)
 
         # If user information is provided, and no existing note exists, create one!
@@ -1167,6 +1182,20 @@ class StockItem(
 
     stocktake_date = models.DateField(blank=True, null=True)
 
+    last_calibration_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('Last Calibration'),
+        help_text=_('Last calibration date for this stock item'),
+    )
+
+    last_factory_calibration_date = models.DateField(
+        blank=True,
+        null=True,
+        verbose_name=_('Last Factory Calibration'),
+        help_text=_('Last factory calibration date for this stock item'),
+    )
+
     stocktake_user = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -1188,6 +1217,14 @@ class StockItem(
         status_class=StockStatus,
         choices=StockStatus.items(),
         validators=[MinValueValidator(0)],
+    )
+
+    tracklet_status = models.CharField(
+        max_length=32,
+        choices=TrackletStockStatus.choices,
+        default=TrackletStockStatus.IN_STOCK,
+        verbose_name=_('Tracklet Status'),
+        help_text=_('Tracklet-specific stock status'),
     )
 
     @property
@@ -1566,12 +1603,74 @@ class StockItem(
 
         return total
 
+    def project_instrument_allocation_count(self, **kwargs):
+        """Return the total quantity allocated to project instruments."""
+        query = self.project_instruments.all()
+
+        if filter_allocations := kwargs.get('filter_allocations'):
+            query = query.filter(**filter_allocations)
+
+        if exclude_allocations := kwargs.get('exclude_allocations'):
+            query = query.exclude(**exclude_allocations)
+
+        query = query.aggregate(q=Coalesce(Sum('quantity'), Decimal(0)))
+
+        total = query['q']
+
+        if total is None:
+            total = Decimal(0)
+
+        return total
+
+    def sync_tracklet_status(self, *, save=True, update_fields=None):
+        """Synchronize tracklet_status with the current stock usage state.
+
+        Manual override statuses are preserved:
+        - BROKEN
+        - MISSING
+        - UNAVAILABLE
+        - CALIBRATION
+        - REPAIR
+        """
+        manual_overrides = {'BROKEN', 'MISSING', 'UNAVAILABLE', 'CALIBRATION', 'REPAIR'}
+
+        if self.tracklet_status in manual_overrides:
+            return False
+
+        if self.quantity <= 0:
+            target = TrackletStockStatus.EMPTY
+        else:
+            in_use = False
+
+            if self.pk:
+                in_use = any(
+                    [
+                        self.project_allocations.exists(),
+                        self.project_instruments.exists(),
+                    ]
+                )
+
+            target = TrackletStockStatus.IN_USE if in_use else TrackletStockStatus.IN_STOCK
+
+        if self.tracklet_status == target:
+            return False
+
+        self.tracklet_status = target
+
+        if save and self.pk:
+            fields = set(update_fields or [])
+            fields.add('tracklet_status')
+            self.save(update_fields=list(fields), add_note=False)
+
+        return True
+
     def allocation_count(self):
         """Return the total quantity allocated to builds or orders."""
         bo = self.build_allocation_count()
         so = self.sales_order_allocation_count()
+        pi = self.project_instrument_allocation_count()
 
-        return bo + so
+        return bo + so + pi
 
     def unallocated_quantity(self):
         """Return the quantity of this StockItem which is *not* allocated."""
@@ -2498,6 +2597,7 @@ class StockItem(
 
             return False
 
+        self.sync_tracklet_status(save=False)
         self.save(add_note=False)
 
         trigger_event(
@@ -2875,6 +2975,101 @@ def after_save_stock_item(sender, instance: StockItem, created, **kwargs):
         if Tracklet.ready.canAppAccessDatabase(allow_test=settings.TESTING_PRICING):
             if instance.part:
                 instance.part.schedule_pricing_update(create=True)
+
+
+def _sync_related_stock_item(instance):
+    """Best-effort synchronization hook for models referencing StockItem."""
+    stock_item = getattr(instance, 'stock_item', None) or getattr(instance, 'item', None)
+
+    if not stock_item:
+        stock_item_id = getattr(instance, 'stock_item_id', None) or getattr(
+            instance, 'item_id', None
+        )
+        if stock_item_id:
+            stock_item = StockItem.objects.filter(pk=stock_item_id).first()
+
+    if stock_item:
+        stock_item.sync_tracklet_status(save=True, update_fields=['tracklet_status'])
+
+
+@receiver(
+    post_save,
+    sender='build.BuildItem',
+    dispatch_uid='stock_item_sync_tracklet_status_build_item_post_save',
+)
+def sync_tracklet_status_on_build_item_save(sender, instance, **kwargs):
+    """Sync tracklet_status when build allocations change."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_delete,
+    sender='build.BuildItem',
+    dispatch_uid='stock_item_sync_tracklet_status_build_item_post_delete',
+)
+def sync_tracklet_status_on_build_item_delete(sender, instance, **kwargs):
+    """Sync tracklet_status when build allocations are removed."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_save,
+    sender='order.SalesOrderAllocation',
+    dispatch_uid='stock_item_sync_tracklet_status_sales_alloc_post_save',
+)
+def sync_tracklet_status_on_sales_alloc_save(sender, instance, **kwargs):
+    """Sync tracklet_status when sales allocations change."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_delete,
+    sender='order.SalesOrderAllocation',
+    dispatch_uid='stock_item_sync_tracklet_status_sales_alloc_post_delete',
+)
+def sync_tracklet_status_on_sales_alloc_delete(sender, instance, **kwargs):
+    """Sync tracklet_status when sales allocations are removed."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_save,
+    sender='projects.ProjectStockAllocation',
+    dispatch_uid='stock_item_sync_tracklet_status_project_alloc_post_save',
+)
+def sync_tracklet_status_on_project_alloc_save(sender, instance, **kwargs):
+    """Sync tracklet_status when project stock allocations change."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_delete,
+    sender='projects.ProjectStockAllocation',
+    dispatch_uid='stock_item_sync_tracklet_status_project_alloc_post_delete',
+)
+def sync_tracklet_status_on_project_alloc_delete(sender, instance, **kwargs):
+    """Sync tracklet_status when project stock allocations are removed."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_save,
+    sender='projects.ProjectInstrument',
+    dispatch_uid='stock_item_sync_tracklet_status_project_instr_post_save',
+)
+def sync_tracklet_status_on_project_instrument_save(sender, instance, **kwargs):
+    """Sync tracklet_status when project instruments change."""
+    _sync_related_stock_item(instance)
+
+
+@receiver(
+    post_delete,
+    sender='projects.ProjectInstrument',
+    dispatch_uid='stock_item_sync_tracklet_status_project_instr_post_delete',
+)
+def sync_tracklet_status_on_project_instrument_delete(sender, instance, **kwargs):
+    """Sync tracklet_status when project instruments are removed."""
+    _sync_related_stock_item(instance)
 
 
 class StockItemTracking(Tracklet.models.InvenTreeModel):

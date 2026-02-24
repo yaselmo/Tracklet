@@ -1,7 +1,7 @@
 import { t } from '@lingui/core/macro';
 import { Alert, Divider, Stack } from '@mantine/core';
 import { useId } from '@mantine/hooks';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type {
   ApiFormModalProps,
@@ -18,7 +18,7 @@ export function useApiFormModal(props: ApiFormModalProps) {
   const id = useId();
   const modalClose = useRef(() => {});
 
-  const modalState = useModalState();
+  const setModalOpen = useModalState((state) => state.setModalOpen);
 
   const modalId = useMemo(() => {
     return props.modalId ?? id;
@@ -52,19 +52,15 @@ export function useApiFormModal(props: ApiFormModalProps) {
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
+  const handleModalClosed = useCallback(() => {
+    setIsOpen(false);
+    formProps.onClose?.();
+  }, [formProps.onClose]);
+
   const modal = useModal({
     id: modalId,
     title: formProps.title,
-    onOpen: () => {
-      setIsOpen(true);
-      modalState.setModalOpen(modalId, true);
-      formProps.onOpen?.();
-    },
-    onClose: () => {
-      setIsOpen(false);
-      modalState.setModalOpen(modalId, false);
-      formProps.onClose?.();
-    },
+    onClose: handleModalClosed,
     closeOnClickOutside: formProps.closeOnClickOutside,
     size: props.size ?? 'xl',
     children: (
@@ -76,10 +72,40 @@ export function useApiFormModal(props: ApiFormModalProps) {
   });
 
   useEffect(() => {
-    modalClose.current = modal.close;
+    modalClose.current = () => {
+      modal.close();
+    };
   }, [modal.close]);
 
-  return modal;
+  const openModal = useCallback(() => {
+    setIsOpen(true);
+    formProps.onOpen?.();
+    modal.open();
+  }, [modal.open, formProps.onOpen]);
+
+  // Keep modal open-state in the global store via effect to avoid render-phase updates.
+  useEffect(() => {
+    setModalOpen(modalId, isOpen);
+  }, [modalId, setModalOpen, isOpen]);
+
+  const closeModal = useCallback(() => {
+    modal.close();
+  }, [modal.close]);
+
+  const toggleModal = useCallback(() => {
+    if (isOpen) {
+      closeModal();
+    } else {
+      openModal();
+    }
+  }, [isOpen, closeModal, openModal]);
+
+  return {
+    ...modal,
+    open: openModal,
+    close: closeModal,
+    toggle: toggleModal
+  };
 }
 
 /**

@@ -53,11 +53,26 @@ def get_icon_packs():
     global _icon_packs
 
     if _icon_packs is None:
-        tabler_icons_path = Path(__file__).parent.parent.joinpath(
-            'InvenTree/static/tabler-icons/icons.json'
+        base_dir = Path(__file__).parent.parent
+        candidate_paths = [
+            # Current project layout
+            base_dir.joinpath('Tracklet/static/tabler-icons/icons.json'),
+            # Legacy project layout
+            base_dir.joinpath('InvenTree/static/tabler-icons/icons.json'),
+        ]
+
+        tabler_icons_path = next(
+            (path for path in candidate_paths if path.exists()), None
         )
-        with open(tabler_icons_path, encoding='utf-8') as tabler_icons_file:
-            tabler_icons = json.load(tabler_icons_file)
+
+        if tabler_icons_path is None:
+            logger.warning(
+                'Tabler icons metadata not found; continuing with empty icon set'
+            )
+            tabler_icons = {}
+        else:
+            with open(tabler_icons_path, encoding='utf-8') as tabler_icons_file:
+                tabler_icons = json.load(tabler_icons_file)
 
         icon_packs = [
             IconPack(

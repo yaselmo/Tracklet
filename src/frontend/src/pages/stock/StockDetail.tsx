@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro';
 import {
-  Accordion,
+  Anchor,
+  Badge,
   Button,
   Grid,
   Group,
@@ -13,7 +14,6 @@ import {
 import {
   IconArrowLeft,
   IconArrowRight,
-  IconBookmark,
   IconBoxPadding,
   IconChecklist,
   IconHistory,
@@ -53,7 +53,6 @@ import {
   EditItemAction,
   OptionsActionDropdown
 } from '../../components/items/ActionDropdown';
-import { StylishText } from '../../components/items/StylishText';
 import InstanceDetail from '../../components/nav/InstanceDetail';
 import NavigationTree from '../../components/nav/NavigationTree';
 import { PageDetail } from '../../components/nav/PageDetail';
@@ -62,11 +61,11 @@ import NotesPanel from '../../components/panels/NotesPanel';
 import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
 import LocateItemButton from '../../components/plugins/LocateItemButton';
-import { StatusRenderer } from '../../components/render/StatusRenderer';
 import OrderPartsWizard from '../../components/wizards/OrderPartsWizard';
 import { useApi } from '../../contexts/ApiContext';
-import { formatCurrency, formatDecimal } from '../../defaults/formatters';
+import { formatCurrency, formatDate, formatDecimal } from '../../defaults/formatters';
 import {
+  processStockItemPatchPayload,
   useFindSerialNumberForm,
   useStockFields,
   useStockItemSerializeFields
@@ -79,10 +78,13 @@ import {
 } from '../../hooks/UseForm';
 import { useInstance } from '../../hooks/UseInstance';
 import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
+import {
+  getTrackletStatusColor,
+  getTrackletStatusLabel,
+  getTrackletStatusPill
+} from '../../components/render/TrackletStatus';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
-import BuildAllocatedStockTable from '../../tables/build/BuildAllocatedStockTable';
-import SalesOrderAllocationTable from '../../tables/sales/SalesOrderAllocationTable';
 import InstalledItemsTable from '../../tables/stock/InstalledItemsTable';
 import { StockItemTable } from '../../tables/stock/StockItemTable';
 import StockItemTestResultTable from '../../tables/stock/StockItemTestResultTable';
@@ -130,6 +132,99 @@ export default function StockDetail() {
     partId: stockitem.part
   });
 
+  const projectAssignmentsQuery = useQuery({
+    queryKey: ['stock-project-assignments', stockitem.pk],
+    enabled: !!stockitem.pk,
+    queryFn: async () => {
+      const [allocationResponse, instrumentResponse] = await Promise.all([
+        api
+          .get(apiUrl(ApiEndpoints.project_allocation_list), {
+            params: {
+              stock_item: stockitem.pk,
+              limit: 100
+            }
+          })
+          .then((response) => response.data)
+          .catch(() => []),
+        api
+          .get(apiUrl(ApiEndpoints.project_instrument_list), {
+            params: {
+              stock_item: stockitem.pk,
+              limit: 100
+            }
+          })
+          .then((response) => response.data)
+          .catch(() => [])
+      ]);
+
+      const allocations = allocationResponse?.results ?? allocationResponse ?? [];
+      const instruments = instrumentResponse?.results ?? instrumentResponse ?? [];
+
+      const statsByProject = new Map<
+        number,
+        { allocation_quantity: number; instrument_quantity: number }
+      >();
+
+      allocations.forEach((row: any) => {
+        const projectId = Number(row.project);
+        if (!projectId) return;
+
+        const current = statsByProject.get(projectId) ?? {
+          allocation_quantity: 0,
+          instrument_quantity: 0
+        };
+
+        current.allocation_quantity += Number(row.quantity ?? 0);
+        statsByProject.set(projectId, current);
+      });
+
+      instruments.forEach((row: any) => {
+        const projectId = Number(row.project);
+        if (!projectId) return;
+
+        const current = statsByProject.get(projectId) ?? {
+          allocation_quantity: 0,
+          instrument_quantity: 0
+        };
+
+        current.instrument_quantity += Number(row.quantity ?? 0);
+        statsByProject.set(projectId, current);
+      });
+
+      const projectIds = [...statsByProject.keys()];
+
+      if (projectIds.length <= 0) {
+        return [];
+      }
+
+      const projects = await Promise.all(
+        projectIds.map(async (projectId) => {
+          try {
+            const response = await api.get(apiUrl(ApiEndpoints.project_list, projectId));
+            return response.data;
+          } catch {
+            return {
+              pk: projectId,
+              name: `Project #${projectId}`
+            };
+          }
+        })
+      );
+
+      return projects
+        .map((project: any) => ({
+          ...project,
+          ...(statsByProject.get(Number(project.pk)) ?? {
+            allocation_quantity: 0,
+            instrument_quantity: 0
+          })
+        }))
+        .sort((a: any, b: any) =>
+          String(a.name ?? '').localeCompare(String(b.name ?? ''))
+        );
+    }
+  });
+
   const detailsPanel = useMemo(() => {
     const data = { ...stockitem };
     const part = stockitem?.part_detail ?? {};
@@ -165,20 +260,10 @@ export default function StockDetail() {
         hidden: !part.revision
       },
       {
-        name: 'status',
-        type: 'status',
+        name: 'tracklet_status',
+        type: 'text',
         label: t`Status`,
-        model: ModelType.stockitem
-      },
-      {
-        name: 'status_custom_key',
-        type: 'status',
-        label: t`Custom Status`,
-        model: ModelType.stockitem,
-        icon: 'status',
-        hidden:
-          !stockitem.status_custom_key ||
-          stockitem.status_custom_key == stockitem.status
+        value_formatter: () => getTrackletStatusPill(stockitem)
       },
       {
         type: 'link',
@@ -426,6 +511,20 @@ export default function StockDetail() {
         label: t`Last Updated`
       },
       {
+        type: 'date',
+        name: 'last_calibration_date',
+        icon: 'calendar',
+        label: t`Last Calibration`,
+        hidden: !stockitem.last_calibration_date
+      },
+      {
+        type: 'date',
+        name: 'last_factory_calibration_date',
+        icon: 'calendar',
+        label: t`Last Factory Calibration`,
+        hidden: !stockitem.last_factory_calibration_date
+      },
+      {
         type: 'text',
         name: 'stocktake',
         icon: 'calendar',
@@ -452,6 +551,59 @@ export default function StockDetail() {
         <DetailsTable fields={tr} item={data} />
         <DetailsTable fields={bl} item={data} />
         <DetailsTable fields={br} item={data} />
+        <Stack gap='xs'>
+          <Text fw={600}>{t`Assigned Projects`}</Text>
+          {projectAssignmentsQuery.isFetching ? (
+            <Skeleton height={28} />
+          ) : (projectAssignmentsQuery.data?.length ?? 0) <= 0 ? (
+            <Text c='dimmed'>{t`This stock item is not assigned to any project`}</Text>
+          ) : (
+            <Stack gap={4}>
+              {projectAssignmentsQuery.data?.map((project: any) => (
+                <Group
+                  key={project.pk}
+                  justify='space-between'
+                  align='center'
+                  wrap='nowrap'
+                >
+                  <Stack gap={0}>
+                    <Anchor href={getDetailUrl(ModelType.project, project.pk)}>
+                      {project.name}
+                    </Anchor>
+                    <Text size='xs' c='dimmed'>
+                      {`${project.start_date ? formatDate(project.start_date) : t`No start`} - ${project.end_date ? formatDate(project.end_date) : t`No end`}`}
+                    </Text>
+                  </Stack>
+                  <Group gap='xs' wrap='nowrap'>
+                    {project.status && (
+                      <Badge
+                        color={
+                          project.status === 'ONGOING'
+                            ? 'green'
+                            : project.status === 'FUTURE'
+                              ? 'blue'
+                              : 'gray'
+                        }
+                      >
+                        {project.status}
+                      </Badge>
+                    )}
+                    {project.instrument_quantity > 0 && (
+                      <Badge color='blue'>
+                        {`${t`Instr`}: ${formatDecimal(project.instrument_quantity)}`}
+                      </Badge>
+                    )}
+                    {project.allocation_quantity > 0 && (
+                      <Badge color='teal'>
+                        {`${t`Alloc`}: ${formatDecimal(project.allocation_quantity)}`}
+                      </Badge>
+                    )}
+                  </Group>
+                </Group>
+              ))}
+            </Stack>
+          )}
+        </Stack>
       </ItemDetailsGrid>
     );
   }, [
@@ -459,21 +611,10 @@ export default function StockDetail() {
     serialNumbers,
     serialNumbersQuery.isFetching,
     instanceQuery.isFetching,
-    enableExpiry
+    enableExpiry,
+    projectAssignmentsQuery.data,
+    projectAssignmentsQuery.isFetching
   ]);
-
-  const showBuildAllocations: boolean = useMemo(() => {
-    // Determine if "build allocations" should be shown for this stock item
-    return (
-      stockitem?.part_detail?.component && // Must be a "component"
-      !stockitem?.sales_order && // Must not be assigned to a sales order
-      !stockitem?.belongs_to
-    ); // Must not be installed into another item
-  }, [stockitem]);
-
-  const showSalesAllocations: boolean = useMemo(() => {
-    return stockitem?.part_detail?.salable;
-  }, [stockitem]);
 
   // API query to determine if this stock item has trackable BOM items
   const trackedBomItemQuery = useQuery({
@@ -538,51 +679,6 @@ export default function StockDetail() {
         )
       },
       {
-        name: 'allocations',
-        label: t`Allocations`,
-        icon: <IconBookmark />,
-        hidden:
-          !stockitem.in_stock ||
-          (!showSalesAllocations && !showBuildAllocations),
-        content: (
-          <Accordion
-            multiple={true}
-            defaultValue={['buildAllocations', 'salesAllocations']}
-          >
-            {showBuildAllocations && (
-              <Accordion.Item value='buildAllocations' key='buildAllocations'>
-                <Accordion.Control>
-                  <StylishText size='lg'>{t`Build Order Allocations`}</StylishText>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <BuildAllocatedStockTable
-                    stockId={stockitem.pk}
-                    modelField='build'
-                    modelTarget={ModelType.build}
-                    showBuildInfo
-                  />
-                </Accordion.Panel>
-              </Accordion.Item>
-            )}
-            {showSalesAllocations && (
-              <Accordion.Item value='salesAllocations' key='salesAllocations'>
-                <Accordion.Control>
-                  <StylishText size='lg'>{t`Sales Order Allocations`}</StylishText>
-                </Accordion.Control>
-                <Accordion.Panel>
-                  <SalesOrderAllocationTable
-                    stockId={stockitem.pk}
-                    modelField='order'
-                    modelTarget={ModelType.salesorder}
-                    showOrderInfo
-                  />
-                </Accordion.Panel>
-              </Accordion.Item>
-            )}
-          </Accordion>
-        )
-      },
-      {
         name: 'test-results',
         label: t`Test Results`,
         icon: <IconChecklist />,
@@ -628,8 +724,6 @@ export default function StockDetail() {
       })
     ];
   }, [
-    showSalesAllocations,
-    showBuildAllocations,
     showInstalledItems,
     stockitem,
     serialNumbers,
@@ -662,6 +756,13 @@ export default function StockDetail() {
     title: t`Edit Stock Item`,
     modalId: 'edit-stock-item',
     fields: editStockItemFields,
+    processFormData: (data) =>
+      processStockItemPatchPayload(data, {
+        fallbackCurrency:
+          stockitem.purchase_price_currency ||
+          globalSettings.getSetting('INVENTREE_DEFAULT_CURRENCY') ||
+          'CAD'
+      }),
     onFormSuccess: refreshInstance
   });
 
@@ -954,13 +1055,10 @@ export default function StockDetail() {
             visible={!!stockitem.batch}
             key='batch'
           />,
-          <StatusRenderer
-            status={stockitem.status_custom_key || stockitem.status}
-            fallbackStatus={stockitem.status}
-            type={ModelType.stockitem}
-            options={{
-              size: 'lg'
-            }}
+          <DetailsBadge
+            color={getTrackletStatusColor(stockitem.tracklet_status)}
+            label={getTrackletStatusLabel(stockitem.tracklet_status)}
+            visible={!!stockitem.tracklet_status}
             key='status'
           />,
           <DetailsBadge

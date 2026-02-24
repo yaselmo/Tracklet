@@ -5,8 +5,19 @@ from decimal import Decimal
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
-from django.db.models import BooleanField, Case, Count, Prefetch, Q, Value, When
-from django.db.models.functions import Coalesce
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    DecimalField,
+    ExpressionWrapper,
+    F,
+    Prefetch,
+    Q,
+    Value,
+    When,
+)
+from django.db.models.functions import Coalesce, Greatest
 from django.utils.translation import gettext_lazy as _
 
 import structlog
@@ -44,6 +55,7 @@ from .models import (
     StockItem,
     StockItemTestResult,
     StockItemTracking,
+    TrackletStockStatus,
     StockLocation,
     StockLocationType,
 )
@@ -358,12 +370,16 @@ class StockItemSerializer(
             'status',
             'status_text',
             'status_custom_key',
+            'tracklet_status',
+            'tracklet_status_display',
             'supplier_part',
             'SKU',
             'MPN',
             'barcode_hash',
             'updated',
             'stocktake_date',
+            'last_calibration_date',
+            'last_factory_calibration_date',
             'purchase_price',
             'purchase_price_currency',
             'use_pack_size',
@@ -371,6 +387,7 @@ class StockItemSerializer(
             'tests',
             # Annotated fields
             'allocated',
+            'available',
             'expired',
             'installed_items',
             'child_items',
@@ -503,10 +520,38 @@ class StockItemSerializer(
 
         # Annotate the queryset with the total allocated to sales orders
         queryset = queryset.annotate(
-            allocated=Coalesce(
+            sales_allocated=Coalesce(
                 SubquerySum('sales_order_allocations__quantity'), Decimal(0)
+            ),
+            build_allocated=Coalesce(SubquerySum('allocations__quantity'), Decimal(0)),
+            project_allocated=Coalesce(
+                SubquerySum('project_allocations__quantity'), Decimal(0)
+            ),
+            project_instrument_allocated=Coalesce(
+                SubquerySum('project_instruments__quantity'), Decimal(0)
+            ),
+        )
+        queryset = queryset.annotate(
+            allocated=ExpressionWrapper(
+                F('sales_allocated')
+                + F('build_allocated')
+                + Greatest(
+                    F('project_allocated'),
+                    F('project_instrument_allocated'),
+                    output_field=DecimalField(max_digits=20, decimal_places=6),
+                ),
+                output_field=DecimalField(max_digits=20, decimal_places=6),
             )
-            + Coalesce(SubquerySum('allocations__quantity'), Decimal(0))
+        )
+        queryset = queryset.annotate(
+            available=ExpressionWrapper(
+                Case(
+                    When(tracklet_status='IN_STOCK', then=F('quantity') - F('allocated')),
+                    default=Value(Decimal(0)),
+                    output_field=DecimalField(max_digits=20, decimal_places=6),
+                ),
+                output_field=DecimalField(max_digits=20, decimal_places=6),
+            )
         )
 
         # Annotate the queryset with the number of tracking items
@@ -550,6 +595,14 @@ class StockItemSerializer(
     status_text = serializers.CharField(
         source='get_status_display', read_only=True, label=_('Status')
     )
+
+    tracklet_status_display = serializers.CharField(
+        source='get_tracklet_status_display',
+        read_only=True,
+        label=_('Tracklet Status'),
+    )
+
+    available = serializers.FloatField(read_only=True, label=_('Available'))
 
     SKU = serializers.CharField(
         source='supplier_part.SKU',
@@ -1104,6 +1157,87 @@ class StockChangeStatusSerializer(serializers.Serializer):
 
         # Create tracking entries
         StockItemTracking.objects.bulk_create(transaction_notes)
+
+
+class StockChangeTrackletStatusSerializer(serializers.Serializer):
+    """Serializer for changing tracklet_status of multiple StockItem objects."""
+
+    class Meta:
+        """Metaclass options."""
+
+        fields = ['items', 'tracklet_status', 'note']
+
+    items = serializers.PrimaryKeyRelatedField(
+        queryset=StockItem.objects.all(),
+        many=True,
+        required=True,
+        allow_null=False,
+        label=_('Stock Items'),
+        help_text=_('Select stock items to change status'),
+    )
+
+    tracklet_status = serializers.ChoiceField(
+        choices=TrackletStockStatus.choices,
+        required=True,
+        label=_('Tracklet Status'),
+        help_text=_('Tracklet-specific stock status'),
+    )
+
+    note = serializers.CharField(
+        label=_('Notes'),
+        help_text=_('Add transaction note (optional)'),
+        required=False,
+        allow_blank=True,
+    )
+
+    def validate_items(self, items):
+        """Validate selected items."""
+        if len(items) == 0:
+            raise ValidationError(_('No stock items selected'))
+        return items
+
+    @transaction.atomic
+    def save(self):
+        """Save the serializer to change tracklet_status for selected items."""
+        data = self.validated_data
+
+        items = data['items']
+        tracklet_status = data['tracklet_status']
+
+        request = self.context['request']
+        user = getattr(request, 'user', None)
+
+        note = data.get('note', '')
+        now = Tracklet.helpers.current_time()
+
+        transaction_notes = []
+
+        for item in items:
+            if item.tracklet_status == tracklet_status:
+                continue
+
+            old_tracklet_status = item.tracklet_status
+            # Update directly to avoid model-level auto-sync recalculating
+            # the just-selected status during this manual override action.
+            StockItem.objects.filter(pk=item.pk).update(tracklet_status=tracklet_status)
+            item.tracklet_status = tracklet_status
+
+            transaction_notes.append(
+                StockItemTracking(
+                    item=item,
+                    tracking_type=stock.status_codes.StockHistoryCode.EDITED.value,
+                    date=now,
+                    deltas={
+                        'tracklet_status': tracklet_status,
+                        'old_tracklet_status': old_tracklet_status,
+                    },
+                    user=user,
+                    notes=note,
+                )
+            )
+
+        if transaction_notes:
+            StockItemTracking.objects.bulk_create(transaction_notes)
 
 
 class StockLocationTypeSerializer(Tracklet.serializers.InvenTreeModelSerializer):

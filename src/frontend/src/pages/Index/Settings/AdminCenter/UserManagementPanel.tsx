@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { Accordion } from '@mantine/core';
+import { Accordion, Text } from '@mantine/core';
 
 import { StylishText } from '../../../../components/items/StylishText';
 import { GlobalSettingList } from '../../../../components/settings/SettingList';
@@ -23,6 +23,9 @@ export default function UserManagementPanel() {
           <StylishText size='lg'>{t`Groups`}</StylishText>
         </Accordion.Control>
         <Accordion.Panel>
+          <Text c='dimmed' size='sm' mb='xs'>
+            {t`Add users to groups; groups grant roles; roles control which tabs appear and whether editing is allowed.`}
+          </Text>
           <GroupTable />
         </Accordion.Panel>
       </Accordion.Item>

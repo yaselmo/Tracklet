@@ -10,6 +10,7 @@ import {
   IconUserCircle
 } from '@tabler/icons-react';
 import { lazy, useMemo } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 import { useShallow } from 'zustand/react/shallow';
 import PageTitle from '../../../components/nav/PageTitle';
@@ -18,6 +19,7 @@ import type { PanelType } from '../../../components/panels/Panel';
 import { PanelGroup } from '../../../components/panels/PanelGroup';
 import { UserSettingList } from '../../../components/settings/SettingList';
 import { Loadable } from '../../../functions/loading';
+import { getUserSettingsPanelAccess } from '../../../functions/settingsPermissions';
 import { useUserState } from '../../../states/UserState';
 import { SecurityContent } from './AccountSettings/SecurityContent';
 import { AccountContent } from './AccountSettings/UserPanel';
@@ -26,10 +28,17 @@ const PluginSettingsGroup = Loadable(
   lazy(() => import('./PluginSettingsGroup'))
 );
 
+// Keep User Settings intentionally minimal for this deployment.
+// Edit this list to control which user settings panels are visible.
+const ALLOWED_USER_SETTINGS = ['account', 'security'] as const;
+const DEFAULT_USER_SETTINGS_PANEL = 'account';
+
 /**
  * User settings page
  */
 export default function UserSettings() {
+  const location = useLocation();
+  const userState = useUserState();
   const [user, isLoggedIn] = useUserState(
     useShallow((state) => [state.user, state.isLoggedIn])
   );
@@ -133,8 +142,73 @@ export default function UserSettings() {
     ];
   }, []);
 
+  const gatedUserSettingsPanels = useMemo(
+    () =>
+      userSettingsPanels.map((panel) => {
+        const access = getUserSettingsPanelAccess(userState, panel.name);
+        return {
+          ...panel,
+          hidden: panel.hidden || !access.view
+        };
+      }),
+    [userSettingsPanels, userState]
+  );
+
+  const allowedUserSettingsSet = useMemo(
+    () => new Set<string>(ALLOWED_USER_SETTINGS),
+    []
+  );
+
+  const filteredUserSettingsPanels = useMemo(
+    () =>
+      gatedUserSettingsPanels.filter((panel) =>
+        allowedUserSettingsSet.has(panel.name)
+      ),
+    [gatedUserSettingsPanels, allowedUserSettingsSet]
+  );
+
+  const fallbackUserSettingsPanel = useMemo(() => {
+    const firstVisiblePanel = filteredUserSettingsPanels.find(
+      (panel) => !panel.hidden && !panel.disabled
+    );
+    const defaultVisible = filteredUserSettingsPanels.find(
+      (panel) =>
+        panel.name === DEFAULT_USER_SETTINGS_PANEL &&
+        !panel.hidden &&
+        !panel.disabled
+    );
+    return defaultVisible?.name ?? firstVisiblePanel?.name ?? '';
+  }, [filteredUserSettingsPanels]);
+
+  const blockedPanelPath = useMemo(() => {
+    const userPath = location.pathname.split('/settings/user/')[1] ?? '';
+    const targetPanel = userPath.split('/')[0] ?? '';
+
+    if (!targetPanel) {
+      return false;
+    }
+
+    return !filteredUserSettingsPanels.some(
+      (panel) =>
+        panel.name === targetPanel && panel.hidden !== true && !panel.disabled
+    );
+  }, [location.pathname, filteredUserSettingsPanels]);
+
   if (!isLoggedIn()) {
     return <Skeleton />;
+  }
+
+  if (blockedPanelPath) {
+    return (
+      <Navigate
+        to={
+          fallbackUserSettingsPanel
+            ? `/settings/user/${fallbackUserSettingsPanel}`
+            : '/settings/user'
+        }
+        replace
+      />
+    );
   }
 
   return (
@@ -153,7 +227,7 @@ export default function UserSettings() {
         />
         <PanelGroup
           pageKey='user-settings'
-          panels={userSettingsPanels}
+          panels={filteredUserSettingsPanels}
           model='usersettings'
           id={null}
         />

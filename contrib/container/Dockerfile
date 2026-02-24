@@ -62,6 +62,7 @@ LABEL org.opencontainers.image.vendor="tracklet" \
 # Install basic system level packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     git gettext libldap2 wget curl ssh \
+    python3-reportlab \
     # Weasyprint requirements : https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#alpine-3-12
     weasyprint libpango-1.0-0 libcairo2 poppler-utils \
     # Database client libraries
@@ -114,6 +115,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Build and install python dependencies
 RUN pip install --user --require-hashes -r base_requirements.txt --no-cache-dir && \
     pip install --user --require-hashes -r requirements.txt --no-cache-dir && \
+    pip install --user --no-cache-dir reportlab && \
     pip cache purge && \
     rm -rf /root/.cache/pip
 

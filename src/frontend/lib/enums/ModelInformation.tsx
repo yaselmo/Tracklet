@@ -171,6 +171,20 @@ export const ModelInformationDict: ModelDict = {
     api_endpoint: ApiEndpoints.purchase_order_line_list,
     icon: 'purchase_orders'
   },
+  project: {
+    label: () => t`Project`,
+    label_multiple: () => t`Projects`,
+    url_overview: '/projects/',
+    url_detail: '/projects/:pk/',
+    api_endpoint: ApiEndpoints.project_list,
+    icon: 'list_details'
+  },
+  projectstockallocation: {
+    label: () => t`Project Stock Allocation`,
+    label_multiple: () => t`Project Stock Allocations`,
+    api_endpoint: ApiEndpoints.project_allocation_list,
+    icon: 'stock'
+  },
   salesorder: {
     label: () => t`Sales Order`,
     label_multiple: () => t`Sales Orders`,

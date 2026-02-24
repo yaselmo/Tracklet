@@ -38,6 +38,11 @@ import { useUserState } from '../../../../states/UserState';
 import { ApiTokenTable } from '../../../../tables/settings/ApiTokenTable';
 import MFASettings from './MFASettings';
 
+// Keep only token-related security section visible in simplified settings UI.
+// Password changes are available via Account actions.
+const ALLOWED_SECURITY_SECTIONS = ['token'] as const;
+const ALLOWED_SECURITY_SECTION_SET = new Set<string>(ALLOWED_SECURITY_SECTIONS);
+
 export function SecurityContent() {
   const [auth_config, sso_enabled] = useServerApiState(
     useShallow((state) => [state.auth_config, state.sso_enabled])
@@ -52,44 +57,56 @@ export function SecurityContent() {
     []
   );
 
+  const showSection = useCallback(
+    (section: string) => ALLOWED_SECURITY_SECTION_SET.has(section),
+    []
+  );
+
   return (
     <Stack>
-      <Accordion multiple defaultValue={['email']}>
-        <Accordion.Item value='email'>
-          <Accordion.Control>
-            <StylishText size='lg'>{t`Email Addresses`}</StylishText>
-          </Accordion.Control>
-          <Accordion.Panel>
-            <EmailSection />
-          </Accordion.Panel>
-        </Accordion.Item>
-        <Accordion.Item value='sso'>
-          <Accordion.Control>
-            <StylishText size='lg'>{t`Single Sign On`}</StylishText>
-          </Accordion.Control>
-          <Accordion.Panel>
-            {sso_enabled() ? (
-              <ProviderSection auth_config={auth_config} />
-            ) : (
-              <Alert
-                icon={<IconAlertCircle size='1rem' />}
-                title={t`Not enabled`}
-                color='yellow'
-              >
-                <Trans>Single Sign On is not enabled for this server </Trans>
-              </Alert>
-            )}
-          </Accordion.Panel>
-        </Accordion.Item>
-        <Accordion.Item value='mfa'>
-          <Accordion.Control>
-            <StylishText size='lg'>{t`Multi-Factor Authentication`}</StylishText>
-          </Accordion.Control>
-          <Accordion.Panel>
-            <MFASettings />
-          </Accordion.Panel>
-        </Accordion.Item>
-        <Accordion.Item value='token'>
+      <Accordion multiple defaultValue={['token']}>
+        {showSection('email') && (
+          <Accordion.Item value='email'>
+            <Accordion.Control>
+              <StylishText size='lg'>{t`Email Addresses`}</StylishText>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <EmailSection />
+            </Accordion.Panel>
+          </Accordion.Item>
+        )}
+        {showSection('sso') && (
+          <Accordion.Item value='sso'>
+            <Accordion.Control>
+              <StylishText size='lg'>{t`Single Sign On`}</StylishText>
+            </Accordion.Control>
+            <Accordion.Panel>
+              {sso_enabled() ? (
+                <ProviderSection auth_config={auth_config} />
+              ) : (
+                <Alert
+                  icon={<IconAlertCircle size='1rem' />}
+                  title={t`Not enabled`}
+                  color='yellow'
+                >
+                  <Trans>Single Sign On is not enabled for this server </Trans>
+                </Alert>
+              )}
+            </Accordion.Panel>
+          </Accordion.Item>
+        )}
+        {showSection('mfa') && (
+          <Accordion.Item value='mfa'>
+            <Accordion.Control>
+              <StylishText size='lg'>{t`Multi-Factor Authentication`}</StylishText>
+            </Accordion.Control>
+            <Accordion.Panel>
+              <MFASettings />
+            </Accordion.Panel>
+          </Accordion.Item>
+        )}
+        {showSection('token') && (
+          <Accordion.Item value='token'>
           <Accordion.Control>
             <StylishText size='lg'>{t`Access Tokens`}</StylishText>
           </Accordion.Control>
@@ -102,7 +119,8 @@ export function SecurityContent() {
             </ErrorBoundary>
           </Accordion.Panel>
         </Accordion.Item>
-        {user.isSuperuser() && (
+        )}
+        {showSection('session') && user.isSuperuser() && (
           <Accordion.Item value='session'>
             <Accordion.Control>
               <StylishText size='lg'>{t`Session Information`}</StylishText>

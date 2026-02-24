@@ -1,13 +1,19 @@
 import { t } from '@lingui/core/macro';
 
 import { ModelType } from '@lib/enums/ModelType';
+import {
+  manufacturingEnabled,
+  purchasingEnabled,
+  salesEnabled
+} from '../../defaults/moduleFlags';
+import { useServerApiState } from '../../states/ServerApiState';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import type { DashboardWidgetProps } from './DashboardWidget';
 import ColorToggleDashboardWidget from './widgets/ColorToggleWidget';
-import GetStartedWidget from './widgets/GetStartedWidget';
 import LanguageSelectDashboardWidget from './widgets/LanguageSelectWidget';
 import NewsWidget from './widgets/NewsWidget';
+import OngoingProjectsDashboardWidget from './widgets/OngoingProjectsWidget';
 import QueryCountDashboardWidget from './widgets/QueryCountDashboardWidget';
 import StocktakeDashboardWidget from './widgets/StocktakeDashboardWidget';
 
@@ -18,6 +24,7 @@ import StocktakeDashboardWidget from './widgets/StocktakeDashboardWidget';
 function BuiltinQueryCountWidgets(): DashboardWidgetProps[] {
   const user = useUserState.getState();
   const globalSettings = useGlobalSettingsState.getState();
+  const server = useServerApiState.getState().server;
 
   const widgets: DashboardWidgetProps[] = [
     QueryCountDashboardWidget({
@@ -179,6 +186,28 @@ function BuiltinQueryCountWidgets(): DashboardWidgetProps[] {
 
   // Filter widgets based on user permissions (if a modelType is defined)
   return widgets.filter((widget: DashboardWidgetProps) => {
+    if (
+      widget.modelType === ModelType.build &&
+      !manufacturingEnabled(server)
+    ) {
+      return false;
+    }
+
+    if (widget.modelType === ModelType.purchaseorder && !purchasingEnabled(server)) {
+      return false;
+    }
+
+    if (
+      [
+        ModelType.salesorder,
+        ModelType.salesordershipment,
+        ModelType.returnorder
+      ].includes(widget.modelType as ModelType) &&
+      !salesEnabled(server)
+    ) {
+      return false;
+    }
+
     if (widget.modelType) {
       return user.hasViewPermission(widget.modelType);
     } else {
@@ -189,14 +218,7 @@ function BuiltinQueryCountWidgets(): DashboardWidgetProps[] {
 
 function BuiltinGettingStartedWidgets(): DashboardWidgetProps[] {
   return [
-    {
-      label: 'gstart',
-      title: t`Getting Started`,
-      description: t`Getting started with Tracklet`,
-      minWidth: 5,
-      minHeight: 4,
-      render: () => <GetStartedWidget />
-    },
+    OngoingProjectsDashboardWidget(),
     {
       label: 'news',
       title: t`News Updates`,

@@ -756,6 +756,14 @@ class PartFilter(FilterSet):
             return queryset.filter(Q(unallocated_stock__gt=0))
         return queryset.filter(Q(unallocated_stock__lte=0))
 
+    available_stock = rest_filters.BooleanFilter(
+        label='Available stock', method='filter_available_stock'
+    )
+
+    def filter_available_stock(self, queryset, name, value):
+        """Alias filter by whether the Part has available stock."""
+        return self.filter_unallocated_stock(queryset, name, value)
+
     convert_from = rest_filters.ModelChoiceFilter(
         label='Can convert from',
         queryset=Part.objects.all(),
@@ -1089,6 +1097,7 @@ class PartList(
         'in_stock',
         'total_in_stock',
         'unallocated_stock',
+        'available_stock',
         'category',
         'default_location',
         'units',
@@ -1103,6 +1112,7 @@ class PartList(
         'pricing_min': 'pricing_data__overall_min',
         'pricing_max': 'pricing_data__overall_max',
         'pricing_updated': 'pricing_data__updated',
+        'available_stock': 'unallocated_stock',
     }
 
     # Default ordering

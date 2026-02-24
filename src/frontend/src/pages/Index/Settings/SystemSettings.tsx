@@ -1,6 +1,10 @@
 import { t } from '@lingui/core/macro';
 import { Divider, Skeleton, Stack } from '@mantine/core';
 import {
+  canViewSettingsRoot,
+  getSystemPanelAccess
+} from '../../../functions/settingsPermissions';
+import {
   IconBellCog,
   IconCategory,
   IconClipboardList,
@@ -19,6 +23,7 @@ import {
   IconTruckReturn
 } from '@tabler/icons-react';
 import { lazy, useMemo } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 
 import { useShallow } from 'zustand/react/shallow';
 import PermissionDenied from '../../../components/errors/PermissionDenied';
@@ -39,6 +44,7 @@ const PluginSettingsGroup = Loadable(
  * System settings page
  */
 export default function SystemSettings() {
+  const location = useLocation();
   const systemSettingsPanels: PanelType[] = useMemo(() => {
     return [
       {
@@ -355,15 +361,49 @@ export default function SystemSettings() {
   const user = useUserState();
 
   const [server] = useServerApiState(useShallow((state) => [state.server]));
+  const isLoggedIn = user.isLoggedIn();
 
-  if (!user.isLoggedIn()) {
-    return <Skeleton />;
+  const gatedSystemPanels = useMemo(
+    () =>
+      systemSettingsPanels.map((panel) => {
+        const access = getSystemPanelAccess(user, panel.name);
+        return {
+          ...panel,
+          hidden: panel.hidden || !access.view
+        };
+      }),
+    [systemSettingsPanels, user]
+  );
+
+  const hasSystemAccess =
+    isLoggedIn &&
+    canViewSettingsRoot(user, 'system') &&
+    gatedSystemPanels.some((panel) => !panel.hidden && !panel.disabled);
+
+  const blockedPanelPath = useMemo(() => {
+    const systemPath = location.pathname.split('/settings/system/')[1] ?? '';
+    const targetPanel = systemPath.split('/')[0] ?? '';
+
+    if (!targetPanel) {
+      return false;
+    }
+
+    return !gatedSystemPanels.some(
+      (panel) =>
+        panel.name === targetPanel && panel.hidden !== true && !panel.disabled
+    );
+  }, [location.pathname, gatedSystemPanels]);
+
+  if (hasSystemAccess && blockedPanelPath) {
+    return <Navigate to='/settings/system' replace />;
   }
 
   return (
     <>
       <PageTitle title={t`System Settings`} />
-      {user.isStaff() ? (
+      {!isLoggedIn ? (
+        <Skeleton />
+      ) : hasSystemAccess ? (
         <Stack gap='xs'>
           <SettingsHeader
             label='system'
@@ -372,7 +412,7 @@ export default function SystemSettings() {
           />
           <PanelGroup
             pageKey='system-settings'
-            panels={systemSettingsPanels}
+            panels={gatedSystemPanels}
             model='systemsettings'
             id={null}
           />

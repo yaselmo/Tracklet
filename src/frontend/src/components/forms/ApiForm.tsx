@@ -427,7 +427,15 @@ export function ApiForm({
 
     // Optionally pre-process the data before submitting it
     if (props.processFormData) {
-      jsonData = props.processFormData(jsonData, form);
+      try {
+        jsonData = props.processFormData(jsonData, form);
+      } catch (error: any) {
+        const message =
+          error?.message || t`Form preprocessing failed before submit`;
+        setNonFieldErrors([message]);
+        props.onFormError?.(error, form);
+        return;
+      }
     }
 
     /* Set the timeout for the request:
@@ -436,6 +444,17 @@ export function ApiForm({
      * - Otherwise, use the default timeout
      */
     const timeout = props.timeout ?? (hasFiles ? 30000 : undefined);
+    const jsonPayloadString = hasFiles ? null : JSON.stringify(jsonData);
+
+    if (import.meta.env.DEV) {
+      console.debug('[ApiForm] submit payload', {
+        method,
+        url,
+        fieldNames: Object.keys(jsonData ?? {}),
+        payload: hasFiles ? '[multipart/form-data]' : jsonData,
+        payloadJson: hasFiles ? null : jsonPayloadString
+      });
+    }
 
     return api({
       method: method,
@@ -502,6 +521,15 @@ export function ApiForm({
           switch (error.response.status) {
             case 400:
               // Data validation errors
+              if (import.meta.env.DEV) {
+                console.error('[ApiForm] validation error', {
+                  method,
+                  url,
+                  payload: jsonData,
+                  payloadJson: jsonPayloadString,
+                  response: error.response?.data
+                });
+              }
               const _nonFieldErrors: string[] = [];
 
               const processErrors = (errors: any, _path?: string) => {

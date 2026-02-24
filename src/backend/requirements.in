@@ -50,6 +50,7 @@ python-dotenv                           # Environment variable management
 pyyaml>=6.0.1                           # YAML parsing
 qrcode[pil]                             # QR code generator
 rapidfuzz                               # Fuzzy string matching
+reportlab                               # Broken report PDF generation
 sentry-sdk                              # Error reporting (optional)
 setuptools                              # Standard dependency
 tablib[xls,xlsx,yaml]                   # Support for XLS and XLSX formats

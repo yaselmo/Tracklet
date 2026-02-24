@@ -150,6 +150,7 @@ export enum ApiEndpoints {
   stock_add = 'stock/add/',
   stock_count = 'stock/count/',
   stock_change_status = 'stock/change_status/',
+  stock_change_tracklet_status = 'stock/change_tracklet_status/',
   stock_merge = 'stock/merge/',
   stock_assign = 'stock/assign/',
   stock_status = 'stock/status/',
@@ -196,6 +197,18 @@ export enum ApiEndpoints {
   return_order_receive = 'order/ro/:id/receive/',
   return_order_line_list = 'order/ro-line/',
   return_order_extra_line_list = 'order/ro-extra-line/',
+
+  // Projects API endpoints
+  project_list = 'projects/',
+  project_allocations = 'projects/:id/allocations/',
+  project_instruments = 'projects/:id/instruments/',
+  project_instrument_auto_assign = 'projects/:id/instrumentation/auto_assign/',
+  project_instrument_release = 'projects/:id/instrumentation/release/',
+  project_reports = 'projects/:id/reports/',
+  project_reports_broken = 'projects/:id/reports/broken/',
+  project_report_items = 'projects/:id/report/items/',
+  project_allocation_list = 'project-allocations/',
+  project_instrument_list = 'project-instruments/',
 
   // Template API endpoints
   label_list = 'label/template/',

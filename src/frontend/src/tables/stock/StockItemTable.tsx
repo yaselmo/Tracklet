@@ -13,25 +13,27 @@ import type { TableFilter } from '@lib/types/Filters';
 import type { StockOperationProps } from '@lib/types/Forms';
 import type { TableColumn } from '@lib/types/Tables';
 import OrderPartsWizard from '../../components/wizards/OrderPartsWizard';
-import { formatCurrency, formatPriceRange } from '../../defaults/formatters';
+import { formatCurrency } from '../../defaults/formatters';
 import { useStockFields } from '../../forms/StockForms';
 import { InvenTreeIcon } from '../../functions/icons';
 import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
 import { useTable } from '../../hooks/UseTable';
+import {
+  getTrackletStatusPill,
+  TRACKLET_STATUS_OPTIONS
+} from '../../components/render/TrackletStatus';
 import { useGlobalSettingsState } from '../../states/SettingsStates';
 import { useUserState } from '../../states/UserState';
 import {
   DateColumn,
+  DecimalColumn,
   DescriptionColumn,
   LocationColumn,
   PartColumn,
-  StatusColumn,
   StockColumn
 } from '../ColumnRenderers';
 import {
-  BatchFilter,
-  HasBatchCodeFilter,
   InStockFilter,
   IncludeVariantsFilter,
   IsSerializedFilter,
@@ -39,7 +41,6 @@ import {
   SerialFilter,
   SerialGTEFilter,
   SerialLTEFilter,
-  StatusFilterOptions,
   SupplierFilter
 } from '../Filter';
 import { TrackletTable } from '../TrackletTable';
@@ -80,10 +81,17 @@ function stockItemTableColumns({
       sortable: true,
       ordering: 'stock'
     }),
-    StatusColumn({ model: ModelType.stockitem }),
+    DecimalColumn({
+      accessor: 'available',
+      title: t`Available`,
+      sortable: true,
+      ordering: 'available'
+    }),
     {
-      accessor: 'batch',
-      sortable: true
+      accessor: 'tracklet_status',
+      title: t`Status`,
+      sortable: true,
+      render: (record: any) => getTrackletStatusPill(record)
     },
     LocationColumn({
       hidden: !showLocation,
@@ -122,24 +130,6 @@ function stockItemTableColumns({
         })
     },
     {
-      accessor: 'stock_value',
-      title: t`Stock Value`,
-      sortable: false,
-      hidden: !showPricing,
-      render: (record: any) => {
-        const min_price =
-          record.purchase_price || record.part_detail?.pricing_min;
-        const max_price =
-          record.purchase_price || record.part_detail?.pricing_max;
-        const currency = record.purchase_price_currency || undefined;
-
-        return formatPriceRange(min_price, max_price, {
-          currency: currency,
-          multiplier: record.quantity
-        });
-      }
-    },
-    {
       accessor: 'packaging',
       sortable: true,
       defaultVisible: false
@@ -156,8 +146,13 @@ function stockItemTableColumns({
       accessor: 'updated'
     }),
     DateColumn({
-      accessor: 'stocktake_date',
-      title: t`Stocktake Date`,
+      accessor: 'last_calibration_date',
+      title: t`Last Calibration`,
+      sortable: true
+    }),
+    DateColumn({
+      accessor: 'last_factory_calibration_date',
+      title: t`Last Factory Calibration`,
       sortable: true
     })
   ];
@@ -181,7 +176,11 @@ function stockItemTableFilters({
       name: 'status',
       label: t`Status`,
       description: t`Filter by stock status`,
-      choiceFunction: StatusFilterOptions(ModelType.stockitem)
+      choiceFunction: () =>
+        TRACKLET_STATUS_OPTIONS.map((option) => ({
+          value: option.value,
+          label: option.label
+        }))
     },
     {
       name: 'assembly',
@@ -232,8 +231,6 @@ function stockItemTableFilters({
       label: t`Sent to Customer`,
       description: t`Show items which have been sent to a customer`
     },
-    HasBatchCodeFilter(),
-    BatchFilter(),
     IsSerializedFilter(),
     SerialFilter(),
     SerialLTEFilter(),

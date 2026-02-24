@@ -8,7 +8,7 @@ import { ActionDropdown } from '../components/items/ActionDropdown';
 import {
   useAddStockItem,
   useAssignStockItem,
-  useChangeStockStatus,
+  useChangeTrackletStatus,
   useCountStockItem,
   useDeleteStockItem,
   useMergeStockItem,
@@ -54,7 +54,7 @@ export function useStockAdjustActions(
   // The available modals for stock adjustment actions
   const addStock = useAddStockItem(props.formProps);
   const assignStock = useAssignStockItem(props.formProps);
-  const changeStatus = useChangeStockStatus(props.formProps);
+  const changeStatus = useChangeTrackletStatus(props.formProps);
   const countStock = useCountStockItem(props.formProps);
   const deleteStock = useDeleteStockItem(props.formProps);
   const mergeStock = useMergeStockItem(props.formProps);
@@ -145,9 +145,9 @@ export function useStockAdjustActions(
 
     props.changeStatus != false &&
       menuActions.push({
-        name: t`Change Status`,
+        name: t`Change Tracklet Status`,
         icon: <InvenTreeIcon icon='info' iconProps={{ color: 'blue' }} />,
-        tooltip: t`Change status of selected stock items`,
+        tooltip: t`Change tracklet status of selected stock items`,
         onClick: () => {
           changeStatus.open();
         }

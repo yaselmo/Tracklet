@@ -45,9 +45,17 @@ export default function TextField({
     setTextValue(value || '');
   }, [value]);
 
+  const textDefinition = useMemo(() => {
+    return {
+      ...definition,
+      allow_null: undefined,
+      allow_blank: undefined
+    };
+  }, [definition]);
+
   return (
     <TextInput
-      {...definition}
+      {...textDefinition}
       ref={field.ref}
       id={fieldId}
       aria-label={`text-field-${field.name}`}

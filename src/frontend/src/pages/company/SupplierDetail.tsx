@@ -6,8 +6,8 @@ export default function SupplierDetail() {
   return (
     <CompanyDetail
       title={t`Supplier`}
-      breadcrumbs={[{ name: t`Purchasing`, url: '/purchasing/' }]}
-      last_crumb_url='/purchasing/supplier'
+      breadcrumbs={[{ name: t`Suppliers`, url: '/suppliers/' }]}
+      last_crumb_url='/suppliers/supplier'
     />
   );
 }

@@ -168,6 +168,74 @@ class AuthRequiredMiddleware:
         return response
 
 
+class ModuleAccessMiddleware:
+    """Block API access to disabled modules."""
+
+    def __init__(self, get_response):
+        """Save response object."""
+        self.get_response = get_response
+
+    def _admin_override_allowed(self, request) -> bool:
+        """Return True when admin override is enabled and current user is admin."""
+        if not settings.MODULES_ADMIN_OVERRIDE:
+            return False
+
+        user = getattr(request, 'user', None)
+        if user is None:
+            return False
+
+        return bool(getattr(user, 'is_staff', False) or getattr(user, 'is_superuser', False))
+
+    def _disabled_module_for_path(self, path: str) -> Optional[str]:
+        """Return module name for disabled path, or None."""
+        if path.startswith('/api/build/') and not settings.ENABLE_MANUFACTURING:
+            return 'manufacturing'
+
+        if path.startswith('/api/purchase/') and not settings.ENABLE_PURCHASING:
+            return 'purchasing'
+
+        if path.startswith('/api/sales/') and not settings.ENABLE_SALES:
+            return 'sales'
+
+        if path.startswith('/api/order/'):
+            order_subpath = path.removeprefix('/api/order/')
+
+            if (
+                order_subpath.startswith(('po/', 'po-line/', 'po-extra-line/'))
+                and not settings.ENABLE_PURCHASING
+            ):
+                return 'purchasing'
+
+            if (
+                order_subpath.startswith(
+                    (
+                        'so/',
+                        'so-line/',
+                        'so-extra-line/',
+                        'so-allocation/',
+                        'ro/',
+                        'ro-line/',
+                        'ro-extra-line/',
+                    )
+                )
+                and not settings.ENABLE_SALES
+            ):
+                return 'sales'
+
+        return None
+
+    def __call__(self, request):
+        """Return 403 for disabled module API endpoints."""
+        module = self._disabled_module_for_path(request.path_info)
+
+        if module and not self._admin_override_allowed(request):
+            return JsonResponse(
+                {'detail': _('This module is disabled by administrator')}, status=403
+            )
+
+        return self.get_response(request)
+
+
 class Check2FAMiddleware(MiddlewareMixin):
     """Ensure that users have two-factor authentication enabled before they have access restricted endpoints.
 

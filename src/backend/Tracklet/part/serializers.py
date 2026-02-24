@@ -42,6 +42,7 @@ from Tracklet.serializers import (
     enable_filter,
 )
 from users.serializers import UserSerializer
+from stock.status_codes import StockStatus
 
 from .models import (
     BomItem,
@@ -623,6 +624,7 @@ class PartSerializer(
             'total_in_stock',
             'external_stock',
             'unallocated_stock',
+            'available_stock',
             'variant_stock',
             # Fields only used for Part creation
             'duplicate',
@@ -707,6 +709,19 @@ class PartSerializer(
             in_stock=part_filters.annotate_total_stock(),
             allocated_to_sales_orders=part_filters.annotate_sales_order_allocations(),
             allocated_to_build_orders=part_filters.annotate_build_order_allocations(),
+            allocated_to_project_instruments=part_filters.annotate_project_instrument_allocations(),
+            allocated_to_project_stock=part_filters.annotate_project_stock_allocations(),
+            allocated_to_projects=Greatest(
+                F('allocated_to_project_instruments'),
+                F('allocated_to_project_stock'),
+                output_field=models.DecimalField(),
+            ),
+            available_stock_count=part_filters.annotate_total_stock(
+                filter=Q(
+                    status=StockStatus.OK.value,
+                    tracklet_status='IN_STOCK',
+                )
+            ),
         )
 
         # Annotate the queryset with the 'total_in_stock' quantity
@@ -723,14 +738,15 @@ class PartSerializer(
             )
         )
 
-        # Annotate with the total 'available stock' quantity
-        # This is the current stock, minus any allocations
+        # Annotate with the total 'available stock' quantity.
+        # Available stock uses Tracklet lifecycle state and all allocation channels.
         queryset = queryset.annotate(
             unallocated_stock=Greatest(
                 ExpressionWrapper(
-                    F('total_in_stock')
+                    F('available_stock_count')
                     - F('allocated_to_sales_orders')
-                    - F('allocated_to_build_orders'),
+                    - F('allocated_to_build_orders')
+                    - F('allocated_to_projects'),
                     output_field=models.DecimalField(),
                 ),
                 Decimal(0),
@@ -858,6 +874,13 @@ class PartSerializer(
 
     unallocated_stock = serializers.FloatField(
         read_only=True, allow_null=True, label=_('Unallocated Stock')
+    )
+
+    available_stock = serializers.FloatField(
+        source='unallocated_stock',
+        read_only=True,
+        allow_null=True,
+        label=_('Available Stock'),
     )
 
     category_default_location = serializers.IntegerField(

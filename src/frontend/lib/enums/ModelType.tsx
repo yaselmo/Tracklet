@@ -20,6 +20,8 @@ export enum ModelType {
   parametertemplate = 'parametertemplate',
   purchaseorder = 'purchaseorder',
   purchaseorderlineitem = 'purchaseorderlineitem',
+  project = 'project',
+  projectstockallocation = 'projectstockallocation',
   salesorder = 'salesorder',
   salesordershipment = 'salesordershipment',
   returnorder = 'returnorder',

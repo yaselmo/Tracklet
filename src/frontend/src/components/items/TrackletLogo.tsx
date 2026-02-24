@@ -1,9 +1,6 @@
-import { t } from '@lingui/core/macro';
 import { ActionIcon } from '@mantine/core';
 import { forwardRef } from 'react';
 import { NavLink } from 'react-router-dom';
-
-import TrackletIcon from './tracklet.svg';
 
 export const TrackletLogoHomeButton = forwardRef<HTMLDivElement>(
   (props, ref) => {
@@ -20,5 +17,5 @@ export const TrackletLogoHomeButton = forwardRef<HTMLDivElement>(
 );
 
 export const TrackletLogo = () => {
-  return <img src={TrackletIcon} alt={t`Tracklet Logo`} height={28} />;
+  return <img src='/Tracklet.png' style={{ height: 28, width: 28, borderRadius: 8 }} />;
 };

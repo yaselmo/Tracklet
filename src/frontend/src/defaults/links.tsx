@@ -8,14 +8,22 @@ import type { UserStateProps } from '@lib/types/User';
 import {
   IconBox,
   IconBuildingFactory2,
+  IconBuildingStore,
   IconDashboard,
+  IconFolder,
   IconPackages,
   IconShoppingCart,
   IconTruckDelivery
 } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import type { MenuLinkItem } from '../components/items/MenuLinks';
+import {
+  manufacturingEnabled,
+  purchasingEnabled,
+  salesEnabled
+} from './moduleFlags';
 import { StylishText } from '../components/items/StylishText';
+import type { ServerAPIProps } from '../states/states';
 
 type NavTab = {
   name: string;
@@ -24,7 +32,7 @@ type NavTab = {
   role?: UserRoles;
 };
 
-export function getNavTabs(user: UserStateProps): NavTab[] {
+export function getNavTabs(user: UserStateProps, server: ServerAPIProps): NavTab[] {
   const navTabs: NavTab[] = [
     {
       name: 'home',
@@ -56,14 +64,30 @@ export function getNavTabs(user: UserStateProps): NavTab[] {
       role: UserRoles.purchase_order
     },
     {
+      name: 'suppliers',
+      title: t`Suppliers`,
+      icon: <IconBuildingStore />,
+      role: UserRoles.purchase_order
+    },
+    {
       name: 'sales',
       title: t`Sales`,
       icon: <IconTruckDelivery />,
       role: UserRoles.sales_order
+    },
+    {
+      name: 'projects',
+      title: t`Projects`,
+      icon: <IconFolder />,
+      role: UserRoles.project
     }
   ];
 
   return navTabs.filter((tab) => {
+    if (tab.name === 'manufacturing' && !manufacturingEnabled(server)) return false;
+    if (tab.name === 'purchasing' && !purchasingEnabled(server)) return false;
+    if (tab.name === 'sales' && !salesEnabled(server)) return false;
+
     if (!tab.role) return true;
     return user.hasViewRole(tab.role);
   });
