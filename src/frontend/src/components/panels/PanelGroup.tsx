@@ -39,7 +39,6 @@ import { eventModified, getBaseUrl } from '@lib/functions/Navigation';
 import { navigateToLink } from '@lib/functions/Navigation';
 import { t } from '@lingui/core/macro';
 import { useShallow } from 'zustand/react/shallow';
-import { generateUrl } from '../../functions/urls';
 import { usePluginPanels } from '../../hooks/UsePluginPanels';
 import { useLocalState } from '../../states/LocalState';
 import { vars } from '../../theme';
@@ -271,9 +270,7 @@ function BasePanelGroup({
                                 style={{
                                   textAlign: 'left'
                                 }}
-                                href={generateUrl(
-                                  `/${getBaseUrl()}${location.pathname}/${panel.name}`
-                                )}
+                                href={`/${getBaseUrl()}${location.pathname}/${panel.name}`}
                               >
                                 {expanded && panel.label}
                               </UnstyledButton>

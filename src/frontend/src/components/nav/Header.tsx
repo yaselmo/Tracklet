@@ -27,7 +27,6 @@ import { useShallow } from 'zustand/react/shallow';
 import { api } from '../../App';
 import type { NavigationUIFeature } from '../../components/plugins/PluginUIFeatureTypes';
 import { getNavTabs } from '../../defaults/links';
-import { generateUrl } from '../../functions/urls';
 import { usePluginUIFeature } from '../../hooks/UsePluginUIFeature';
 import * as classes from '../../main.css';
 import { useLocalState } from '../../states/LocalState';
@@ -249,7 +248,7 @@ function NavTabs() {
         >
           <UnstyledButton
             component={'a'}
-            href={generateUrl(`/${getBaseUrl()}/${tab.name}`)}
+            href={`/${getBaseUrl()}/${tab.name}`}
           >
             {tab.title}
           </UnstyledButton>

@@ -209,9 +209,6 @@ class EventFurnitureAssignmentSerializer(InvenTreeModelSerializer):
         if submitted_quantity is not None:
             instance.quantity = (instance.quantity or 0) + submitted_quantity
 
-        if 'status' in validated_data:
-            instance.status = validated_data['status']
-
         if 'checked_out_at' in validated_data:
             instance.checked_out_at = validated_data.get('checked_out_at')
 

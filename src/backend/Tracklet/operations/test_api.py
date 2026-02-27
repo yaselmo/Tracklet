@@ -131,7 +131,7 @@ class OperationsApiTest(InvenTreeAPITestCase):
             event=event, part=self.rental_part
         )
         self.assertEqual(assignment.quantity, 15)
-        self.assertEqual(assignment.status, 20)
+        self.assertEqual(assignment.status, 10)
         self.assertEqual(
             assignment.notes, 'Main hall guest seating\nAdditional seating'
         )
