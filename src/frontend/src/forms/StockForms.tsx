@@ -176,6 +176,12 @@ export function useStockFields({
           }
         }
       },
+      category: {
+        field_type: 'related field',
+        api_url: apiUrl(ApiEndpoints.stock_category_list),
+        required: true,
+        label: t`Category`
+      },
       supplier_part: {
         hidden: partInstance?.purchaseable == false,
         disabled: !!supplierPartId,

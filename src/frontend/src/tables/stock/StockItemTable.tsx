@@ -730,7 +730,7 @@ export function StockItemTable({
         label: t`Name`
       },
       category: {
-        required: false,
+        required: true,
         field_type: 'related field',
         api_url: apiUrl(ApiEndpoints.stock_category_list),
         label: t`Category`

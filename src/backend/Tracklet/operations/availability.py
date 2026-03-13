@@ -67,13 +67,19 @@ def active_event_reservation_filter(at=None):
     if at is None:
         at = timezone.now()
 
-    return (
-        Q(status__in=[
-            FurnitureAssignmentStatus.RESERVED.value,
-            FurnitureAssignmentStatus.IN_USE.value,
-        ])
-        & (Q(checked_out_at__isnull=True) | Q(checked_out_at__lte=at))
-        & (Q(checked_in_at__isnull=True) | Q(checked_in_at__gt=at))
+    active_statuses = [
+        FurnitureAssignmentStatus.RESERVED.value,
+        FurnitureAssignmentStatus.IN_USE.value,
+    ]
+
+    return Q(status__in=active_statuses) & (
+        Q(checked_in_at__gt=at)
+        | (
+            Q(checked_in_at__isnull=True)
+            & (
+                Q(event__end_datetime__gt=at) | Q(event__end_datetime__isnull=True)
+            )
+        )
     )
 
 

@@ -21,6 +21,7 @@ from common.settings import set_global_setting
 from Tracklet.unit_test import InvenTreeAPIPerformanceTestCase, InvenTreeAPITestCase
 from part.models import Part, PartTestTemplate
 from stock.models import (
+    StockCategory,
     StockItem,
     StockItemTestResult,
     StockItemTracking,
@@ -618,6 +619,21 @@ class StockItemListTest(StockAPITestCase):
         # 3 stock items associated with part 10004
         response = self.get_stock(part=10004)
         self.assertEqual(len(response), 3)
+
+    def test_category_detail_and_filtering(self):
+        """Ensure stock items expose readable category details and can be filtered."""
+        category = StockCategory.objects.create(name='Table')
+        item = StockItem.objects.filter(pk=1000).first()
+        self.assertIsNotNone(item)
+        item.category = category
+        item.save()
+
+        response = self.get_stock(category_detail=True, category=category.pk)
+
+        matching = [record for record in response if record['pk'] == item.pk]
+        self.assertEqual(len(matching), 1)
+        self.assertEqual(matching[0]['category'], category.pk)
+        self.assertEqual(matching[0]['category_detail']['name'], 'Table')
 
     def test_filter_by_ipn(self):
         """Filter StockItem by IPN reference."""
@@ -1404,6 +1420,37 @@ class StockItemTest(StockAPITestCase):
             data={'part': 1, 'location': 1, 'quantity': 10},
             expected_code=201,
         )
+
+        self.assertIn('category_detail', response.data[0])
+
+    def test_stock_item_create_and_update_category(self):
+        """Test category assignment for stock item create and update flows."""
+        category_a = StockCategory.objects.create(name='Chair')
+        category_b = StockCategory.objects.create(name='Decor')
+
+        create_response = self.post(
+            self.list_url,
+            data={
+                'part': 1,
+                'location': 1,
+                'quantity': 1,
+                'category': category_a.pk,
+            },
+            expected_code=201,
+        )
+
+        created_pk = create_response.data[0]['pk']
+        self.assertEqual(create_response.data[0]['category'], category_a.pk)
+        self.assertEqual(create_response.data[0]['category_detail']['name'], 'Chair')
+
+        update_response = self.patch(
+            reverse('api-stock-detail', kwargs={'pk': created_pk}),
+            data={'category': category_b.pk},
+            expected_code=200,
+        )
+
+        self.assertEqual(update_response.data['category'], category_b.pk)
+        self.assertEqual(update_response.data['category_detail']['name'], 'Decor')
 
     def test_stock_item_create_with_supplier_part(self):
         """Test creation of a StockItem via the API, including SupplierPart data."""

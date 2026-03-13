@@ -19,6 +19,7 @@ from .models import (
     RentalOrder,
     Venue,
 )
+from .tasks import transition_event_furniture_assignments_to_in_use
 
 
 class OperationsApiTest(InvenTreeAPITestCase):
@@ -603,6 +604,72 @@ class OperationsApiTest(InvenTreeAPITestCase):
         self.assertEqual(after.status_code, 200)
         self.assertEqual(after.data['availability'], 'AVAILABLE')
 
+    def test_future_event_booking_reserves_stock_immediately(self):
+        now = timezone.now()
+        event = Event.objects.create(
+            title='Future Reserved Event',
+            event_type=self.event_type,
+            venue=self.venue,
+            planner=self.planner,
+            start_datetime=now + timedelta(days=2),
+            end_datetime=now + timedelta(days=2, hours=4),
+            status=20,
+        )
+
+        item = StockItem.objects.create(part=self.rental_part, quantity=1)
+
+        list_url = reverse('api-tracklet-event-furniture-list')
+        stock_url = reverse('api-stock-detail', kwargs={'pk': item.pk})
+
+        self.post(
+            list_url,
+            {
+                'event': event.pk,
+                'part': self.rental_part.pk,
+                'quantity': 1,
+                'status': 10,
+                'checked_out_at': event.start_datetime.isoformat(),
+                'checked_in_at': event.end_datetime.isoformat(),
+            },
+            expected_code=201,
+        )
+
+        response = self.get(stock_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['availability'], 'RESERVED')
+
+    def test_reserved_assignment_transitions_to_in_use_when_event_starts(self):
+        now = timezone.now()
+        event = Event.objects.create(
+            title='Transition Event',
+            event_type=self.event_type,
+            venue=self.venue,
+            planner=self.planner,
+            start_datetime=now + timedelta(hours=2),
+            end_datetime=now + timedelta(hours=6),
+            status=20,
+        )
+
+        assignment = EventFurnitureAssignment.objects.create(
+            event=event,
+            part=self.rental_part,
+            quantity=1,
+            status=10,
+            checked_out_at=event.start_datetime,
+            checked_in_at=event.end_datetime,
+        )
+
+        self.assertEqual(assignment.status, 10)
+
+        event.start_datetime = now - timedelta(minutes=5)
+        event.end_datetime = now + timedelta(hours=1)
+        event.save()
+
+        transition_event_furniture_assignments_to_in_use()
+
+        assignment.refresh_from_db()
+        self.assertEqual(assignment.status, 20)
+
     def test_rental_order_create_and_line_validation(self):
         customer = Company.objects.filter(is_customer=True).first()
         self.assertIsNotNone(customer)
@@ -654,6 +721,73 @@ class OperationsApiTest(InvenTreeAPITestCase):
 
         self.assertEqual(RentalOrder.objects.count(), 2)
         self.assertEqual(RentalLineItem.objects.count(), 1)
+
+    def test_rental_line_overlap_filters(self):
+        customer = Company.objects.filter(is_customer=True).first()
+        self.assertIsNotNone(customer)
+
+        order_url = reverse('api-tracklet-rental-order-list')
+        line_url = reverse('api-tracklet-rental-line-list')
+
+        first_order = self.post(
+            order_url,
+            {
+                'customer': customer.pk,
+                'rental_start': '2026-05-01T09:00:00Z',
+                'rental_end': '2026-05-05T09:00:00Z',
+                'status': 20,
+            },
+            expected_code=201,
+        )
+        second_order = self.post(
+            order_url,
+            {
+                'customer': customer.pk,
+                'rental_start': '2026-05-10T09:00:00Z',
+                'rental_end': '2026-05-12T09:00:00Z',
+                'status': 40,
+            },
+            expected_code=201,
+        )
+
+        active_line = self.post(
+            line_url,
+            {'order': first_order.data['pk'], 'asset': self.asset.pk, 'quantity': 1},
+            expected_code=201,
+        )
+        returned_line = RentalLineItem.objects.create(
+            order=RentalOrder.objects.get(pk=second_order.data['pk']),
+            asset=self.asset,
+            quantity=1,
+        )
+
+        response = self.get(
+            line_url,
+            {
+                'asset': self.asset.pk,
+                'active': True,
+                'overlap_start': '2026-05-02T09:00:00Z',
+                'overlap_end': '2026-05-03T09:00:00Z',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['pk'], active_line.data['pk'])
+
+        response = self.get(
+            line_url,
+            {
+                'asset': self.asset.pk,
+                'active': True,
+                'overlap_start': '2026-05-11T09:00:00Z',
+                'overlap_end': '2026-05-11T12:00:00Z',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data['count'], 0)
+        self.assertIsNotNone(returned_line.pk)
 
     def test_stock_availability_reflects_active_rental_line(self):
         customer = Company.objects.filter(is_customer=True).first()

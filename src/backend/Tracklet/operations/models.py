@@ -241,6 +241,22 @@ class EventFurnitureAssignment(
         null=True, blank=True, verbose_name=_('Checked In At')
     )
 
+    def save(self, *args, **kwargs):
+        from .availability import get_assignment_reservation_window
+
+        start, end = get_assignment_reservation_window(self)
+        now = timezone.now()
+
+        if (
+            self.status == FurnitureAssignmentStatus.RESERVED.value
+            and start is not None
+            and start <= now
+            and (end is None or end > now)
+        ):
+            self.status = FurnitureAssignmentStatus.IN_USE.value
+
+        super().save(*args, **kwargs)
+
     def clean(self):
         super().clean()
 

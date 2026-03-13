@@ -175,9 +175,16 @@ export function useRentalOrderFields({
 }
 
 export function useRentalLineItemFields({
-  orderId
+  orderId,
+  order,
+  onAssetChange
 }: {
   orderId?: number;
+  order?: {
+    rental_start?: string;
+    rental_end?: string;
+  };
+  onAssetChange?: (pk: number | null, data: any) => void;
 } = {}): ApiFormFieldSet {
   return useMemo(() => {
     return {
@@ -190,11 +197,13 @@ export function useRentalLineItemFields({
         field_type: 'related field',
         api_url: apiUrl(ApiEndpoints.stock_item_list),
         model: ModelType.stockitem,
+        onValueChange: (pk: number | null, data: any) => onAssetChange?.(pk, data),
         modelRenderer: (instance) =>
           instance?.title || instance?.part_detail?.full_name || instance?.part_name || '',
         filters: {
           in_stock: true,
-          part_detail: true
+          part_detail: true,
+          availability: 'AVAILABLE'
         }
       },
       quantity: {
@@ -203,5 +212,5 @@ export function useRentalLineItemFields({
       },
       notes: {}
     };
-  }, [orderId]);
+  }, [onAssetChange, order?.rental_end, order?.rental_start, orderId]);
 }

@@ -150,6 +150,56 @@ class RentalOrderFilter(FilterSet):
         return queryset.exclude(criteria)
 
 
+class RentalLineItemFilter(FilterSet):
+    class Meta:
+        model = models.RentalLineItem
+        fields = ['order', 'asset']
+
+    active = rest_filters.BooleanFilter(label=_('Active'), method='filter_active')
+    overlap_start = rest_filters.DateTimeFilter(method='filter_overlap_start')
+    overlap_end = rest_filters.DateTimeFilter(method='filter_overlap_end')
+
+    def filter_active(self, queryset, name, value):
+        if not value:
+            return queryset
+
+        return queryset.filter(
+            order__status__in=[
+                RentalOrderStatus.DRAFT.value,
+                RentalOrderStatus.ACTIVE.value,
+                RentalOrderStatus.OVERDUE.value,
+            ]
+        )
+
+    def _apply_overlap_filter(self, queryset, value=None, bound='start'):
+        start = value if bound == 'start' else None
+        end = value if bound == 'end' else None
+
+        if start is None:
+            start = self.form.cleaned_data.get('overlap_start')
+        if end is None:
+            end = self.form.cleaned_data.get('overlap_end')
+
+        if start is None or end is None:
+            return queryset
+
+        start = normalize_overlap_datetime(start)
+        end = normalize_overlap_datetime(end)
+
+        if end <= start:
+            return queryset.none()
+
+        return queryset.filter(
+            Q(order__rental_start__lt=end) & Q(order__rental_end__gt=start)
+        )
+
+    def filter_overlap_start(self, queryset, name, value):
+        return self._apply_overlap_filter(queryset, value=value, bound='start')
+
+    def filter_overlap_end(self, queryset, name, value):
+        return self._apply_overlap_filter(queryset, value=value, bound='end')
+
+
 class EventTypeList(ListCreateAPI):
     queryset = models.EventType.objects.all()
     serializer_class = serializers.EventTypeSerializer
@@ -380,7 +430,7 @@ class RentalLineItemList(ListCreateAPI):
     serializer_class = serializers.RentalLineItemSerializer
 
     filter_backends = SEARCH_ORDER_FILTER
-    filterset_fields = ['order', 'asset']
+    filterset_class = RentalLineItemFilter
     search_fields = ['order__reference', 'asset__title', 'asset__part__name', 'notes']
     ordering_fields = ['order__reference', 'asset__title', 'quantity']
     ordering = ['order', 'pk']

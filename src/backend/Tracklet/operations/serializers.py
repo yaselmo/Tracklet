@@ -375,8 +375,18 @@ class RentalLineItemSerializer(InvenTreeModelSerializer):
             overlaps = overlaps.exclude(pk=self.instance.pk)
 
         if overlaps.exists():
+            conflict = overlaps.select_related('order').first()
+            reference = getattr(conflict.order, 'reference', None) if conflict else None
+            message = _('Asset is already booked for an overlapping rental period')
+
+            if reference:
+                message = _(
+                    'Asset is already booked for an overlapping rental period '
+                    f'({reference})'
+                )
+
             raise serializers.ValidationError({
-                'asset': _('Asset is already booked for an overlapping rental period')
+                'asset': message
             })
 
         return attrs

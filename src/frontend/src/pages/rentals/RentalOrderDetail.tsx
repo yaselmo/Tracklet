@@ -1,10 +1,11 @@
 import { t } from '@lingui/core/macro';
-import { Badge, Grid, Stack, Text } from '@mantine/core';
-import { IconInfoCircle, IconList, IconNotes } from '@tabler/icons-react';
+import { Badge, Grid, Stack } from '@mantine/core';
+import { IconInfoCircle, IconList } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
+import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
 import PrimaryActionButton from '../../components/buttons/PrimaryActionButton';
 import {
@@ -13,6 +14,8 @@ import {
 } from '../../components/details/Details';
 import InstanceDetail from '../../components/nav/InstanceDetail';
 import { PageDetail } from '../../components/nav/PageDetail';
+import AttachmentPanel from '../../components/panels/AttachmentPanel';
+import NotesPanel from '../../components/panels/NotesPanel';
 import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
 import { useRentalOrderFields } from '../../forms/EventRentalForms';
@@ -99,16 +102,6 @@ export default function RentalOrderDetail() {
     onFormSuccess: refreshInstance
   });
 
-  const addNote = useEditApiFormModal({
-    url: ApiEndpoints.tracklet_rental_order_list,
-    pk: order.pk,
-    title: t`Add Note`,
-    fields: {
-      notes: {}
-    },
-    onFormSuccess: refreshInstance
-  });
-
   const detailPanel = useMemo(() => {
     const left: DetailsField[] = [
       {
@@ -189,23 +182,22 @@ export default function RentalOrderDetail() {
         icon: <IconList />,
         content: order.pk ? (
           <RentalLineItemTable
-            orderId={order.pk}
+            order={order}
             refreshOrder={refreshInstance}
           />
         ) : (
           <></>
         )
       },
-      {
-        name: 'notes',
-        label: t`Notes`,
-        icon: <IconNotes />,
-        content: (
-          <Text style={{ whiteSpace: 'pre-wrap' }} size='sm'>
-            {order.notes || t`No notes`}
-          </Text>
-        )
-      }
+      NotesPanel({
+        model_type: ModelType.rentalorder,
+        model_id: order.pk,
+        has_note: !!order.notes
+      }),
+      AttachmentPanel({
+        model_type: ModelType.rentalorder,
+        model_id: order.pk
+      })
     ];
   }, [order, detailPanel]);
 
@@ -241,12 +233,6 @@ export default function RentalOrderDetail() {
         hidden={!user.hasChangeRole(UserRoles.sales_order)}
         onClick={cancelOrder.open}
       />,
-      <PrimaryActionButton
-        title={t`Add Note`}
-        icon='note'
-        hidden={!user.hasChangeRole(UserRoles.sales_order)}
-        onClick={addNote.open}
-      />
     ];
   }, [
     user,
@@ -254,8 +240,7 @@ export default function RentalOrderDetail() {
     activateOrder,
     returnOrder,
     extendOrder,
-    cancelOrder,
-    addNote
+    cancelOrder
   ]);
 
   return (
@@ -265,7 +250,6 @@ export default function RentalOrderDetail() {
       {returnOrder.modal}
       {extendOrder.modal}
       {cancelOrder.modal}
-      {addNote.modal}
       <InstanceDetail
         query={instanceQuery}
         requiredRole={UserRoles.sales_order}

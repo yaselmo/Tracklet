@@ -25,6 +25,22 @@ export type ModelDict = {
 };
 
 export const ModelInformationDict: ModelDict = {
+  event: {
+    label: () => t`Event`,
+    label_multiple: () => t`Events`,
+    url_overview: '/events/',
+    url_detail: '/events/event/:pk/',
+    api_endpoint: ApiEndpoints.tracklet_event_list,
+    icon: 'calendar'
+  },
+  rentalorder: {
+    label: () => t`Rental Order`,
+    label_multiple: () => t`Rental Orders`,
+    url_overview: '/rentals/',
+    url_detail: '/rentals/rental-order/:pk/',
+    api_endpoint: ApiEndpoints.tracklet_rental_order_list,
+    icon: 'package_export'
+  },
   part: {
     label: () => t`Part`,
     label_multiple: () => t`Parts`,

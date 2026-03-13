@@ -1098,6 +1098,7 @@ class StockOutputOptions(OutputConfiguration):
 
     OPTIONS = [
         InvenTreeOutputOption('part_detail', default=True),
+        InvenTreeOutputOption('category_detail'),
         InvenTreeOutputOption('path_detail'),
         InvenTreeOutputOption('supplier_part_detail'),
         InvenTreeOutputOption('location_detail'),
@@ -1317,7 +1318,15 @@ class StockList(
 
                 item.save(user=user)
 
-                response_data = [serializer.data]
+                queryset = StockSerializers.StockItemSerializer.annotate_queryset(
+                    StockItem.objects.filter(pk=item.pk)
+                )
+
+                response = StockSerializers.StockItemSerializer(
+                    queryset, many=True, context=self.get_serializer_context()
+                )
+
+                response_data = response.data
 
         return Response(
             response_data,

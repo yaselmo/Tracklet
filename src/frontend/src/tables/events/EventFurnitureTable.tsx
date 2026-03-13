@@ -1,19 +1,7 @@
 import { t } from '@lingui/core/macro';
-import {
-  Badge,
-  Button,
-  Group,
-  SegmentedControl,
-  Stack,
-  Text
-} from '@mantine/core';
+import { Badge, Button, Group, SegmentedControl, Stack, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
-import {
-  IconArmchair,
-  IconCheck,
-  IconEdit,
-  IconTrash
-} from '@tabler/icons-react';
+import { IconCheck, IconEdit, IconTrash } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -64,9 +52,6 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
   const user = useUserState();
   const navigate = useNavigate();
   const [selectedAssignment, setSelectedAssignment] = useState<number>(-1);
-  const [defaultFilter, setDefaultFilter] = useState<'in-use' | 'all'>(
-    'in-use'
-  );
   const [usageFilter, setUsageFilter] = useState<'active' | 'all'>('active');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
@@ -357,23 +342,9 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
         tooltip={t`Add Furniture`}
         onClick={() => createAssignment.open()}
         hidden={!user.hasAddRole(UserRoles.sales_order)}
-      />,
-      <Group key='event-furniture-toggle' gap='xs'>
-        <IconArmchair size={16} />
-        <SegmentedControl
-          size='xs'
-          value={defaultFilter}
-          onChange={(value: string) =>
-            setDefaultFilter(value as 'in-use' | 'all')
-          }
-          data={[
-            { label: t`In use only`, value: 'in-use' },
-            { label: t`Show all`, value: 'all' }
-          ]}
-        />
-      </Group>
+      />
     ];
-  }, [createAssignment, user, defaultFilter]);
+  }, [createAssignment, user]);
 
   const rowActions = useCallback(
     (record: any): RowAction[] => {
@@ -489,8 +460,7 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
         columns={columns}
         props={{
           params: {
-            event: eventId,
-            in_use: defaultFilter === 'in-use'
+            event: eventId
           },
           rowActions,
           tableActions,

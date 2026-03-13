@@ -478,6 +478,19 @@ class StockItemSerializer(
 
         return part
 
+    def validate(self, data):
+        """Ensure stock items always resolve to a usable category."""
+        data = super().validate(data)
+
+        category_in_payload = 'category' in getattr(self, 'initial_data', {})
+
+        if self.instance is None and data.get('category') is None:
+            data['category'], _ = StockCategory.objects.get_or_create(name='Other')
+        elif self.instance is not None and category_in_payload and data.get('category') is None:
+            data['category'], _ = StockCategory.objects.get_or_create(name='Other')
+
+        return data
+
     def update(self, instance, validated_data):
         """Custom update method to pass the user information through to the instance."""
         instance._user = self.context.get('user', None)

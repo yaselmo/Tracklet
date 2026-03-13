@@ -1,10 +1,11 @@
 import { t } from '@lingui/core/macro';
-import { Badge, Grid, Stack, Text } from '@mantine/core';
-import { IconArmchair, IconInfoCircle, IconNotes } from '@tabler/icons-react';
+import { Badge, Grid, Stack } from '@mantine/core';
+import { IconArmchair, IconInfoCircle } from '@tabler/icons-react';
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
+import { ModelType } from '@lib/enums/ModelType';
 import { UserRoles } from '@lib/enums/Roles';
 import PrimaryActionButton from '../../components/buttons/PrimaryActionButton';
 import {
@@ -13,6 +14,8 @@ import {
 } from '../../components/details/Details';
 import InstanceDetail from '../../components/nav/InstanceDetail';
 import { PageDetail } from '../../components/nav/PageDetail';
+import AttachmentPanel from '../../components/panels/AttachmentPanel';
+import NotesPanel from '../../components/panels/NotesPanel';
 import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
 import { useEventFields } from '../../forms/EventRentalForms';
@@ -50,16 +53,6 @@ export default function EventDetail() {
     title: t`Change Event Status`,
     fields: {
       status: {}
-    },
-    onFormSuccess: refreshInstance
-  });
-
-  const addNote = useEditApiFormModal({
-    url: ApiEndpoints.tracklet_event_list,
-    pk: event.pk,
-    title: t`Add Note`,
-    fields: {
-      notes: {}
     },
     onFormSuccess: refreshInstance
   });
@@ -149,16 +142,15 @@ export default function EventDetail() {
         icon: <IconArmchair />,
         content: event.pk ? <EventFurnitureTable event={event} /> : <></>
       },
-      {
-        name: 'notes',
-        label: t`Notes`,
-        icon: <IconNotes />,
-        content: (
-          <Text style={{ whiteSpace: 'pre-wrap' }} size='sm'>
-            {event.notes || t`No notes`}
-          </Text>
-        )
-      }
+      NotesPanel({
+        model_type: ModelType.event,
+        model_id: event.pk,
+        has_note: !!event.notes
+      }),
+      AttachmentPanel({
+        model_type: ModelType.event,
+        model_id: event.pk
+      })
     ];
   }, [event, detailsPanel]);
 
@@ -176,20 +168,13 @@ export default function EventDetail() {
         hidden={!user.hasChangeRole(UserRoles.sales_order)}
         onClick={changeStatus.open}
       />,
-      <PrimaryActionButton
-        title={t`Add Note`}
-        icon='note'
-        hidden={!user.hasChangeRole(UserRoles.sales_order)}
-        onClick={addNote.open}
-      />
     ];
-  }, [user, editEvent, changeStatus, addNote]);
+  }, [user, editEvent, changeStatus]);
 
   return (
     <>
       {editEvent.modal}
       {changeStatus.modal}
-      {addNote.modal}
       <InstanceDetail
         query={instanceQuery}
         requiredRole={UserRoles.sales_order}

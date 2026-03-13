@@ -2,6 +2,8 @@
  * Enumeration of available API model types
  */
 export enum ModelType {
+  event = 'event',
+  rentalorder = 'rentalorder',
   part = 'part',
   supplierpart = 'supplierpart',
   manufacturerpart = 'manufacturerpart',
