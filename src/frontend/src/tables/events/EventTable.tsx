@@ -42,6 +42,11 @@ export function EventTable() {
     ];
   }, [user]);
 
+  const canDeleteEvents = useMemo(
+    () => user.hasDeleteRole(UserRoles.sales_order),
+    [user]
+  );
+
   const filters: TableFilter[] = useMemo(() => {
     return [
       {
@@ -194,6 +199,7 @@ export function EventTable() {
           tableActions,
           tableFilters: filters,
           enableSelection: true,
+          enableBulkDelete: canDeleteEvents,
           enableDownload: true,
           onRowClick: (record, index, event) => {
             navigateToLink(`/events/event/${record.pk}`, navigate, event);

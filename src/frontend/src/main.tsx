@@ -50,6 +50,7 @@ declare global {
 export const IS_DEV = import.meta.env.DEV;
 export const IS_DEMO = import.meta.env.VITE_DEMO === 'true';
 export const IS_DEV_OR_DEMO = IS_DEV || IS_DEMO;
+const DEV_BACKEND_HOST = `http://${window.location.hostname}:8000`;
 
 // Filter out any settings that are not defined
 const loaded_vals = (window.INVENTREE_SETTINGS || {}) as any;
@@ -69,8 +70,8 @@ window.INVENTREE_SETTINGS = {
     ...(IS_DEV
       ? {
           'server-localhost': {
-            host: 'http://localhost:8000',
-            name: 'Localhost'
+            host: DEV_BACKEND_HOST,
+            name: 'Dev Backend'
           }
         }
       : {}),

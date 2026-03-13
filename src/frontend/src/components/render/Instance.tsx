@@ -52,6 +52,7 @@ import { RenderPart, RenderPartCategory, RenderPartTestTemplate } from './Part';
 import { RenderPlugin } from './Plugin';
 import { RenderLabelTemplate, RenderReportTemplate } from './Report';
 import {
+  RenderStockCategory,
   RenderStockItem,
   RenderStockLocation,
   RenderStockLocationType
@@ -82,6 +83,7 @@ export const RendererLookup: ModelRendererDict = {
   [ModelType.returnorderlineitem]: RenderReturnOrderLineItem,
   [ModelType.salesorder]: RenderSalesOrder,
   [ModelType.salesordershipment]: RenderSalesOrderShipment,
+  [ModelType.stockcategory]: RenderStockCategory,
   [ModelType.stocklocation]: RenderStockLocation,
   [ModelType.stocklocationtype]: RenderStockLocationType,
   [ModelType.stockitem]: RenderStockItem,

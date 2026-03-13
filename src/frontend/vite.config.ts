@@ -11,9 +11,12 @@ import { __INVENTREE_VERSION_INFO__ } from './version-info';
 // Detect if the current environment is WSL
 // Required for enabling file system polling
 const IS_IN_WSL = platform().includes('WSL') || release().includes('WSL');
+const USE_POLLING = process.env.VITE_USE_POLLING === 'true' || IS_IN_WSL;
+const BACKEND_PROXY_TARGET =
+  process.env.VITE_BACKEND_PROXY_TARGET ?? 'http://localhost:8000';
 
-if (IS_IN_WSL) {
-  console.log('WSL detected: using polling for file system events');
+if (USE_POLLING) {
+  console.log('Using polling for file system events');
 }
 
 // Output directory for the built files
@@ -71,22 +74,25 @@ export default defineConfig(({ command, mode }) => {
       }
     },
     server: {
+      host: '0.0.0.0',
+      port: 5173,
+      strictPort: true,
       proxy: {
         '/media': {
-          target: 'http://localhost:8000',
+          target: BACKEND_PROXY_TARGET,
           changeOrigin: true,
           secure: true
         },
         '/static': {
-          target: 'http://localhost:8000',
+          target: BACKEND_PROXY_TARGET,
           changeOrigin: true,
           secure: true
         }
       },
       watch: {
-        // Use polling only for WSL as the file system doesn't trigger notifications for Linux apps
+        // Use polling where filesystem notifications are unreliable (WSL / container bind mounts)
         // Ref: https://github.com/vitejs/vite/issues/1153#issuecomment-785467271
-        usePolling: IS_IN_WSL
+        usePolling: USE_POLLING
       }
     },
     define: {

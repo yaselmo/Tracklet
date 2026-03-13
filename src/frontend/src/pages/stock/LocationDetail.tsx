@@ -48,7 +48,7 @@ import {
 import { useInstance } from '../../hooks/UseInstance';
 import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
 import { useUserState } from '../../states/UserState';
-import { PartListTable } from '../../tables/part/PartTable';
+import { StockCategoryTable } from '../../tables/stock/StockCategoryTable';
 import { StockItemTable } from '../../tables/stock/StockItemTable';
 import StockLocationParametricTable from '../../tables/stock/StockLocationParametricTable';
 import { StockLocationTable } from '../../tables/stock/StockLocationTable';
@@ -214,6 +214,8 @@ export default function Stock() {
           <StockItemTable
             tableName='location-stock'
             allowAdd
+            allowViewToggle
+            showAvailability={false}
             params={{
               location: id
             }}
@@ -221,19 +223,10 @@ export default function Stock() {
         )
       },
       {
-        name: 'default_parts',
-        label: t`Default Parts`,
+        name: 'stock-categories',
+        label: t`Stock Categories`,
         icon: <IconPackages />,
-        hidden: !location.pk,
-        content: (
-          <PartListTable
-            props={{
-              params: {
-                default_location: location.pk
-              }
-            }}
-          />
-        )
+        content: <StockCategoryTable />
       },
       ParametersPanel({
         model_type: ModelType.stocklocation,

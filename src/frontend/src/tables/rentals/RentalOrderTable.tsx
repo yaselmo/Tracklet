@@ -54,6 +54,11 @@ export function RentalOrderTable({
     ];
   }, [user]);
 
+  const canDeleteRentalOrders = useMemo(
+    () => user.hasDeleteRole(UserRoles.sales_order),
+    [user]
+  );
+
   const tableFilters: TableFilter[] = useMemo(() => {
     return [
       {
@@ -188,6 +193,7 @@ export function RentalOrderTable({
           tableFilters,
           tableActions,
           enableSelection: true,
+          enableBulkDelete: canDeleteRentalOrders,
           enableDownload: true,
           onRowClick: (record, index, event) => {
             navigateToLink(

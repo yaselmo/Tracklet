@@ -149,3 +149,15 @@ export function RenderStockItem(
     />
   );
 }
+
+export function RenderStockCategory({
+  instance
+}: Readonly<InstanceRenderInterface>): ReactNode {
+  return (
+    <RenderInlineModel
+      primary={instance.name}
+      suffix={instance.description}
+      prefix={<ApiIcon name='part' />}
+    />
+  );
+}

@@ -4,7 +4,7 @@ from collections import OrderedDict
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import F, Q
 from django.urls import include, path
 from django.utils.translation import gettext_lazy as _
@@ -39,6 +39,7 @@ from part.models import BomItem, Part, PartCategory
 from part.serializers import PartBriefSerializer
 from stock.generators import generate_batch_code, generate_serial_number
 from stock.models import (
+    StockCategory,
     StockItem,
     StockItemTestResult,
     StockItemTracking,
@@ -63,7 +64,6 @@ from Tracklet.filters import (
 from Tracklet.helpers import extract_serial_numbers, generateTestKey, str2bool
 from Tracklet.mixins import (
     CreateAPI,
-    CustomRetrieveUpdateDestroyAPI,
     ListAPI,
     ListCreateAPI,
     OutputOptionsMixin,
@@ -423,30 +423,52 @@ class StockLocationList(
 
 
 class StockLocationDetail(
-    StockLocationMixin, OutputOptionsMixin, CustomRetrieveUpdateDestroyAPI
+    StockLocationMixin, OutputOptionsMixin, RetrieveUpdateDestroyAPI
 ):
     """API endpoint for detail view of StockLocation object."""
 
     output_options = StockLocationOutputOptions
 
     def destroy(self, request, *args, **kwargs):
-        """Delete a Stock location instance via the API."""
-        delete_stock_items = Tracklet.helpers.str2bool(
-            request.data.get('delete_stock_items', False)
-        )
-        delete_sub_locations = Tracklet.helpers.str2bool(
-            request.data.get('delete_sub_locations', False)
-        )
+        """Delete a stock location instance via the API.
 
-        return super().destroy(
-            request,
-            *args,
-            **{
-                **kwargs,
-                'delete_sub_locations': delete_sub_locations,
-                'delete_stock_items': delete_stock_items,
-            },
-        )
+        Deletion is blocked when the location (or its sublocations) still contains stock.
+        """
+        instance = self.get_object()
+
+        if instance.stock_item_count(cascade=True) > 0:
+            raise ValidationError(
+                {
+                    'detail': _(
+                        'This stock location contains stock items and cannot be deleted.'
+                    )
+                }
+            )
+
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except IntegrityError as exc:
+            message = str(exc)
+
+            if 'projects_project' in message:
+                raise ValidationError(
+                    {
+                        'detail': _(
+                            'This stock location is referenced by one or more projects and cannot be deleted.'
+                        )
+                    }
+                ) from exc
+
+            if 'stock_stocklocation' in message:
+                raise ValidationError(
+                    {
+                        'detail': _(
+                            'This stock location is referenced by other records and cannot be deleted.'
+                        )
+                    }
+                ) from exc
+
+            raise
 
 
 class StockLocationTree(ListAPI):
@@ -585,6 +607,27 @@ class StockFilter(FilterSet):
     part = rest_filters.ModelChoiceFilter(
         label=_('Part'), queryset=Part.objects.all(), method='filter_part'
     )
+
+    category = rest_filters.ModelChoiceFilter(
+        label=_('Stock Category'),
+        queryset=StockCategory.objects.all(),
+        method='filter_category',
+    )
+    include_subcategories = rest_filters.BooleanFilter(
+        label=_('Include Subcategories'),
+        method='filter_include_subcategories',
+    )
+
+    def filter_include_subcategories(self, queryset, name, value):
+        return queryset
+
+    def filter_category(self, queryset, name, category):
+        include_subcategories = str2bool(self.data.get('include_subcategories', True))
+
+        if include_subcategories:
+            return queryset.filter(category__in=category.descendants(include_self=True))
+
+        return queryset.filter(category=category)
 
     def filter_part(self, queryset, name, part):
         """Filter StockItem list by provided Part instance.
@@ -1285,6 +1328,8 @@ class StockList(
     filter_backends = SEARCH_ORDER_FILTER_ALIAS
 
     ordering_field_aliases = {
+        'title': 'title',
+        'category': 'category__name',
         'part': 'part__name',
         'location': 'location__pathstring',
         'IPN': 'part__IPN',
@@ -1295,6 +1340,9 @@ class StockList(
 
     ordering_fields = [
         'batch',
+        'title',
+        'category',
+        'category__name',
         'location',
         'part',
         'part__name',
@@ -1312,9 +1360,11 @@ class StockList(
         'MPN',
     ]
 
-    ordering = ['part__name', 'quantity', 'location']
+    ordering = ['title', 'quantity', 'location']
 
     search_fields = [
+        'title',
+        'category__name',
         'serial',
         'batch',
         'location__name',
@@ -1334,6 +1384,143 @@ class StockDetail(StockApiMixin, OutputOptionsMixin, RetrieveUpdateDestroyAPI):
     """API detail endpoint for a single StockItem instance."""
 
     output_options = StockOutputOptions
+
+
+class StockCategoryList(ListCreateAPI):
+    queryset = StockCategory.objects.all()
+    serializer_class = StockSerializers.StockCategorySerializer
+    filter_backends = SEARCH_ORDER_FILTER
+    filterset_fields = ['parent']
+    search_fields = ['name', 'description']
+    ordering_fields = ['name']
+    ordering = ['name']
+
+
+class StockCategoryDetail(RetrieveUpdateDestroyAPI):
+    queryset = StockCategory.objects.all()
+    serializer_class = StockSerializers.StockCategorySerializer
+
+
+class StockCreateSimple(CreateAPI):
+    """Create a stock item with stock-first fields.
+
+    Required input:
+    - category
+    - title
+    """
+
+    queryset = StockItem.objects.none()
+    serializer_class = StockSerializers.StockItemSerializer
+
+    def _get_stock_bridge_part_category(self):
+        """Get or create a fallback PartCategory for stock-first item creation."""
+        from django.utils.translation import gettext_lazy
+
+        category = PartCategory.objects.filter(name='Stock Items', parent=None).first()
+
+        if category:
+            return category
+
+        return PartCategory.objects.create(
+            name='Stock Items',
+            parent=None,
+            description=gettext_lazy(
+                'Auto-created category for stock-first items created from the Stock UI'
+            ),
+        )
+
+    def create(self, request, *args, **kwargs):
+        data = OrderedDict()
+        data.update(self.clean_data(request.data))
+
+        title = str(data.get('title', '')).strip()
+        if not title:
+            raise ValidationError({'title': _('Title is required')})
+
+        category_id = data.get('category', None)
+        new_category_name = str(data.get('new_category_name', '')).strip()
+
+        category = None
+
+        if category_id:
+            try:
+                category = StockCategory.objects.get(pk=category_id)
+            except (ValueError, StockCategory.DoesNotExist):
+                raise ValidationError({'category': _('Valid category must be supplied')})
+        elif new_category_name:
+            category = StockCategory.objects.create(name=new_category_name)
+        else:
+            raise ValidationError(
+                {'category': _('Category is required (select existing or create new)')}
+            )
+
+        quantity = data.get('quantity', 1)
+        try:
+            quantity = float(quantity)
+        except (TypeError, ValueError):
+            raise ValidationError({'quantity': _('Quantity must be a number')})
+
+        if quantity <= 0:
+            raise ValidationError({'quantity': _('Quantity must be greater than zero')})
+
+        location = data.get('location', None)
+        if location is not None:
+            try:
+                location = StockLocation.objects.get(pk=location)
+            except (ValueError, StockLocation.DoesNotExist):
+                raise ValidationError({'location': _('Valid location must be supplied')})
+
+        notes = data.get('notes', '')
+
+        try:
+            with transaction.atomic():
+                # Keep backend compatibility by creating an internal Part record.
+                bridge_category = self._get_stock_bridge_part_category()
+
+                part = Part(
+                    name=title,
+                    description=notes,
+                    category=bridge_category,
+                )
+                part.full_clean()
+                part.save()
+
+                item_kwargs = {
+                    'part': part,
+                    'title': title,
+                    'category': category,
+                    'quantity': quantity,
+                    'location': location,
+                    'notes': notes,
+                    'status': StockStatus.OK.value,
+                    'availability': StockItem.Availability.AVAILABLE,
+                }
+
+                # Defensive compatibility for instances that still expose a legacy
+                # tracklet_status field in the DB/model mapping.
+                try:
+                    StockItem._meta.get_field('tracklet_status')
+                    item_kwargs['tracklet_status'] = StockStatus.OK.value
+                except Exception:
+                    pass
+
+                item = StockItem.objects.create(**item_kwargs)
+        except DjangoValidationError as exc:
+            if hasattr(exc, 'message_dict'):
+                raise ValidationError(exc.message_dict)
+            raise ValidationError({'detail': exc.messages})
+        except Exception as exc:
+            raise ValidationError({'detail': str(exc) or exc.__class__.__name__})
+
+        queryset = StockSerializers.StockItemSerializer.annotate_queryset(
+            StockItem.objects.filter(pk=item.pk)
+        )
+
+        response = StockSerializers.StockItemSerializer(
+            queryset, many=True, context=self.get_serializer_context()
+        )
+
+        return Response(response.data, status=status.HTTP_201_CREATED)
 
 
 class StockItemSerialNumbers(RetrieveAPI):
@@ -1682,6 +1869,14 @@ class StockTrackingList(
 
 
 stock_api_urls = [
+    path(
+        'category/',
+        include([
+            path('<int:pk>/', StockCategoryDetail.as_view(), name='api-stock-category-detail'),
+            path('', StockCategoryList.as_view(), name='api-stock-category-list'),
+        ]),
+    ),
+    path('create-simple/', StockCreateSimple.as_view(), name='api-stock-create-simple'),
     path(
         'location/',
         include([

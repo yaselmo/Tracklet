@@ -11,11 +11,18 @@ from django_filters.rest_framework.filterset import FilterSet
 from rest_framework import status
 from rest_framework.response import Response
 
+from Tracklet.api import ListCreateDestroyAPIView
 from Tracklet.filters import SEARCH_ORDER_FILTER
 from Tracklet.mixins import ListCreateAPI, RetrieveUpdateDestroyAPI
 
 from . import models, serializers
-from .status_codes import FurnitureAssignmentStatus, RentalOrderStatus
+from .availability import (
+    active_event_reservation_filter,
+    annotate_assignment_reservation_window,
+    normalize_overlap_datetime,
+    reservation_overlap_filter,
+)
+from .status_codes import RentalOrderStatus
 
 
 class EventFilter(FilterSet):
@@ -44,17 +51,13 @@ class EventFurnitureAssignmentFilter(FilterSet):
 
     active = rest_filters.BooleanFilter(label=_('Active'), method='filter_active')
     in_use = rest_filters.BooleanFilter(label=_('In Use'), method='filter_in_use')
+    overlap_start = rest_filters.DateTimeFilter(method='filter_overlap_start')
+    overlap_end = rest_filters.DateTimeFilter(method='filter_overlap_end')
+    reservation_state = rest_filters.CharFilter(method='filter_reservation_state')
 
     def filter_active(self, queryset, name, value):
-        active_filter = Q(checked_in_at__isnull=True) | Q(
-            status__in=[
-                FurnitureAssignmentStatus.RESERVED.value,
-                FurnitureAssignmentStatus.IN_USE.value,
-            ]
-        )
-
         if value:
-            return queryset.filter(active_filter)
+            return queryset.filter(active_event_reservation_filter())
 
         return queryset
 
@@ -63,6 +66,48 @@ class EventFurnitureAssignmentFilter(FilterSet):
             return self.filter_active(queryset, name, value)
 
         return queryset
+
+    def _apply_overlap_filter(self, queryset, value=None, bound='start'):
+        start = value if bound == 'start' else None
+        end = value if bound == 'end' else None
+
+        if start is None:
+            start = self.form.cleaned_data.get('overlap_start')
+        if end is None:
+            end = self.form.cleaned_data.get('overlap_end')
+
+        if start is None or end is None:
+            return queryset
+
+        start = normalize_overlap_datetime(start)
+        end = normalize_overlap_datetime(end)
+
+        if end <= start:
+            return queryset.none()
+
+        return annotate_assignment_reservation_window(queryset).filter(
+            reservation_overlap_filter(start=start, end=end)
+        )
+
+    def filter_overlap_start(self, queryset, name, value):
+        return self._apply_overlap_filter(queryset, value=value, bound='start')
+
+    def filter_overlap_end(self, queryset, name, value):
+        return self._apply_overlap_filter(queryset, value=value, bound='end')
+
+    def filter_reservation_state(self, queryset, name, value):
+        state = (value or '').strip().lower()
+
+        if state not in ['upcoming', 'past']:
+            return queryset
+
+        now = normalize_overlap_datetime(timezone.now())
+        with_windows = annotate_assignment_reservation_window(queryset)
+
+        if state == 'upcoming':
+            return with_windows.filter(reservation_end__gt=now)
+
+        return with_windows.filter(reservation_end__lte=now)
 
 
 class RentalOrderFilter(FilterSet):
@@ -153,7 +198,9 @@ class PlannerDetail(RetrieveUpdateDestroyAPI):
     serializer_class = serializers.PlannerSerializer
 
 
-class EventList(ListCreateAPI):
+class EventList(ListCreateDestroyAPIView):
+    role_required = 'sales_order'
+
     queryset = (
         models.Event.objects
         .select_related('event_type', 'venue', 'planner')
@@ -177,6 +224,8 @@ class EventList(ListCreateAPI):
 
 
 class EventDetail(RetrieveUpdateDestroyAPI):
+    role_required = 'sales_order'
+
     queryset = models.Event.objects.select_related(
         'event_type', 'venue', 'planner'
     ).all()
@@ -229,6 +278,10 @@ class EventFurnitureAssignmentList(ListCreateAPI):
         'item__category',
         'quantity',
         'status',
+        'checked_out_at',
+        'checked_in_at',
+        'event__start_datetime',
+        'event__end_datetime',
         'pk',
     ]
     ordering = ['-checked_out_at', '-pk']
@@ -277,7 +330,9 @@ class RentalAssetDetail(RetrieveUpdateDestroyAPI):
     serializer_class = serializers.RentalAssetSerializer
 
 
-class RentalOrderList(ListCreateAPI):
+class RentalOrderList(ListCreateDestroyAPIView):
+    role_required = 'sales_order'
+
     serializer_class = serializers.RentalOrderListSerializer
 
     filter_backends = SEARCH_ORDER_FILTER
@@ -319,18 +374,22 @@ class RentalOrderDetail(RetrieveUpdateDestroyAPI):
 
 
 class RentalLineItemList(ListCreateAPI):
-    queryset = models.RentalLineItem.objects.select_related('order', 'asset').all()
+    queryset = models.RentalLineItem.objects.select_related(
+        'order', 'asset', 'asset__part'
+    ).all()
     serializer_class = serializers.RentalLineItemSerializer
 
     filter_backends = SEARCH_ORDER_FILTER
     filterset_fields = ['order', 'asset']
-    search_fields = ['order__reference', 'asset__name', 'asset__asset_tag', 'notes']
-    ordering_fields = ['order__reference', 'asset__name', 'quantity']
+    search_fields = ['order__reference', 'asset__title', 'asset__part__name', 'notes']
+    ordering_fields = ['order__reference', 'asset__title', 'quantity']
     ordering = ['order', 'pk']
 
 
 class RentalLineItemDetail(RetrieveUpdateDestroyAPI):
-    queryset = models.RentalLineItem.objects.select_related('order', 'asset').all()
+    queryset = models.RentalLineItem.objects.select_related(
+        'order', 'asset', 'asset__part'
+    ).all()
     serializer_class = serializers.RentalLineItemSerializer
 
 

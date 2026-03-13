@@ -43,13 +43,6 @@ export const ManufacturerPartDetail = Loadable(
   lazy(() => import('./pages/company/ManufacturerPartDetail'))
 );
 
-export const CategoryDetail = Loadable(
-  lazy(() => import('./pages/part/CategoryDetail'))
-);
-export const PartDetail = Loadable(
-  lazy(() => import('./pages/part/PartDetail'))
-);
-
 export const LocationDetail = Loadable(
   lazy(() => import('./pages/stock/LocationDetail'))
 );
@@ -178,11 +171,7 @@ export const routes = (
         <Route path='system/*' element={<SystemSettings />} />
         <Route path='user/*' element={<UserSettings />} />
       </Route>
-      <Route path='part/'>
-        <Route index element={<Navigate to='category/index/' />} />
-        <Route path='category/:id?/*' element={<CategoryDetail />} />
-        <Route path=':id/*' element={<PartDetail />} />
-      </Route>
+      <Route path='part/*' element={<Navigate to='/stock/' replace />} />
       <Route path='stock/'>
         <Route index element={<Navigate to='location/index/' />} />
         <Route path='location/:id?/*' element={<LocationDetail />} />

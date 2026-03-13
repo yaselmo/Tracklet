@@ -67,6 +67,23 @@ export const useLocalState = create<LocalStateProps>()(
           host = Object.values(state.hostList)[0].host;
         }
 
+        // In dev mode, avoid sending remote LAN clients to their own localhost.
+        if (import.meta.env.DEV && host) {
+          try {
+            const parsed = new URL(host);
+            const localHosts = ['localhost', '127.0.0.1', '::1'];
+            const currentHost = window.location.hostname;
+            const isCurrentLocal = localHosts.includes(currentHost);
+
+            if (localHosts.includes(parsed.hostname) && !isCurrentLocal) {
+              parsed.hostname = currentHost;
+              host = parsed.toString();
+            }
+          } catch {
+            // Keep the configured host if parsing fails
+          }
+        }
+
         // If no host is provided, fallback to using the current URL (default)
         if (!host) {
           host = window.location.origin;

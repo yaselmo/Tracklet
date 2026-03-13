@@ -16,7 +16,7 @@ import {
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { AddItemButton } from '@lib/components/AddItemButton';
@@ -71,6 +71,19 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [selectedPartId, setSelectedPartId] = useState<number | null>(null);
   const [assignmentInitialData, setAssignmentInitialData] = useState<any>({});
+  const overlapWindow = useMemo(() => {
+    const overlapStart = event?.start_datetime
+      ? dayjs(event.start_datetime).toISOString()
+      : undefined;
+    const overlapEnd = event?.end_datetime
+      ? dayjs(event.end_datetime).toISOString()
+      : undefined;
+
+    return {
+      overlap_start: overlapStart,
+      overlap_end: overlapEnd
+    };
+  }, [event?.start_datetime, event?.end_datetime]);
 
   const usageModal = useModal({
     id: `event-furniture-usage-modal-${eventId}`,
@@ -158,7 +171,8 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
           props={{
             params: {
               part: selectedPartId || undefined,
-              active: usageFilter === 'active'
+              active: usageFilter === 'active',
+              ...overlapWindow
             },
             enableSelection: false,
             enableDownload: true
@@ -170,13 +184,19 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
 
   const usageCountQuery = useQuery({
     enabled: isCreateModalOpen && !!selectedPartId,
-    queryKey: ['event-furniture-part-usage-count', selectedPartId],
+    queryKey: [
+      'event-furniture-part-usage-count',
+      selectedPartId,
+      overlapWindow.overlap_start,
+      overlapWindow.overlap_end
+    ],
     queryFn: async () => {
       return api
         .get(apiUrl(ApiEndpoints.tracklet_event_furniture_list), {
           params: {
             part: selectedPartId,
             active: true,
+            ...overlapWindow,
             limit: 1
           }
         })
@@ -208,6 +228,12 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
       checked_in_at: checkedIn
     });
   }, [event]);
+
+  useEffect(() => {
+    if (isCreateModalOpen) {
+      updateAssignmentDefaultDates();
+    }
+  }, [isCreateModalOpen, updateAssignmentDefaultDates]);
 
   const createAssignment = useCreateApiFormModal({
     url: ApiEndpoints.tracklet_event_furniture_list,
@@ -244,7 +270,7 @@ export function EventFurnitureTable({ event }: Readonly<{ event: any }>) {
     onOpen: () => {
       setCreateModalOpen(true);
       setSelectedPartId(null);
-      setAssignmentInitialData({});
+      updateAssignmentDefaultDates();
     },
     onClose: () => {
       setCreateModalOpen(false);

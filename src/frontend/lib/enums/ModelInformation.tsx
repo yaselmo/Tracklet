@@ -84,6 +84,12 @@ export const ModelInformationDict: ModelDict = {
     admin_url: '/part/partcategory/',
     icon: 'category'
   },
+  stockcategory: {
+    label: () => t`Stock Category`,
+    label_multiple: () => t`Stock Categories`,
+    api_endpoint: ApiEndpoints.stock_category_list,
+    icon: 'category'
+  },
   stockitem: {
     label: () => t`Stock Item`,
     label_multiple: () => t`Stock Items`,

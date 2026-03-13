@@ -139,9 +139,11 @@ export enum ApiEndpoints {
   stock_location_list = 'stock/location/',
   stock_location_type_list = 'stock/location-type/',
   stock_location_tree = 'stock/location/tree/',
+  stock_category_list = 'stock/category/',
 
   // Stock item API endpoints
   stock_item_list = 'stock/',
+  stock_create_simple = 'stock/create-simple/',
   stock_tracking_list = 'stock/track/',
   stock_test_result_list = 'stock/test/',
   stock_transfer = 'stock/transfer/',

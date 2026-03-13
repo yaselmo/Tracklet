@@ -1,5 +1,6 @@
 import { t } from '@lingui/core/macro';
-import { Group } from '@mantine/core';
+import { Alert, Group } from '@mantine/core';
+import { IconTrash } from '@tabler/icons-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { AddItemButton } from '@lib/components/AddItemButton';
@@ -17,6 +18,7 @@ import { InvenTreeIcon } from '../../functions/icons';
 import {
   useBulkEditApiFormModal,
   useCreateApiFormModal,
+  useDeleteApiFormModal,
   useEditApiFormModal
 } from '../../hooks/UseForm';
 import { useTable } from '../../hooks/UseTable';
@@ -123,6 +125,18 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
     onFormSuccess: (record: any) => table.updateRecord(record)
   });
 
+  const deleteLocation = useDeleteApiFormModal({
+    url: ApiEndpoints.stock_location_list,
+    pk: selectedLocation,
+    title: t`Delete Location`,
+    preFormContent: (
+      <Alert color='red' title={t`Confirm Deletion`}>
+        {t`Are you sure you want to delete this location?`}
+      </Alert>
+    ),
+    onFormSuccess: table.refreshTable
+  });
+
   const setParent = useBulkEditApiFormModal({
     url: ApiEndpoints.stock_location_list,
     items: table.selectedIds,
@@ -167,6 +181,7 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
   const rowActions = useCallback(
     (record: any): RowAction[] => {
       const can_edit = user.hasChangeRole(UserRoles.stock_location);
+      const can_delete = user.hasDeleteRole(UserRoles.stock_location);
 
       return [
         RowEditAction({
@@ -175,16 +190,28 @@ export function StockLocationTable({ parentId }: Readonly<{ parentId?: any }>) {
             setSelectedLocation(record.pk);
             editLocation.open();
           }
-        })
+        }),
+        {
+          title: t`Delete Location`,
+          tooltip: t`Delete Location`,
+          icon: <IconTrash />,
+          color: 'red',
+          hidden: !can_delete,
+          onClick: () => {
+            setSelectedLocation(record.pk);
+            deleteLocation.open();
+          }
+        }
       ];
     },
-    [user]
+    [deleteLocation, editLocation, user]
   );
 
   return (
     <>
       {newLocation.modal}
       {editLocation.modal}
+      {deleteLocation.modal}
       {setParent.modal}
       <TrackletTable
         url={apiUrl(ApiEndpoints.stock_location_list)}

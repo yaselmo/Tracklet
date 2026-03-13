@@ -98,5 +98,5 @@ class RentalOrderAdmin(admin.ModelAdmin):
 @admin.register(models.RentalLineItem)
 class RentalLineItemAdmin(admin.ModelAdmin):
     list_display = ['order', 'asset', 'quantity']
-    search_fields = ['order__reference', 'asset__name', 'asset__asset_tag']
+    search_fields = ['order__reference', 'asset__title', 'asset__part__name']
     list_filter = ['order', 'asset']

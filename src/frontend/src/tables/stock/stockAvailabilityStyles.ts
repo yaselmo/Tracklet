@@ -12,6 +12,8 @@ const DEFAULT_STYLE = {
 
 const AVAIL_STYLE: Record<string, { bg: string; fg: string }> = {
   AVAILABLE: { bg: 'var(--mantine-color-green-6)', fg: '#fff' },
+  RESERVED: { bg: 'var(--mantine-color-yellow-6)', fg: '#111' },
+  IN_USE: { bg: 'var(--mantine-color-blue-6)', fg: '#fff' },
   UNAVAILABLE: { bg: 'var(--mantine-color-gray-6)', fg: '#fff' },
   MISSING: { bg: 'var(--mantine-color-yellow-5)', fg: '#111' },
   BROKEN: { bg: 'var(--mantine-color-red-6)', fg: '#fff' }

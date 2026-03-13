@@ -6,7 +6,6 @@ import { UserRoles } from '@lib/enums/Roles';
 import type { SettingsStateProps } from '@lib/types/Settings';
 import type { UserStateProps } from '@lib/types/User';
 import {
-  IconBox,
   IconBuildingFactory2,
   IconCalendarEvent,
   IconClipboardList,
@@ -33,12 +32,6 @@ export function getNavTabs(user: UserStateProps): NavTab[] {
       name: 'home',
       title: t`Dashboard`,
       icon: <IconDashboard />
-    },
-    {
-      name: 'part',
-      title: t`Parts`,
-      icon: <IconBox />,
-      role: UserRoles.part
     },
     {
       name: 'stock',

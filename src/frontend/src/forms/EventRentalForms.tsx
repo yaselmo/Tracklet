@@ -2,6 +2,7 @@ import { t } from '@lingui/core/macro';
 import { useMemo } from 'react';
 
 import { ApiEndpoints, apiUrl } from '@lib/index';
+import { ModelType } from '@lib/enums/ModelType';
 import type { ApiFormFieldSet } from '@lib/types/Forms';
 
 export function useEventFields(): ApiFormFieldSet {
@@ -107,7 +108,6 @@ export function useEventFurnitureAssignmentFields({
         api_url: apiUrl(ApiEndpoints.part_list),
         filters: {
           active: true,
-          IPN_regex: '^RENTAL-',
           category_detail: true
         },
         required: true,
@@ -187,8 +187,14 @@ export function useRentalLineItemFields({
         disabled: !!orderId
       },
       asset: {
+        field_type: 'related field',
+        api_url: apiUrl(ApiEndpoints.stock_item_list),
+        model: ModelType.stockitem,
+        modelRenderer: (instance) =>
+          instance?.title || instance?.part_detail?.full_name || instance?.part_name || '',
         filters: {
-          active: true
+          in_stock: true,
+          part_detail: true
         }
       },
       quantity: {

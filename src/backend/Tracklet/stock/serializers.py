@@ -41,6 +41,7 @@ from Tracklet.serializers import (
 from users.serializers import UserSerializer
 
 from .models import (
+    StockCategory,
     StockItem,
     StockItemTestResult,
     StockItemTracking,
@@ -192,6 +193,22 @@ class LocationBriefSerializer(Tracklet.serializers.InvenTreeModelSerializer):
         fields = ['pk', 'name', 'pathstring']
 
 
+class StockCategoryBriefSerializer(Tracklet.serializers.InvenTreeModelSerializer):
+    class Meta:
+        model = StockCategory
+        fields = ['pk', 'name', 'parent']
+
+
+class StockCategorySerializer(Tracklet.serializers.InvenTreeModelSerializer):
+    parent_detail = StockCategoryBriefSerializer(
+        source='parent', many=False, read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = StockCategory
+        fields = ['pk', 'name', 'description', 'parent', 'parent_detail']
+
+
 @register_importer()
 class StockItemTestResultSerializer(
     Tracklet.serializers.FilterableSerializerMixin,
@@ -333,6 +350,8 @@ class StockItemSerializer(
         model = StockItem
         fields = [
             'pk',
+            'title',
+            'category',
             'part',
             'quantity',
             'serial',
@@ -384,6 +403,7 @@ class StockItemSerializer(
             'supplier_part_detail',
             'part_detail',
             'location_detail',
+            'category_detail',
         ]
         read_only_fields = [
             'allocated',
@@ -485,6 +505,24 @@ class StockItemSerializer(
         instance = super().update(instance, validated_data=validated_data)
 
         return instance
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if not data.get('title'):
+            data['title'] = getattr(instance, 'title', '') or getattr(
+                instance.part, 'name', ''
+            )
+
+        availability = instance.infer_availability()
+        data['availability'] = availability
+
+        try:
+            data['availability_text'] = StockItem.Availability(availability).label
+        except Exception:
+            data['availability_text'] = availability
+
+        return data
 
     @staticmethod
     def annotate_queryset(queryset):
@@ -617,6 +655,18 @@ class StockItemSerializer(
         ),
         False,
         prefetch_fields=['location'],
+    )
+
+    category_detail = enable_filter(
+        StockCategoryBriefSerializer(
+            label=_('Category'),
+            source='category',
+            many=False,
+            read_only=True,
+            allow_null=True,
+        ),
+        False,
+        prefetch_fields=['category'],
     )
 
     tests = enable_filter(

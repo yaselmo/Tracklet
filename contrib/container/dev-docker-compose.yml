@@ -19,6 +19,9 @@ services:
     # Note: This can be changed to a different backend if required
     inventree-dev-db:
         image: postgres:17
+        networks:
+            inventree-dev-net:
+                ipv4_address: 172.30.0.10
         expose:
             - 5432/tcp
         environment:
@@ -28,7 +31,7 @@ services:
             - POSTGRES_DB=inventree
         volumes:
           # Map 'data' volume such that postgres database is stored externally
-          - ./data:/var/lib/postgresql/data:z
+          - ../../data:/var/lib/postgresql/data:z
         restart: unless-stopped
 
     # InvenTree web server service
@@ -36,8 +39,10 @@ services:
     inventree-dev-server:
         depends_on:
           - inventree-dev-db
+        networks:
+            - inventree-dev-net
         build: &build_config
-            context: .
+            context: ../..
             dockerfile: contrib/container/Dockerfile
             target: dev
         # Cache the built image to be used by the inventree-dev-worker process
@@ -47,21 +52,57 @@ services:
             - 8000:8000
         volumes:
             # Mount local source directory to /home/inventree
-            - ./:/home/inventree:z
+            - ../../:/home/inventree:z
         env_file:
-            - contrib/container/docker.dev.env
+            - ./docker.dev.env
+        restart: unless-stopped
+
+    # Frontend development server (Vite)
+    inventree-dev-frontend:
+        depends_on:
+          - inventree-dev-server
+        networks:
+            - inventree-dev-net
+        image: inventree-dev-image
+        build: *build_config
+        command: /bin/bash -lc "if [ ! -d /home/inventree/src/frontend/node_modules ]; then invoke int.frontend-install; fi && invoke dev.frontend-server"
+        ports:
+            # Expose frontend dev server (Vite) on port 5173
+            - 5173:5173
+        environment:
+            - VITE_BACKEND_PROXY_TARGET=http://inventree-dev-server:8000
+            - VITE_USE_POLLING=true
+        volumes:
+            # Mount local source directory to /home/inventree
+            - ../../:/home/inventree:z
+            # Keep frontend dependencies in a persistent docker volume
+            - inventree-dev-frontend-node-modules:/home/inventree/src/frontend/node_modules
+        env_file:
+            - ./docker.dev.env
         restart: unless-stopped
 
     # Background worker process handles long-running or periodic tasks
     inventree-dev-worker:
         image: inventree-dev-image
+        networks:
+            - inventree-dev-net
         build: *build_config
         command: invoke worker
         depends_on:
             - inventree-dev-server
         volumes:
             # Mount local source directory to /home/inventree
-            - ./:/home/inventree:z
+            - ../../:/home/inventree:z
         env_file:
-            - contrib/container/docker.dev.env
+            - ./docker.dev.env
         restart: unless-stopped
+
+networks:
+    inventree-dev-net:
+        name: inventree-dev-net
+        ipam:
+            config:
+                - subnet: 172.30.0.0/24
+
+volumes:
+    inventree-dev-frontend-node-modules:

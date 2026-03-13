@@ -9,6 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 import Tracklet.models
 from company.models import Company
+from stock.models import StockItem
 from users.models import Owner
 
 from .status_codes import EventStatus, FurnitureAssignmentStatus, RentalOrderStatus
@@ -198,18 +199,6 @@ class EventFurnitureAssignment(
     class Meta:
         verbose_name = _('Event Furniture Assignment')
         verbose_name_plural = _('Event Furniture Assignments')
-        constraints = [
-            models.UniqueConstraint(
-                fields=['event', 'item'],
-                condition=Q(item__isnull=False),
-                name='event_furniture_item_unique',
-            ),
-            models.UniqueConstraint(
-                fields=['event', 'part'],
-                condition=Q(part__isnull=False),
-                name='event_furniture_part_unique',
-            ),
-        ]
 
     event = models.ForeignKey(
         Event,
@@ -401,7 +390,7 @@ class RentalLineItem(
     )
 
     asset = models.ForeignKey(
-        RentalAsset,
+        StockItem,
         on_delete=models.PROTECT,
         related_name='rental_lines',
         verbose_name=_('Asset'),

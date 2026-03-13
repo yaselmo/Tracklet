@@ -124,6 +124,10 @@ export function CompanyTable({
     ];
   }, [user]);
 
+  const canDelete =
+    user.hasDeleteRole(UserRoles.purchase_order) ||
+    user.hasDeleteRole(UserRoles.sales_order);
+
   const rowActions = useCallback(
     (record: any): RowAction[] => {
       return [
@@ -164,6 +168,7 @@ export function CompanyTable({
           tableActions: tableActions,
           enableDownload: true,
           enableSelection: true,
+          enableBulkDelete: canDelete,
           enableReports: true,
           rowActions: rowActions
         }}

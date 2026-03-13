@@ -48,7 +48,7 @@ export function RentalLineItemTable({
         title: t`Asset`,
         sortable: true,
         render: (record: any) =>
-          record.asset_detail?.asset_tag || record.asset_detail?.name || '-'
+          record.asset_detail?.title || record.asset_detail?.part_full_name || '-'
       },
       {
         accessor: 'quantity',

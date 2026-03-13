@@ -1,6 +1,5 @@
 """Serializers for operations API."""
 
-from django.db import IntegrityError, transaction
 from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
@@ -12,6 +11,11 @@ from Tracklet.serializers import InvenTreeModelSerializer
 from users.serializers import OwnerSerializer
 
 from . import models
+from .availability import (
+    annotate_assignment_reservation_window,
+    normalize_overlap_datetime,
+    reservation_overlap_filter,
+)
 from .status_codes import EventStatus, FurnitureAssignmentStatus, RentalOrderStatus
 
 
@@ -179,59 +183,13 @@ class EventFurnitureAssignmentSerializer(InvenTreeModelSerializer):
         return bool(getattr(obj, '_updated_existing', False))
 
     def create(self, validated_data):
-        event = validated_data.get('event')
-        part = validated_data.get('part')
-
-        if not event or not part:
-            instance = super().create(validated_data)
-            instance._updated_existing = False
-            return instance
-
-        try:
-            with transaction.atomic():
-                instance, created = (
-                    models.EventFurnitureAssignment.objects.get_or_create(
-                        event=event, part=part, defaults=validated_data
-                    )
-                )
-        except IntegrityError:
-            instance = models.EventFurnitureAssignment.objects.get(
-                event=event, part=part
-            )
-            created = False
-
-        if created:
-            instance._updated_existing = False
-            return instance
-
-        submitted_quantity = validated_data.get('quantity')
-
-        if submitted_quantity is not None:
-            instance.quantity = (instance.quantity or 0) + submitted_quantity
-
-        if 'checked_out_at' in validated_data:
-            instance.checked_out_at = validated_data.get('checked_out_at')
-
-        if 'checked_in_at' in validated_data:
-            instance.checked_in_at = validated_data.get('checked_in_at')
-
-        submitted_notes = (validated_data.get('notes') or '').strip()
-
-        if submitted_notes:
-            existing_notes = (instance.notes or '').strip()
-            instance.notes = (
-                f'{existing_notes}\n{submitted_notes}'
-                if existing_notes
-                else submitted_notes
-            )
-
-        instance.item = None
-        instance.save()
-        instance._updated_existing = True
-
+        instance = super().create(validated_data)
+        instance._updated_existing = False
         return instance
 
     def validate(self, attrs):
+        assignment = self.instance
+
         part = attrs.get('part', getattr(self.instance, 'part', None))
         item = attrs.get('item', getattr(self.instance, 'item', None))
 
@@ -242,6 +200,71 @@ class EventFurnitureAssignmentSerializer(InvenTreeModelSerializer):
 
         if part and 'item' not in attrs:
             attrs['item'] = None
+
+        event = attrs.get('event', getattr(assignment, 'event', None))
+        if event is None:
+            raise serializers.ValidationError({'event': _('Event is required')})
+
+        start = attrs.get('checked_out_at', getattr(assignment, 'checked_out_at', None))
+        end = attrs.get('checked_in_at', getattr(assignment, 'checked_in_at', None))
+
+        if start is None:
+            start = event.start_datetime
+
+        if end is None:
+            end = event.end_datetime
+
+        start = normalize_overlap_datetime(start)
+        end = normalize_overlap_datetime(end)
+
+        if not start or not end:
+            raise serializers.ValidationError({
+                'event': _('Event reservation window is incomplete')
+            })
+
+        if end <= start:
+            raise serializers.ValidationError({
+                'checked_in_at': _('Checked in timestamp must be after checked out')
+            })
+
+        active_statuses = [
+            FurnitureAssignmentStatus.RESERVED.value,
+            FurnitureAssignmentStatus.IN_USE.value,
+        ]
+
+        candidate_status = attrs.get(
+            'status',
+            getattr(assignment, 'status', FurnitureAssignmentStatus.RESERVED.value),
+        )
+
+        if candidate_status not in active_statuses:
+            return attrs
+
+        overlapping = models.EventFurnitureAssignment.objects.filter(
+            status__in=active_statuses
+        )
+
+        if part:
+            overlapping = overlapping.filter(part=part)
+        elif item:
+            overlapping = overlapping.filter(item=item)
+        else:
+            overlapping = overlapping.none()
+
+        overlapping = annotate_assignment_reservation_window(overlapping).filter(
+            reservation_overlap_filter(start=start, end=end)
+        )
+
+        if assignment:
+            overlapping = overlapping.exclude(pk=assignment.pk)
+
+        if overlapping.exists():
+            field = 'part' if part else 'item'
+            raise serializers.ValidationError({
+                field: _(
+                    'Furniture is already reserved for an overlapping event period'
+                )
+            })
 
         return attrs
 
@@ -309,7 +332,7 @@ class RentalOrderSerializer(InvenTreeModelSerializer):
 
 class RentalLineItemSerializer(InvenTreeModelSerializer):
     order_detail = RentalOrderSerializer(source='order', read_only=True)
-    asset_detail = RentalAssetSerializer(source='asset', read_only=True)
+    asset_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = models.RentalLineItem
@@ -357,6 +380,19 @@ class RentalLineItemSerializer(InvenTreeModelSerializer):
             })
 
         return attrs
+
+    def get_asset_detail(self, obj):
+        asset = obj.asset
+        part = getattr(asset, 'part', None)
+
+        return {
+            'pk': asset.pk,
+            'title': asset.title,
+            'serial': asset.serial,
+            'part': asset.part_id,
+            'part_full_name': getattr(part, 'full_name', '') if part else '',
+            'availability': asset.availability,
+        }
 
 
 class RentalOrderListSerializer(RentalOrderSerializer):

@@ -1,9 +1,21 @@
 import { t } from '@lingui/core/macro';
-import { Badge } from '@mantine/core';
-import { useMemo, useState } from 'react';
+import {
+  Badge,
+  Card,
+  Center,
+  HoverCard,
+  Image,
+  Pagination,
+  SimpleGrid,
+  Stack,
+  Text
+} from '@mantine/core';
+import { useQuery } from '@tanstack/react-query';
+import { IconLayoutGrid, IconTable } from '@tabler/icons-react';
+import type { ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { ActionButton } from '@lib/components/ActionButton';
 import { AddItemButton } from '@lib/components/AddItemButton';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
@@ -12,11 +24,15 @@ import { apiUrl } from '@lib/functions/Api';
 import { getDetailUrl } from '@lib/functions/Navigation';
 import type { TableFilter } from '@lib/types/Filters';
 import type { StockOperationProps } from '@lib/types/Forms';
+import type { ApiFormFieldSet } from '@lib/types/Forms';
+import type { InvenTreeTableProps } from '@lib/types/Tables';
 import type { TableColumn } from '@lib/types/Tables';
-import OrderPartsWizard from '../../components/wizards/OrderPartsWizard';
+import type { TableState } from '@lib/types/Tables';
+import SegmentedIconControl from '../../components/buttons/SegmentedIconControl';
+import { useApi } from '../../contexts/ApiContext';
 import { formatCurrency, formatPriceRange } from '../../defaults/formatters';
-import { useStockFields } from '../../forms/StockForms';
 import { InvenTreeIcon } from '../../functions/icons';
+import { generateUrl } from '../../functions/urls';
 import { useCreateApiFormModal } from '../../hooks/UseForm';
 import { useStockAdjustActions } from '../../hooks/UseStockAdjustActions';
 import { useTable } from '../../hooks/UseTable';
@@ -26,7 +42,6 @@ import {
   DateColumn,
   DescriptionColumn,
   LocationColumn,
-  PartColumn,
   StockColumn
 } from '../ColumnRenderers';
 import {
@@ -42,37 +57,332 @@ import {
   SupplierFilter
 } from '../Filter';
 import { TrackletTable } from '../TrackletTable';
+import TrackletTableHeader from '../TrackletTableHeader';
 import { getStockAvailabilityStyle } from './stockAvailabilityStyles';
+
+const STOCK_IMAGE_SIZE_PX = 48;
+const STOCK_IMAGE_PREVIEW_SIZE_PX = 220;
+const STOCK_GRID_PAGE_SIZE = 24;
+
+function StockItemImageCell({ record }: Readonly<{ record: any }>) {
+  const [imageError, setImageError] = useState(false);
+
+  const imageSource =
+    record?.image || record?.part_detail?.thumbnail || record?.part_detail?.image;
+  const resolvedSource = imageSource ? generateUrl(imageSource) : '';
+  const showImage = !!resolvedSource && !imageError;
+
+  return (
+    <HoverCard
+      disabled={!showImage}
+      withinPortal
+      openDelay={120}
+      closeDelay={60}
+      shadow='md'
+      zIndex={3000}
+      position='right-start'
+    >
+      <HoverCard.Target>
+        <Center h={STOCK_IMAGE_SIZE_PX} w={STOCK_IMAGE_SIZE_PX}>
+          {showImage ? (
+            <img
+              src={resolvedSource}
+              alt={record?.title || record?.part_detail?.name || 'Stock item'}
+              onError={() => setImageError(true)}
+              style={{
+                width: `${STOCK_IMAGE_SIZE_PX}px`,
+                height: `${STOCK_IMAGE_SIZE_PX}px`,
+                objectFit: 'cover',
+                borderRadius: '8px',
+                display: 'block'
+              }}
+            />
+          ) : (
+            <Center
+              h={STOCK_IMAGE_SIZE_PX}
+              w={STOCK_IMAGE_SIZE_PX}
+              style={{
+                borderRadius: '8px',
+                backgroundColor: 'var(--mantine-color-gray-1)',
+                color: 'var(--mantine-color-gray-6)'
+              }}
+            >
+              <InvenTreeIcon icon='photo' iconProps={{ size: 20, stroke: 1.5 }} />
+            </Center>
+          )}
+        </Center>
+      </HoverCard.Target>
+      <HoverCard.Dropdown p={6}>
+        <Image
+          src={resolvedSource}
+          alt={record?.title || record?.part_detail?.name || 'Stock item preview'}
+          w={STOCK_IMAGE_PREVIEW_SIZE_PX}
+          h={STOCK_IMAGE_PREVIEW_SIZE_PX}
+          fit='cover'
+          radius='sm'
+        />
+      </HoverCard.Dropdown>
+    </HoverCard>
+  );
+}
+
+function StockItemCard({
+  record,
+  showAvailability,
+  onOpen
+}: Readonly<{
+  record: any;
+  showAvailability: boolean;
+  onOpen: (record: any) => void;
+}>) {
+  const [imageError, setImageError] = useState(false);
+
+  const imageSource =
+    record?.image || record?.part_detail?.thumbnail || record?.part_detail?.image;
+  const resolvedSource = imageSource ? generateUrl(imageSource) : '';
+  const showImage = !!resolvedSource && !imageError;
+
+  const availability = getStockAvailabilityStyle(
+    record?.availability,
+    record?.availability_text
+  );
+
+  return (
+    <Card
+      withBorder
+      radius='md'
+      shadow='xs'
+      p='sm'
+      onClick={() => onOpen(record)}
+      style={{ cursor: 'pointer', height: '100%' }}
+    >
+      <Card.Section withBorder>
+        <Center
+          h={170}
+          style={{
+            backgroundColor: showImage
+              ? 'var(--mantine-color-body)'
+              : 'var(--mantine-color-gray-1)'
+          }}
+        >
+          {showImage ? (
+            <img
+              src={resolvedSource}
+              alt={record?.title || record?.part_detail?.name || 'Stock item'}
+              onError={() => setImageError(true)}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                display: 'block'
+              }}
+            />
+          ) : (
+            <InvenTreeIcon icon='photo' iconProps={{ size: 42, stroke: 1.4 }} />
+          )}
+        </Center>
+      </Card.Section>
+      <Stack gap={6} mt='sm'>
+        <Text fw={600} lineClamp={2}>
+          {record?.title || record?.part_detail?.name || record?.part || '-'}
+        </Text>
+        <Text size='sm' c='dimmed' lineClamp={1}>
+          {record?.category_detail?.name || '-'}
+        </Text>
+        <Text size='sm' lineClamp={1}>
+          {record?.location_detail?.name || '-'}
+        </Text>
+        <Text size='sm'>
+          {t`Stock`}: {record?.stock ?? record?.quantity ?? '-'}
+        </Text>
+        {showAvailability && (
+          <Badge
+            styles={{
+              root: {
+                backgroundColor: availability.bg,
+                color: availability.fg,
+                width: 'fit-content'
+              }
+            }}
+          >
+            {availability.label}
+          </Badge>
+        )}
+      </Stack>
+    </Card>
+  );
+}
+
+function StockItemGridView({
+  tableState,
+  tableFilters,
+  tableActions,
+  params,
+  showAvailability
+}: Readonly<{
+  tableState: TableState;
+  tableFilters: TableFilter[];
+  tableActions: ReactNode[];
+  params: Record<string, any>;
+  showAvailability: boolean;
+}>) {
+  const api = useApi();
+  const navigate = useNavigate();
+
+  const tableProps: InvenTreeTableProps = useMemo(
+    () => ({
+      enableDownload: true,
+      enableLabels: true,
+      enableReports: true,
+      enableFilters: true,
+      enableSearch: true,
+      enableRefresh: true,
+      enableColumnSwitching: false,
+      tableFilters,
+      tableActions,
+      modelType: ModelType.stockitem,
+      params
+    }),
+    [tableFilters, tableActions, params]
+  );
+
+  useEffect(() => {
+    tableState.setPage(1);
+  }, [tableState.searchTerm, tableState.filterSet.activeFilters, tableState.queryFilters]);
+
+  const gridQuery = useQuery({
+    queryKey: [
+      'stock-item-grid',
+      tableState.tableKey,
+      tableState.page,
+      tableState.searchTerm,
+      tableState.filterSet.activeFilters,
+      tableState.queryFilters.toString(),
+      params
+    ],
+    queryFn: async () => {
+      const queryParams: Record<string, any> = {
+        ...params,
+        limit: STOCK_GRID_PAGE_SIZE,
+        offset: (Math.max(1, tableState.page) - 1) * STOCK_GRID_PAGE_SIZE
+      };
+
+      if (tableState.queryFilters && tableState.queryFilters.size > 0) {
+        for (const [key, value] of tableState.queryFilters) {
+          queryParams[key] = value;
+        }
+      } else if (tableState.filterSet.activeFilters) {
+        tableState.filterSet.activeFilters.forEach((flt: any) => {
+          queryParams[flt.name] = flt.value;
+        });
+      }
+
+      if (tableState.searchTerm) {
+        queryParams.search = tableState.searchTerm;
+      }
+
+      return api
+        .get(apiUrl(ApiEndpoints.stock_item_list), {
+          params: queryParams
+        })
+        .then((response) => {
+          const results = response.data?.results ?? response.data ?? [];
+          tableState.setRecordCount(response.data?.count ?? results.length);
+          tableState.setRecords(results);
+          return results;
+        });
+    }
+  });
+
+  useEffect(() => {
+    tableState.setIsLoading(gridQuery.isLoading || gridQuery.isFetching);
+  }, [gridQuery.isLoading, gridQuery.isFetching]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil((tableState.recordCount ?? 0) / STOCK_GRID_PAGE_SIZE)
+  );
+
+  return (
+    <Stack gap='sm'>
+      <TrackletTableHeader
+        tableUrl={apiUrl(ApiEndpoints.stock_item_list)}
+        tableState={tableState}
+        tableProps={tableProps}
+        hasSwitchableColumns={false}
+        columns={[]}
+        filters={tableFilters}
+        toggleColumn={() => null}
+      />
+      {!gridQuery.isFetching && (tableState.records?.length ?? 0) == 0 ? (
+        <Text c='dimmed'>{t`No records found`}</Text>
+      ) : (
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}>
+          {gridQuery.isFetching
+            ? Array.from({ length: 8 }).map((_, idx) => (
+                <Card key={idx} withBorder radius='md' shadow='xs' h={310} />
+              ))
+            : tableState.records.map((record: any) => (
+                <StockItemCard
+                  key={record.pk}
+                  record={record}
+                  showAvailability={showAvailability}
+                  onOpen={(item) =>
+                    navigate(getDetailUrl(ModelType.stockitem, item.pk))
+                  }
+                />
+              ))}
+        </SimpleGrid>
+      )}
+      {totalPages > 1 && (
+        <Center>
+          <Pagination
+            value={Math.max(1, tableState.page)}
+            onChange={tableState.setPage}
+            total={totalPages}
+          />
+        </Center>
+      )}
+    </Stack>
+  );
+}
 
 /**
  * Construct a list of columns for the stock item table
  */
 function stockItemTableColumns({
   showLocation,
-  showPricing
+  showPricing,
+  showAvailability
 }: {
   showLocation: boolean;
   showPricing: boolean;
+  showAvailability: boolean;
 }): TableColumn[] {
   return [
-    PartColumn({
-      accessor: 'part',
-      part: 'part_detail'
-    }),
     {
-      accessor: 'part_detail.IPN',
-      title: t`IPN`,
-      sortable: true,
-      ordering: 'IPN'
+      accessor: 'image',
+      title: t`Image`,
+      sortable: false,
+      switchable: false,
+      width: 56,
+      render: (record: any) => <StockItemImageCell record={record} />
     },
     {
-      accessor: 'part_detail.revision',
-      title: t`Revision`,
+      accessor: 'title',
+      title: t`Item`,
       sortable: true,
-      defaultVisible: false
+      render: (record: any) =>
+        record.title || record.part_detail?.name || record.part || '-'
+    },
+    {
+      accessor: 'category_detail.name',
+      title: t`Category`,
+      sortable: true,
+      render: (record: any) => record.category_detail?.name || '-'
     },
     DescriptionColumn({
-      accessor: 'part_detail.description'
+      accessor: 'notes'
     }),
     StockColumn({
       accessor: '',
@@ -83,6 +393,7 @@ function stockItemTableColumns({
     {
       accessor: 'availability',
       title: t`Availability`,
+      hidden: !showAvailability,
       sortable: true,
       render: (record: any) => {
         const availability = getStockAvailabilityStyle(
@@ -207,10 +518,20 @@ function stockItemTableFilters({
       type: 'choice',
       choices: [
         { value: 'AVAILABLE', label: t`Available` },
+        { value: 'RESERVED', label: t`Reserved` },
+        { value: 'IN_USE', label: t`In Use` },
         { value: 'UNAVAILABLE', label: t`Unavailable` },
         { value: 'MISSING', label: t`Missing` },
         { value: 'BROKEN', label: t`Broken` }
       ]
+    },
+    {
+      name: 'category',
+      label: t`Stock Category`,
+      description: t`Filter by stock category`,
+      type: 'api',
+      apiUrl: apiUrl(ApiEndpoints.stock_category_list),
+      apiFilter: {}
     },
     {
       name: 'assembly',
@@ -343,18 +664,23 @@ export function StockItemTable({
   allowAdd = false,
   showLocation = true,
   showPricing = true,
+  showAvailability = true,
   allowReturn = false,
+  allowViewToggle = false,
   tableName = 'stockitems'
 }: Readonly<{
   params?: any;
   allowAdd?: boolean;
   showLocation?: boolean;
   showPricing?: boolean;
+  showAvailability?: boolean;
   allowReturn?: boolean;
+  allowViewToggle?: boolean;
   tableName: string;
 }>) {
   const table = useTable(tableName);
   const user = useUserState();
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   const settings = useGlobalSettingsState();
 
@@ -369,9 +695,10 @@ export function StockItemTable({
     () =>
       stockItemTableColumns({
         showLocation: showLocation ?? true,
-        showPricing: showPricing ?? true
+        showPricing: showPricing ?? true,
+        showAvailability: showAvailability ?? true
       }),
-    [showLocation, showPricing]
+    [showLocation, showPricing, showAvailability]
   );
 
   const tableFilters: TableFilter[] = useMemo(
@@ -396,37 +723,47 @@ export function StockItemTable({
     };
   }, [table.selectedRecords, table.refreshTable]);
 
-  const newStockItemFields = useStockFields({
-    create: true,
-    partId: params.part,
-    supplierPartId: params.supplier_part,
-    pricing: params.pricing,
-    modalId: 'add-stock-item'
-  });
+  const newStockItemFields: ApiFormFieldSet = useMemo(
+    () => ({
+      title: {
+        required: true,
+        label: t`Name`
+      },
+      category: {
+        required: false,
+        field_type: 'related field',
+        api_url: apiUrl(ApiEndpoints.stock_category_list),
+        label: t`Category`
+      },
+      new_category_name: {
+        field_type: 'string',
+        required: false,
+        label: t`New Category (Quick Create)`,
+        description: t`Use this when no category exists yet`
+      },
+      quantity: {
+        value: 1
+      },
+      location: {},
+      notes: {}
+    }),
+    []
+  );
 
   const newStockItem = useCreateApiFormModal({
-    url: ApiEndpoints.stock_item_list,
+    url: ApiEndpoints.stock_create_simple,
     title: t`Add Stock Item`,
     modalId: 'add-stock-item',
     fields: newStockItemFields,
     initialData: {
-      part: params.part,
       location: params.location
     },
-    follow: params.openNewStockItem ?? true,
+    follow: true,
     table: table,
     onFormSuccess: (response: any) => {
-      // Returns a list that may contain multiple serialized stock items
-      // Navigate to the first result
       navigate(getDetailUrl(ModelType.stockitem, response[0].pk));
     },
-    successMessage: t`Stock item serialized`
-  });
-
-  const [partsToOrder, setPartsToOrder] = useState<any[]>([]);
-
-  const orderPartsWizard = OrderPartsWizard({
-    parts: partsToOrder
+    successMessage: t`Stock item created`
   });
 
   const stockAdjustActions = useStockAdjustActions({
@@ -434,22 +771,46 @@ export function StockItemTable({
     return: allowReturn
   });
 
+  const viewToggleControl = useMemo(() => {
+    if (!allowViewToggle) {
+      return null;
+    }
+
+    return (
+      <SegmentedIconControl
+        value={viewMode}
+        onChange={(value) => setViewMode(value as 'table' | 'grid')}
+        data={[
+          {
+            value: 'table',
+            label: t`Table View`,
+            icon: <IconTable size={16} />
+          },
+          {
+            value: 'grid',
+            label: t`Grid View`,
+            icon: <IconLayoutGrid size={16} />
+          }
+        ]}
+      />
+    );
+  }, [allowViewToggle, viewMode]);
+
+  const tableQueryParams = useMemo(
+    () => ({
+      ...params,
+      part_detail: true,
+      category_detail: true,
+      location_detail: true,
+      supplier_part_detail: true
+    }),
+    [params]
+  );
+
   const tableActions = useMemo(() => {
-    return [
+    const actions: ReactNode[] = [
+      viewToggleControl,
       stockAdjustActions.dropdown,
-      <ActionButton
-        key='stock-order'
-        hidden={!user.hasAddRole(UserRoles.purchase_order)}
-        tooltip={t`Order items`}
-        icon={<InvenTreeIcon icon='buy' />}
-        disabled={!table.hasSelectedRecords}
-        onClick={() => {
-          setPartsToOrder(
-            table.selectedRecords.map((record) => record.part_detail)
-          );
-          orderPartsWizard.openWizard();
-        }}
-      />,
       <AddItemButton
         key='add-stock-item'
         hidden={!allowAdd || !user.hasAddRole(UserRoles.stock)}
@@ -457,39 +818,39 @@ export function StockItemTable({
         onClick={() => newStockItem.open()}
       />
     ];
-  }, [
-    user,
-    allowAdd,
-    table.hasSelectedRecords,
-    table.selectedRecords,
-    stockAdjustActions.dropdown
-  ]);
+
+    return actions.filter((action) => !!action);
+  }, [viewToggleControl, user, allowAdd, stockAdjustActions.dropdown]);
 
   return (
     <>
       {newStockItem.modal}
-      {orderPartsWizard.wizard}
       {stockAdjustActions.modals.map((modal) => modal.modal)}
-      <TrackletTable
-        url={apiUrl(ApiEndpoints.stock_item_list)}
-        tableState={table}
-        columns={tableColumns}
-        props={{
-          enableDownload: true,
-          enableSelection: true,
-          enableLabels: true,
-          enableReports: true,
-          tableFilters: tableFilters,
-          tableActions: tableActions,
-          modelType: ModelType.stockitem,
-          params: {
-            ...params,
-            part_detail: true,
-            location_detail: true,
-            supplier_part_detail: true
-          }
-        }}
-      />
+      {viewMode === 'table' ? (
+        <TrackletTable
+          url={apiUrl(ApiEndpoints.stock_item_list)}
+          tableState={table}
+          columns={tableColumns}
+          props={{
+            enableDownload: true,
+            enableSelection: true,
+            enableLabels: true,
+            enableReports: true,
+            tableFilters: tableFilters,
+            tableActions: tableActions,
+            modelType: ModelType.stockitem,
+            params: tableQueryParams
+          }}
+        />
+      ) : (
+        <StockItemGridView
+          tableState={table}
+          tableFilters={tableFilters}
+          tableActions={tableActions}
+          params={tableQueryParams}
+          showAvailability={showAvailability}
+        />
+      )}
     </>
   );
 }

@@ -16,12 +16,12 @@ import {
   IconArrowRight,
   IconBookmark,
   IconBoxPadding,
+  IconCalendarEvent,
   IconChecklist,
   IconHistory,
   IconInfoCircle,
   IconPackages,
   IconSearch,
-  IconShoppingCart,
   IconSitemap
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
@@ -64,7 +64,6 @@ import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
 import LocateItemButton from '../../components/plugins/LocateItemButton';
 import { StatusRenderer } from '../../components/render/StatusRenderer';
-import OrderPartsWizard from '../../components/wizards/OrderPartsWizard';
 import { useApi } from '../../contexts/ApiContext';
 import { formatCurrency, formatDecimal } from '../../defaults/formatters';
 import {
@@ -89,6 +88,7 @@ import { StockItemTable } from '../../tables/stock/StockItemTable';
 import StockItemTestResultTable from '../../tables/stock/StockItemTestResultTable';
 import { StockTrackingTable } from '../../tables/stock/StockTrackingTable';
 import { getStockAvailabilityStyle } from '../../tables/stock/stockAvailabilityStyles';
+import { StockEventReservationsTable } from '../../tables/events/StockEventReservationsTable';
 
 export default function StockDetail() {
   const { id } = useParams();
@@ -117,6 +117,7 @@ export default function StockDetail() {
     pk: id,
     params: {
       part_detail: true,
+      category_detail: true,
       location_detail: true,
       path_detail: true
     }
@@ -142,29 +143,19 @@ export default function StockDetail() {
       return <Skeleton />;
     }
 
-    // Top left - core part information
+    // Top left - core stock information
     const tl: DetailsField[] = [
       {
-        name: 'part',
-        label: t`Base Part`,
-        type: 'link',
-        model: ModelType.part
-      },
-      {
-        name: 'part_detail.IPN',
-        label: t`IPN`,
+        name: 'title',
+        label: t`Name`,
         type: 'text',
-        copy: true,
-        icon: 'part',
-        hidden: !part.IPN
+        copy: true
       },
       {
-        name: 'part_detail.revision',
-        label: t`Revision`,
-        type: 'string',
-        copy: true,
-        icon: 'revision',
-        hidden: !part.revision
+        name: 'category_detail.name',
+        label: t`Category`,
+        type: 'text',
+        hidden: !stockitem.category
       },
       {
         name: 'status',
@@ -464,12 +455,12 @@ export default function StockDetail() {
       <ItemDetailsGrid>
         <Grid grow>
           <DetailsImage
-            appRole={UserRoles.part}
-            apiPath={ApiEndpoints.part_list}
+            appRole={UserRoles.stock}
+            apiPath={ApiEndpoints.stock_item_list}
             src={
               stockitem.part_detail?.image ?? stockitem?.part_detail?.thumbnail
             }
-            pk={stockitem.part}
+            pk={stockitem.pk}
           />
           <Grid.Col span={{ base: 12, sm: 8 }}>
             <DetailsTable fields={tl} item={data} />
@@ -559,6 +550,17 @@ export default function StockDetail() {
         icon: <IconHistory />,
         content: stockitem.pk ? (
           <StockTrackingTable itemId={stockitem.pk} />
+        ) : (
+          <Skeleton />
+        )
+      },
+      {
+        name: 'event-reservations',
+        label: t`Event Reservations`,
+        icon: <IconCalendarEvent />,
+        hidden: !stockitem?.part,
+        content: stockitem?.part ? (
+          <StockEventReservationsTable partId={stockitem.part} />
         ) : (
           <Skeleton />
         )
@@ -761,8 +763,11 @@ export default function StockDetail() {
     title: t`Delete Stock Item`,
     preFormContent: preDeleteContent,
     onFormSuccess: () => {
-      // Redirect to the part page
-      navigate(getDetailUrl(ModelType.part, stockitem.part));
+      if (stockitem.location) {
+        navigate(getDetailUrl(ModelType.stocklocation, stockitem.location));
+      } else {
+        navigate(getOverviewUrl(ModelType.stockitem));
+      }
     }
   });
 
@@ -824,10 +829,6 @@ export default function StockDetail() {
       }
     },
     successMessage: t`Stock item serialized`
-  });
-
-  const orderPartsWizard = OrderPartsWizard({
-    parts: stockitem.part_detail ? [stockitem.part_detail] : []
   });
 
   const scanIntoLocation = useBarcodeScanDialog({
@@ -917,18 +918,6 @@ export default function StockDetail() {
             icon: <InvenTreeIcon icon='serial' iconProps={{ color: 'blue' }} />,
             onClick: () => {
               serializeStockItem.open();
-            }
-          },
-          {
-            name: t`Order`,
-            tooltip: t`Order Stock`,
-            hidden:
-              !user.hasAddRole(UserRoles.purchase_order) ||
-              !stockitem.part_detail?.active ||
-              !stockitem.part_detail?.purchaseable,
-            icon: <IconShoppingCart color='blue' />,
-            onClick: () => {
-              orderPartsWizard.openWizard();
             }
           }
         ]}
@@ -1067,7 +1056,7 @@ export default function StockDetail() {
           )}
           <PageDetail
             title={t`Stock Item`}
-            subtitle={stockitem.part_detail?.full_name}
+            subtitle={stockitem.title || stockitem.part_detail?.full_name}
             imageUrl={stockitem.part_detail?.thumbnail}
             editAction={editStockItem.open}
             editEnabled={user.hasChangePermission(ModelType.stockitem)}
@@ -1079,7 +1068,7 @@ export default function StockDetail() {
             }
             lastCrumb={[
               {
-                name: stockitem.name,
+                name: stockitem.title || stockitem.part_detail?.full_name,
                 url: `/stock/item/${stockitem.pk}/`
               }
             ]}
@@ -1103,7 +1092,6 @@ export default function StockDetail() {
       {deleteStockItem.modal}
       {serializeStockItem.modal}
       {stockAdjustActions.modals.map((modal) => modal.modal)}
-      {orderPartsWizard.wizard}
     </>
   );
 }

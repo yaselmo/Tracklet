@@ -100,6 +100,51 @@ class StockLocationType(Tracklet.models.MetadataMixin, models.Model):
     )
 
 
+class StockCategory(Tracklet.models.MetadataMixin, models.Model):
+    """Stock-first category model used to classify stock items."""
+
+    class Meta:
+        verbose_name = _('Stock Category')
+        verbose_name_plural = _('Stock Categories')
+
+    name = models.CharField(max_length=100, verbose_name=_('Name'))
+    description = models.CharField(
+        blank=True, max_length=250, verbose_name=_('Description')
+    )
+    parent = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='children',
+        verbose_name=_('Parent'),
+    )
+
+    def __str__(self):
+        return self.name
+
+    @staticmethod
+    def get_api_url():
+        return reverse('api-stock-category-list')
+
+    def descendants(self, include_self=True):
+        """Return this category and all descendants."""
+        ids = [self.pk] if include_self and self.pk else []
+        queue = [self.pk] if self.pk else []
+
+        while queue:
+            parent_id = queue.pop(0)
+            child_ids = list(
+                StockCategory.objects.filter(parent_id=parent_id).values_list(
+                    'pk', flat=True
+                )
+            )
+            ids.extend(child_ids)
+            queue.extend(child_ids)
+
+        return StockCategory.objects.filter(pk__in=ids)
+
+
 class StockLocationReportContext(report.mixins.BaseReportContext):
     """Report context for the StockLocation model.
 
@@ -438,6 +483,8 @@ class StockItem(
 
     class Availability(models.TextChoices):
         AVAILABLE = 'AVAILABLE', _('Available')
+        RESERVED = 'RESERVED', _('Reserved')
+        IN_USE = 'IN_USE', _('In Use')
         UNAVAILABLE = 'UNAVAILABLE', _('Unavailable')
         MISSING = 'MISSING', _('Missing')
         BROKEN = 'BROKEN', _('Broken')
@@ -793,6 +840,8 @@ class StockItem(
             self.availability = availability_key
         else:
             self.availability = self.Availability.UNAVAILABLE
+
+        self.tracklet_status = self.status or StockStatus.OK.value
 
         user = kwargs.pop('user', None)
 
@@ -1209,12 +1258,35 @@ class StockItem(
         validators=[MinValueValidator(0)],
     )
 
+    tracklet_status = models.PositiveIntegerField(
+        default=StockStatus.OK.value,
+        editable=False,
+        db_column='tracklet_status',
+    )
+
     availability = models.CharField(
         max_length=20,
         choices=Availability.choices,
         default=Availability.AVAILABLE,
         db_index=True,
         verbose_name=_('Availability'),
+    )
+
+    title = models.CharField(
+        max_length=150,
+        blank=True,
+        default='',
+        verbose_name=_('Title'),
+        help_text=_('Stock item title'),
+    )
+
+    category = models.ForeignKey(
+        StockCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='stock_items',
+        verbose_name=_('Category'),
     )
 
     @property
@@ -1244,6 +1316,27 @@ class StockItem(
             or self.status not in StockStatusGroups.AVAILABLE_CODES
         ):
             return self.Availability.UNAVAILABLE
+
+        # Active event reservations override basic "available" state.
+        from operations.availability import (
+            get_event_reservation_availability_for_part,
+            get_rental_reservation_availability_for_stock,
+        )
+
+        event_availability = get_event_reservation_availability_for_part(self.part)
+        rental_availability = get_rental_reservation_availability_for_stock(self)
+
+        if (
+            event_availability == self.Availability.IN_USE
+            or rental_availability == self.Availability.IN_USE
+        ):
+            return self.Availability.IN_USE
+
+        if (
+            event_availability == self.Availability.RESERVED
+            or rental_availability == self.Availability.RESERVED
+        ):
+            return self.Availability.RESERVED
 
         return self.Availability.AVAILABLE
 

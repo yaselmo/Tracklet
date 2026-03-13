@@ -51,7 +51,9 @@ class CompanyMixin(OutputOptionsMixin):
         return queryset
 
 
-class CompanyList(CompanyMixin, ParameterListMixin, DataExportViewMixin, ListCreateAPI):
+class CompanyList(
+    CompanyMixin, ParameterListMixin, DataExportViewMixin, ListCreateDestroyAPIView
+):
     """API endpoint for accessing a list of Company objects.
 
     Provides two methods:
