@@ -1,0 +1,16 @@
+coverage[toml]
+django-querycount
+django-silk
+django-slowtests
+django-test-migrations
+django-types
+django-stubs
+isort
+pdfminer.six
+pip-tools
+pre-commit
+pytest-codspeed
+pytest-django
+requests-mock
+setuptools
+ty

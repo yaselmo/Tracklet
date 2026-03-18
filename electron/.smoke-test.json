@@ -1,0 +1,18 @@
+{
+  "recordedAt": "2026-03-17T16:42:35.116Z",
+  "ok": true,
+  "phase": "did-finish-load",
+  "diagnostics": {
+    "apiHost": "http://127.0.0.1:5173",
+    "apiStatus": 200,
+    "apiError": null,
+    "isElectron": true,
+    "location": "http://127.0.0.1:5173/web/"
+  },
+  "authDiagnostics": {
+    "csrfTokenPresent": true,
+    "loginStatus": 200,
+    "userStatus": 200,
+    "dashboardStatus": 200
+  }
+}

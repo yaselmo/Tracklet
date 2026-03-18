@@ -1,0 +1,68 @@
+{
+  "name": "tracklet-electron",
+  "version": "0.7.0",
+  "private": true,
+  "description": "Optional Electron desktop wrapper for Tracklet",
+  "author": "Tracklet",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node launch.js",
+    "start": "node launch.js",
+    "smoke-test": "node launch.js --smoke-test",
+    "build:frontend": "cmd /c \"cd /d ..\\src\\frontend && node_modules\\.bin\\lingui.cmd extract && node_modules\\.bin\\lingui.cmd compile --typescript && node_modules\\.bin\\vite.cmd build --emptyOutDir\"",
+    "dist:win": "node build-win.js"
+  },
+  "devDependencies": {
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "org.tracklet.desktop",
+    "productName": "Tracklet",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build-win.js",
+      "desktopServer.js",
+      "launch.js",
+      "main.js",
+      "package.json",
+      "preload.js"
+    ],
+    "extraResources": [
+      {
+        "from": "create-superuser.ps1",
+        "to": "scripts/create-superuser.ps1"
+      },
+      {
+        "from": "../src/backend/Tracklet/web/static/web",
+        "to": "web"
+      }
+    ],
+    "artifactName": "Tracklet-Setup-${version}.${ext}",
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "installerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "shortcutName": "Tracklet",
+      "uninstallDisplayName": "Tracklet"
+    }
+  }
+}

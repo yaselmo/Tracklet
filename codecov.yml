@@ -1,0 +1,83 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 85%
+    patch: off
+
+github_checks:
+    annotations: true
+
+flag_management:
+  default_rules:
+    carryforward: true
+  individual_flags:
+    - name: backend
+      carryforward: true
+      statuses:
+        - type: project
+          target: 85%
+    - name: migrations
+      carryforward: true
+      statuses:
+        - type: project
+          target: 40%
+    - name: web
+      carryforward: true
+      statuses:
+        - type: project
+          target: 45%
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        branches:
+          - "!main"
+  individual_components:
+    - component_id: backend-apps
+      name: Backend Apps
+      paths:
+        - src/backend/Tracklet/build/**
+        - src/backend/Tracklet/company/**
+        - src/backend/Tracklet/data_exporter/**
+        - src/backend/Tracklet/importer/**
+        - src/backend/Tracklet/machine/**
+        - src/backend/Tracklet/order/**
+        - src/backend/Tracklet/part/**
+        - src/backend/Tracklet/plugin/**
+        - src/backend/Tracklet/report/**
+        - src/backend/Tracklet/stock/**
+        - src/backend/Tracklet/users/**
+        - src/backend/Tracklet/web/**
+      statuses:
+        - type: project
+          target: 90%
+    - component_id: backend-general
+      name: Backend General
+      paths:
+        - src/backend/Tracklet/generic/**
+        - src/backend/Tracklet/common/**
+      statuses:
+        - type: project
+          target: 92% # 95%
+        - type: patch
+          target: 95%
+    - component_id: web
+      name: Frontend
+      paths:
+        - src/frontend/**
+      statuses:
+        - type: project
+          target: 68% # 90%
+        - type: patch
+          target: 80%
+comment:
+  require_bundle_changes: True
+  bundle_change_threshold: "1Kb"
+  layout: "header, diff, flags, components"
+
+bundle_analysis:
+  warning_threshold: "5%"
+  status: "informational"

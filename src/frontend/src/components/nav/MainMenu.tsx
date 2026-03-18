@@ -1,0 +1,80 @@
+import { Trans } from '@lingui/react/macro';
+import {
+  Group,
+  Menu,
+  Skeleton,
+  Text,
+  UnstyledButton,
+  useMantineColorScheme
+} from '@mantine/core';
+import {
+  IconChevronDown,
+  IconInfoCircle,
+  IconLogout,
+  IconMoonStars,
+  IconSun
+} from '@tabler/icons-react';
+import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
+import { aboutTracklet } from '../../defaults/links';
+import { doLogout } from '../../functions/auth';
+import * as classes from '../../main.css';
+import { useUserState } from '../../states/UserState';
+import { vars } from '../../theme';
+
+export function MainMenu() {
+  const navigate = useNavigate();
+  const username = useUserState(useShallow((state) => state.username));
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+
+  return (
+    <>
+      <Menu width={260} position='bottom-end'>
+        <Menu.Target>
+          <UnstyledButton className={classes.layoutHeaderUser}>
+            <Group gap={7}>
+              {username() ? (
+                <Text fw={500} size='sm' style={{ lineHeight: 1 }} mr={3}>
+                  {username()}
+                </Text>
+              ) : (
+                <Skeleton height={20} width={40} radius={vars.radiusDefault} />
+              )}
+              <IconChevronDown />
+            </Group>
+          </UnstyledButton>
+        </Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item
+            onClick={toggleColorScheme}
+            leftSection={
+              colorScheme === 'dark' ? <IconSun /> : <IconMoonStars />
+            }
+            c={
+              colorScheme === 'dark'
+                ? vars.colors.yellow[4]
+                : vars.colors.blue[6]
+            }
+          >
+            <Trans>Change Color Mode</Trans>
+          </Menu.Item>
+          <Menu.Item
+            onClick={() => aboutTracklet()}
+            leftSection={<IconInfoCircle />}
+          >
+            <Trans>About Tracklet</Trans>
+          </Menu.Item>
+          <Menu.Divider />
+          <Menu.Item
+            leftSection={<IconLogout />}
+            onClick={() => {
+              doLogout(navigate);
+            }}
+          >
+            <Trans>Logout</Trans>
+          </Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    </>
+  );
+}

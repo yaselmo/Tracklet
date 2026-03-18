@@ -1,0 +1,45 @@
+# Tracklet Windows-native starter config
+# Copy this file to config\config.yaml and then adjust values for your machine.
+
+database:
+  ENGINE: postgresql
+  NAME: tracklet
+  USER: tracklet
+  PASSWORD: change-me
+  HOST: 127.0.0.1
+  PORT: 5432
+
+site_url: 'http://127.0.0.1:8000'
+debug: True
+
+allowed_hosts:
+  - '127.0.0.1'
+  - 'localhost'
+
+trusted_origins:
+  - 'http://127.0.0.1:8000'
+  - 'http://localhost:8000'
+  - 'http://127.0.0.1:5173'
+  - 'http://localhost:5173'
+
+cors:
+  allow_all: true
+  allow_credentials: true
+
+plugins_enabled: False
+auto_update: False
+
+media_root: 'C:/Tracklet/data/media'
+static_root: 'C:/Tracklet/data/static'
+backup_dir: 'C:/Tracklet/data/backup'
+
+background:
+  workers: 1
+  timeout: 90
+  max_attempts: 5
+
+cache:
+  enabled: false
+
+storage:
+  target: local
