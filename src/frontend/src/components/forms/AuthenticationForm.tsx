@@ -56,9 +56,13 @@ export function AuthenticationForm() {
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
   const [isLaunchingSuperuser, setIsLaunchingSuperuser] =
     useState<boolean>(false);
+  const [isCreatingBackup, setIsCreatingBackup] = useState<boolean>(false);
   const canCreateSuperuser =
     window.TRACKLET_ELECTRON?.isElectron &&
     typeof window.TRACKLET_ELECTRON?.openCreateSuperuser === 'function';
+  const canCreateBackup =
+    window.TRACKLET_ELECTRON?.isElectron &&
+    typeof window.TRACKLET_ELECTRON?.openCreateBackup === 'function';
 
   function handleLogin() {
     setIsLoggingIn(true);
@@ -161,6 +165,55 @@ export function AuthenticationForm() {
     }
   }
 
+  async function handleCreateBackup() {
+    if (!canCreateBackup) {
+      return;
+    }
+
+    setIsCreatingBackup(true);
+
+    try {
+      const result = await window.TRACKLET_ELECTRON?.openCreateBackup?.();
+
+      if (result?.cancelled) {
+        return;
+      }
+
+      if (result?.ok) {
+        const createdFiles = result.files?.length || 0;
+
+        showNotification({
+          title: t`Backup created`,
+          message:
+            createdFiles > 0
+              ? t`Tracklet created timestamped database and media backups in the desktop backups folder.`
+              : t`Tracklet completed the desktop backup flow in the configured backups folder.`,
+          color: 'green'
+        });
+        return;
+      }
+
+      showNotification({
+        title: t`Backup failed`,
+        message:
+          result?.error ||
+          t`Tracklet Desktop could not create a safe backup right now.`,
+        color: 'red'
+      });
+    } catch (error) {
+      showNotification({
+        title: t`Backup failed`,
+        message:
+          error instanceof Error
+            ? error.message
+            : t`Tracklet Desktop could not create a safe backup right now.`,
+        color: 'red'
+      });
+    } finally {
+      setIsCreatingBackup(false);
+    }
+  }
+
   return (
     <>
       {sso_enabled() ? (
@@ -178,7 +231,7 @@ export function AuthenticationForm() {
           />
         </>
       ) : null}
-      {canCreateSuperuser ? (
+      {canCreateSuperuser || canCreateBackup ? (
         <Alert color='green' title={t`Desktop setup helper`} mb='md'>
           <Stack gap='xs'>
             <Text size='sm'>
@@ -188,14 +241,26 @@ export function AuthenticationForm() {
                 folder.
               </Trans>
             </Text>
-            <Button
-              variant='light'
-              color='green'
-              onClick={handleCreateSuperuser}
-              loading={isLaunchingSuperuser}
-            >
-              <Trans>Create Superuser</Trans>
-            </Button>
+            {canCreateSuperuser ? (
+              <Button
+                variant='light'
+                color='green'
+                onClick={handleCreateSuperuser}
+                loading={isLaunchingSuperuser}
+              >
+                <Trans>Create Superuser</Trans>
+              </Button>
+            ) : null}
+            {canCreateBackup ? (
+              <Button
+                variant='light'
+                color='teal'
+                onClick={handleCreateBackup}
+                loading={isCreatingBackup}
+              >
+                <Trans>Create Backup</Trans>
+              </Button>
+            ) : null}
           </Stack>
         </Alert>
       ) : null}

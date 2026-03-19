@@ -59,7 +59,7 @@ export async function fetchGlobalStates() {
 
   setApiDefaults();
   const traceId = setTraceId();
-  await Promise.all([
+  await Promise.allSettled([
     useServerApiState.getState().fetchServerApiState(),
     useUserSettingsState.getState().fetchSettings(),
     useGlobalSettingsState.getState().fetchSettings(),

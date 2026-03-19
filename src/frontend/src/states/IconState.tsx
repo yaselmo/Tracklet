@@ -53,7 +53,7 @@ export const useIconState = create<IconState>()((set, get) => ({
       return;
     }
 
-    await Promise.all(
+    const loadedFonts = await Promise.all(
       packs.data.map(async (pack: any) => {
         if (pack.prefix && pack.fonts) {
           const fontName = `inventree-icon-font-${pack.prefix}`;
@@ -63,9 +63,18 @@ export const useIconState = create<IconState>()((set, get) => ({
             )
             .join(',\n');
           const font = new FontFace(fontName, `${src};`);
-          await font.load();
-          document.fonts.add(font);
-          return font;
+
+          try {
+            await font.load();
+            document.fonts.add(font);
+            return font;
+          } catch (error) {
+            console.warn('WARN: Could not load icon font package', {
+              prefix: pack.prefix,
+              error
+            });
+            return null;
+          }
         } else {
           console.error(
             "ERR: Icon package is missing 'prefix' or 'fonts' field"
@@ -90,5 +99,15 @@ export const useIconState = create<IconState>()((set, get) => ({
         packs.data?.map((pack: any) => [pack.prefix, pack])
       )
     });
+
+    if (loadedFonts.some((font) => font === null)) {
+      hideNotification('icon-fetch-error');
+      showNotification({
+        id: 'icon-fetch-error',
+        title: t`Warning`,
+        message: t`Some desktop icon fonts could not be loaded, but Tracklet will continue starting.`,
+        color: 'yellow'
+      });
+    }
   }
 }));

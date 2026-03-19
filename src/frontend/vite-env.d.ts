@@ -19,6 +19,14 @@ interface TrackletElectronBridge {
     backendDir?: string;
     error?: string;
   }>;
+  openCreateBackup?: () => Promise<{
+    ok: boolean;
+    cancelled?: boolean;
+    backendDir?: string;
+    backupDir?: string;
+    files?: string[];
+    error?: string;
+  }>;
   platform?: string;
   versions?: {
     chrome: string;

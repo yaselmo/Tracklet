@@ -36,6 +36,14 @@
         "to": "scripts/create-superuser.ps1"
       },
       {
+        "from": "create-backup.ps1",
+        "to": "scripts/create-backup.ps1"
+      },
+      {
+        "from": "start-backend.ps1",
+        "to": "scripts/start-backend.ps1"
+      },
+      {
         "from": "../src/backend/Tracklet/web/static/web",
         "to": "web"
       }
@@ -58,6 +66,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
       "installerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",

@@ -1,5 +1,4 @@
 import { t } from '@lingui/core/macro';
-import { useDebouncedCallback } from '@mantine/hooks';
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -9,11 +8,10 @@ import { Wrapper } from './Layout';
 export default function Logged_In() {
   const navigate = useNavigate();
   const location = useLocation();
-  const checkLoginStateDebounced = useDebouncedCallback(checkLoginState, 300);
 
   useEffect(() => {
-    checkLoginStateDebounced(navigate, location?.state);
-  }, [navigate]);
+    checkLoginState(navigate, location?.state);
+  }, [location?.state, navigate]);
 
   return (
     <Wrapper titleText={t`Checking if you are already logged in`} loader />

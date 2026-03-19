@@ -1,2 +1,0 @@
-import{j as n,ab as a,P as m}from"./index-C2T8VoWo.js";import{B as u}from"./moduleFlags-DldYLO7Y.js";function p({title:r,tooltip:o,icon:t,color:s,hidden:e,onClick:i}){return e?null:n.jsx(a,{label:o??r,position:"bottom",hidden:!o,children:n.jsx(m,{leftSection:t&&n.jsx(u,{icon:t}),color:s,radius:"sm",p:"xs",onClick:i,children:r})})}export{p as P};
-//# sourceMappingURL=PrimaryActionButton-BwGm3sp4.js.map

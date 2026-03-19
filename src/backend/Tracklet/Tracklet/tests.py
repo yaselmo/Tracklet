@@ -1332,6 +1332,50 @@ class TestSettings(InvenTreeTestCase):
         with in_env_context({'INVENTREE_PLUGIN_FILE': str(test_file)}):
             self.assertIn(str(test_file), str(config.get_plugin_file()))
 
+    def test_desktop_persistent_defaults(self):
+        """Test desktop-mode persistent paths."""
+        desktop_root = config.get_testfolder_dir() / 'desktop-data'
+
+        env = {
+            'INVENTREE_DESKTOP_MODE': 'true',
+            'INVENTREE_DESKTOP_DATA_DIR': str(desktop_root),
+        }
+
+        old_config_data = config.CONFIG_DATA
+
+        try:
+            config.CONFIG_DATA = None
+
+            with in_env_context(env):
+                config_file = config.get_config_file()
+                plugin_file = config.get_plugin_file()
+                secret_key = config.get_secret_key(return_path=True)
+                media_dir = config.get_media_dir()
+                static_dir = config.get_static_dir()
+                backup_dir = config.get_backup_dir()
+                log_dir = config.get_log_dir(create=True)
+
+                self.assertEqual(
+                    config_file, desktop_root.joinpath('config', 'config.yaml')
+                )
+                self.assertEqual(
+                    plugin_file, desktop_root.joinpath('config', 'plugins.txt')
+                )
+                self.assertEqual(
+                    secret_key, desktop_root.joinpath('config', 'secret_key.txt')
+                )
+                self.assertEqual(media_dir, desktop_root.joinpath('data', 'media'))
+                self.assertEqual(static_dir, desktop_root.joinpath('data', 'static'))
+                self.assertEqual(backup_dir, desktop_root.joinpath('backups'))
+                self.assertEqual(log_dir, desktop_root.joinpath('logs'))
+                self.assertTrue(config_file.exists())
+                self.assertTrue(media_dir.exists())
+                self.assertTrue(static_dir.exists())
+                self.assertTrue(backup_dir.exists())
+                self.assertTrue(log_dir.exists())
+        finally:
+            config.CONFIG_DATA = old_config_data
+
     def test_helpers_secret_key(self):
         """Test get_secret_key."""
         # Normal file behavior - not configured

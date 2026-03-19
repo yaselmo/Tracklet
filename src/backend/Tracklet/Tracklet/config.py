@@ -75,6 +75,107 @@ def get_root_dir() -> Path:
     return get_base_dir().parent.parent.parent
 
 
+def desktop_mode_enabled() -> bool:
+    """Return True if the desktop persistence mode is enabled."""
+    return is_true(os.environ.get('INVENTREE_DESKTOP_MODE', 'False'))
+
+
+def get_desktop_root_dir() -> Optional[Path]:
+    """Return the persistent desktop data root, if configured."""
+    root = (
+        os.environ.get('INVENTREE_DESKTOP_DATA_DIR')
+        or os.environ.get('TRACKLET_DESKTOP_DATA_DIR')
+        or os.environ.get('INVENTREE_DATA_DIR')
+    )
+
+    if root:
+        return Path(root).expanduser().resolve()
+
+    if desktop_mode_enabled() and os.name == 'nt':
+        app_data = os.environ.get('LOCALAPPDATA') or os.environ.get('APPDATA')
+
+        if app_data:
+            return Path(app_data).joinpath('TrackletDesktop').resolve()
+
+    return None
+
+
+def get_desktop_config_dir() -> Optional[Path]:
+    """Return the config directory for desktop persistence mode."""
+    if root := get_desktop_root_dir():
+        return root.joinpath('config')
+
+    return None
+
+
+def get_desktop_data_dir() -> Optional[Path]:
+    """Return the data directory for desktop persistence mode."""
+    if root := get_desktop_root_dir():
+        return root.joinpath('data')
+
+    return None
+
+
+def get_desktop_log_dir() -> Optional[Path]:
+    """Return the log directory for desktop persistence mode."""
+    if root := get_desktop_root_dir():
+        return root.joinpath('logs')
+
+    return None
+
+
+def get_desktop_backup_dir() -> Optional[Path]:
+    """Return the backup directory for desktop persistence mode."""
+    if root := get_desktop_root_dir():
+        return root.joinpath('backups')
+
+    return None
+
+
+def get_desktop_database_file() -> Optional[Path]:
+    """Return the SQLite database path for desktop persistence mode."""
+    if data_dir := get_desktop_data_dir():
+        return data_dir.joinpath('database.sqlite3')
+
+    return None
+
+
+def get_desktop_default_config() -> dict:
+    """Return a desktop-friendly default configuration."""
+    database_file = get_desktop_database_file()
+    media_dir = get_desktop_data_dir().joinpath('media')
+    static_dir = get_desktop_data_dir().joinpath('static')
+    backup_dir = get_desktop_backup_dir()
+
+    return {
+        'database': {
+            'ENGINE': 'sqlite3',
+            'NAME': str(database_file),
+        },
+        'site_url': 'http://127.0.0.1:8000',
+        'debug': False,
+        'allowed_hosts': ['127.0.0.1', 'localhost'],
+        'trusted_origins': [
+            'http://127.0.0.1:8000',
+            'http://localhost:8000',
+            'http://127.0.0.1:5173',
+            'http://localhost:5173',
+            'http://127.0.0.1:64740',
+            'http://localhost:64740',
+        ],
+        'cors': {
+            'allow_all': True,
+            'allow_credentials': True,
+        },
+        'media_root': str(media_dir),
+        'static_root': str(static_dir),
+        'backup_dir': str(backup_dir),
+        'plugins_enabled': False,
+        'auto_update': False,
+        'storage': {'target': 'local'},
+    }
+
+
 def inventreeInstaller() -> Optional[str]:
     """Returns the installer for the running codebase - if set or detectable."""
     load_version_file()
@@ -107,6 +208,9 @@ def inventreeInstaller() -> Optional[str]:
 
 def get_config_dir() -> Path:
     """Returns the InvenTree configuration directory depending on the install type."""
+    if desktop_dir := get_desktop_config_dir():
+        return desktop_dir.resolve()
+
     if inst := inventreeInstaller():
         if inst == 'DOC':
             return Path('/home/inventree/data/').resolve()
@@ -170,8 +274,16 @@ def get_config_file(create=True) -> Path:
         )
         ensure_dir(cfg_filename.parent)
 
-        cfg_template = base_dir.joinpath('config_template.yaml')
-        shutil.copyfile(cfg_template, cfg_filename)
+        if get_desktop_root_dir():
+            import yaml
+
+            cfg_filename.write_text(
+                yaml.safe_dump(get_desktop_default_config(), sort_keys=False),
+                encoding='utf-8',
+            )
+        else:
+            cfg_template = base_dir.joinpath('config_template.yaml')
+            shutil.copyfile(cfg_template, cfg_filename)
         print(f'Created config file {cfg_filename}')
 
     check_config_dir('INVENTREE_CONFIG_FILE', cfg_filename, conf_dir)
@@ -319,6 +431,9 @@ def get_media_dir(create=True, error=True):
     """Return the absolute path for the 'media' directory (where uploaded files are stored)."""
     md = get_setting('INVENTREE_MEDIA_ROOT', 'media_root')
 
+    if not md and (data_dir := get_desktop_data_dir()):
+        md = data_dir.joinpath('media')
+
     if not md:
         if error:
             raise FileNotFoundError('INVENTREE_MEDIA_ROOT not specified')
@@ -336,6 +451,9 @@ def get_media_dir(create=True, error=True):
 def get_static_dir(create=True, error=True):
     """Return the absolute path for the 'static' directory (where static files are stored)."""
     sd = get_setting('INVENTREE_STATIC_ROOT', 'static_root')
+
+    if not sd and (data_dir := get_desktop_data_dir()):
+        sd = data_dir.joinpath('static')
 
     if not sd:
         if error:
@@ -355,6 +473,9 @@ def get_backup_dir(create=True, error=True):
     """Return the absolute path for the backup directory."""
     bd = get_setting('INVENTREE_BACKUP_DIR', 'backup_dir')
 
+    if not bd and (backup_dir := get_desktop_backup_dir()):
+        bd = backup_dir
+
     if not bd:
         if error:
             raise FileNotFoundError('INVENTREE_BACKUP_DIR not specified')
@@ -367,6 +488,27 @@ def get_backup_dir(create=True, error=True):
         bd.mkdir(parents=True, exist_ok=True)
 
     return bd
+
+
+def get_log_dir(create=True, error=False):
+    """Return the absolute path for the log directory."""
+    ld = get_setting('INVENTREE_LOG_DIR', 'log_dir')
+
+    if not ld and (desktop_logs := get_desktop_log_dir()):
+        ld = desktop_logs
+
+    if not ld:
+        if error:
+            raise FileNotFoundError('INVENTREE_LOG_DIR not specified')
+
+        return None
+
+    ld = Path(ld).resolve()
+
+    if create:
+        ld.mkdir(parents=True, exist_ok=True)
+
+    return ld
 
 
 def get_plugin_file() -> Path:

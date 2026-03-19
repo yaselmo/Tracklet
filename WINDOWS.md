@@ -40,7 +40,6 @@ Run from the repository root:
 py -3.11 -m venv env
 .\\env\\Scripts\\Activate.ps1
 python -m pip install --upgrade pip setuptools invoke
-Copy-Item .\\contrib\\windows\\config.windows.yaml .\\config\\config.yaml
 python -m invoke install --windows
 cd .\\src\\frontend
 corepack enable
@@ -50,6 +49,8 @@ cd ..\\..
 python -m invoke update --skip_backup --no_frontend
 python -m invoke superuser
 ```
+
+If you want to keep using PostgreSQL instead of the desktop-mode default SQLite file, copy `.\contrib\windows\config.windows.yaml` to `.\config\config.yaml` and adjust it for your machine before starting the backend.
 
 If you want the backend-served frontend bundle:
 
@@ -78,6 +79,55 @@ Frontend dev server:
 
 ```powershell
 .\\contrib\\windows\\start-frontend.ps1
+```
+
+## Persistent Desktop Storage
+
+The Windows backend and worker launchers now enable desktop persistence automatically. By default they use:
+
+```text
+%LOCALAPPDATA%\TrackletDesktop
+```
+
+Tracklet stores desktop data there, outside the app install folder:
+
+- `config\config.yaml`
+- `config\plugins.txt`
+- `config\secret_key.txt`
+- `data\database.sqlite3`
+- `data\media\`
+- `data\static\`
+- `backups\`
+- `logs\`
+
+This keeps data safe across app restarts, Windows reboots, reinstallations, and Electron `.exe` updates.
+
+To override the root location, set:
+
+```powershell
+$env:INVENTREE_DESKTOP_DATA_DIR = 'D:\TrackletData'
+```
+
+before running `start-backend.ps1` or `start-worker.ps1`.
+
+## Backup And Restore
+
+Back up the local database and uploaded files:
+
+```powershell
+.\env\Scripts\python.exe -m invoke backup
+```
+
+Restore a backup:
+
+```powershell
+.\env\Scripts\python.exe -m invoke restore
+```
+
+By default, backup archives are written to:
+
+```text
+%LOCALAPPDATA%\TrackletDesktop\backups
 ```
 
 ## Browser URLs

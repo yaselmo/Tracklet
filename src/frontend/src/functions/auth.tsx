@@ -24,12 +24,30 @@ let csrfRequestPromise: Promise<void> | null = null;
 export function followRedirect(navigate: NavigateFunction, redirect: any) {
   let url = redirect?.redirectUrl ?? '/home';
 
-  if (redirect?.queryParams) {
-    // Construct and appand query parameters
-    url = `${url}?${new URLSearchParams(redirect.queryParams).toString()}`;
+  // Avoid routing back into the auth callback or bare root after login.
+  if (!url || url === '/' || url === '/login' || url === '/logged-in') {
+    url = '/home';
   }
 
-  navigate(url);
+  if (redirect?.queryParams) {
+    const queryParams = new URLSearchParams(
+      String(redirect.queryParams).replace(/^\?/, '')
+    ).toString();
+
+    if (queryParams) {
+      url = `${url}?${queryParams}`;
+    }
+  }
+
+  if (redirect?.anchor) {
+    const anchor = String(redirect.anchor).replace(/^#/, '');
+
+    if (anchor) {
+      url = `${url}#${anchor}`;
+    }
+  }
+
+  navigate(url, { replace: true });
 }
 
 /**
@@ -73,7 +91,8 @@ export async function doBasicLogin(
   username: string,
   password: string,
   navigate: NavigateFunction,
-  code?: string
+  code?: string,
+  retryOnConflict = true
 ) {
   const { getHost } = useLocalState.getState();
   const { clearUserState, setAuthenticated, fetchUserState } =
@@ -121,10 +140,40 @@ export async function doBasicLogin(
             await handlePossibleMFAError(err);
             break;
           case 409:
-            doLogout(navigate);
+            await authApi(
+              apiUrl(ApiEndpoints.auth_session),
+              undefined,
+              'delete'
+            ).catch(() => {});
+
+            clearUserState();
+            clearCsrfCookie();
+            setAuthContext(undefined);
+
+            if (retryOnConflict) {
+              notifications.show({
+                title: t`Session refreshed`,
+                message: t`An old desktop session was cleared. Retrying login now.`,
+                color: 'blue',
+                id: 'auth-login-error',
+                autoClose: true
+              });
+
+              success =
+                (await doBasicLogin(
+                username,
+                password,
+                navigate,
+                code,
+                false
+                )) ?? false;
+              loginDone = success;
+              return;
+            }
+
             notifications.show({
-              title: t`Logged Out`,
-              message: t`There was a conflicting session for this browser, which has been logged out.`,
+              title: t`Login failed`,
+              message: t`A conflicting browser session could not be cleared automatically. Try again.`,
               color: 'red',
               id: 'auth-login-error',
               autoClose: true
@@ -447,14 +496,18 @@ export const checkLoginState = async (
       title: t`Logged In`,
       message: t`Successfully logged in`
     });
-    MfaSetupOk(navigate).then(async (isOk) => {
-      if (isOk) {
-        observeProfile();
-        await fetchGlobalStates();
 
-        followRedirect(navigate, redirect);
-      }
-    });
+    const isOk = await MfaSetupOk(navigate);
+
+    if (isOk) {
+      observeProfile();
+      followRedirect(navigate, redirect);
+      void fetchGlobalStates().catch((error) => {
+        console.warn('WARN: Failed to refresh all global state after login', {
+          error
+        });
+      });
+    }
   };
 
   if (isLoggedIn()) {
@@ -500,11 +553,18 @@ function handleSuccessFullAuth(
     if (isOk) {
       await fetchUserState();
       observeProfile();
-      await fetchGlobalStates();
 
       if (location !== undefined) {
         followRedirect(navigate, location?.state);
+      } else {
+        followRedirect(navigate, undefined);
       }
+
+      void fetchGlobalStates().catch((error) => {
+        console.warn('WARN: Failed to refresh all global state after auth', {
+          error
+        });
+      });
     }
   });
 }

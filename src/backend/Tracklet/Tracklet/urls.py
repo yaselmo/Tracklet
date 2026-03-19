@@ -6,6 +6,7 @@ Passes URL lookup downstream to each app as required.
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView
@@ -172,8 +173,8 @@ if settings.PLUGINS_ENABLED:
 
 # Server running in "DEBUG" mode?
 if settings.DEBUG:
-    # Static file access
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    # Serve static assets from Django's staticfiles finders during development.
+    urlpatterns += staticfiles_urlpatterns()
 
     # Media file access
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

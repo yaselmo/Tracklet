@@ -137,16 +137,18 @@ LOGGING = {
 
 # Add handlers
 if WRITE_LOG and JSON_LOG:  # pragma: no cover
+    log_dir = config.get_log_dir(create=True) or BASE_DIR
     LOGGING['handlers']['log_file'] = {
         'class': 'logging.handlers.WatchedFileHandler',
-        'filename': str(BASE_DIR.joinpath('logs.json')),
+        'filename': str(log_dir.joinpath('tracklet.json.log')),
         'formatter': 'json_formatter',
     }
     DEFAULT_LOG_HANDLER.append('log_file')
 elif WRITE_LOG:  # pragma: no cover
+    log_dir = config.get_log_dir(create=True) or BASE_DIR
     LOGGING['handlers']['log_file'] = {
         'class': 'logging.handlers.WatchedFileHandler',
-        'filename': str(BASE_DIR.joinpath('logs.log')),
+        'filename': str(log_dir.joinpath('tracklet.log')),
         'formatter': 'key_value',
     }
     DEFAULT_LOG_HANDLER.append('log_file')
@@ -678,6 +680,15 @@ required_keys = ['ENGINE', 'NAME']
 
 # Ensure all database keys are upper case
 db_config = {key.upper(): value for key, value in db_config.items()}
+
+if config.get_desktop_root_dir():
+    desktop_db_defaults = config.get_desktop_default_config().get('database', {})
+
+    if 'ENGINE' not in db_config and desktop_db_defaults.get('ENGINE'):
+        db_config['ENGINE'] = desktop_db_defaults['ENGINE']
+
+    if 'NAME' not in db_config and desktop_db_defaults.get('NAME'):
+        db_config['NAME'] = desktop_db_defaults['NAME']
 
 for key in required_keys:
     if key not in db_config:  # pragma: no cover

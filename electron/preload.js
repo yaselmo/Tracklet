@@ -11,6 +11,10 @@ contextBridge.exposeInMainWorld('TRACKLET_ELECTRON', {
   isElectron: true,
   apiHost,
   openCreateSuperuser: () => ipcRenderer.invoke('tracklet:create-superuser'),
+  openCreateBackup: () => ipcRenderer.invoke('tracklet:create-backup'),
+  retryBackendStartup: () => ipcRenderer.invoke('tracklet:retry-backend-startup'),
+  locateBackendAgain: () => ipcRenderer.invoke('tracklet:locate-backend-again'),
+  openLogsFolder: () => ipcRenderer.invoke('tracklet:open-logs-folder'),
   platform: process.platform,
   versions: {
     chrome: process.versions.chrome,

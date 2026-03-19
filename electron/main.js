@@ -21,8 +21,64 @@ const DEFAULT_ICON = path.resolve(
     : '../src/backend/Tracklet/Tracklet/static/img/tracklet.png'
 );
 const SMOKE_TEST_REPORT = path.resolve(__dirname, '.smoke-test.json');
+const BACKEND_CONFIG_FILE = 'backend-config.json';
+const BACKEND_LOG_FILE = 'backend-startup.log';
 let packagedDesktopServer;
 let mainWindow;
+
+function getElectronUserDataDir() {
+  const override =
+    process.env.TRACKLET_ELECTRON_USER_DATA_DIR ||
+    process.env.ELECTRON_USER_DATA_DIR;
+
+  if (override) {
+    return path.resolve(override);
+  }
+
+  const baseDir =
+    process.platform === 'win32'
+      ? process.env.LOCALAPPDATA || app.getPath('appData')
+      : app.getPath('appData');
+
+  return path.resolve(baseDir, 'TrackletDesktop', 'electron');
+}
+
+function getTrackletDesktopRootDir() {
+  const override =
+    process.env.INVENTREE_DESKTOP_DATA_DIR ||
+    process.env.TRACKLET_DESKTOP_DATA_DIR ||
+    process.env.INVENTREE_DATA_DIR;
+
+  if (override) {
+    return path.resolve(override);
+  }
+
+  const baseDir =
+    process.platform === 'win32'
+      ? process.env.LOCALAPPDATA || app.getPath('appData')
+      : app.getPath('appData');
+
+  return path.resolve(baseDir, 'TrackletDesktop');
+}
+
+function getTrackletLogsDir() {
+  return path.join(getTrackletDesktopRootDir(), 'logs');
+}
+
+function getBackendLogPath() {
+  return path.join(getTrackletLogsDir(), BACKEND_LOG_FILE);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+app.setPath('userData', getElectronUserDataDir());
 
 function createSplashWindow() {
   const splashWindow = new BrowserWindow({
@@ -144,6 +200,666 @@ function getCreateSuperuserScriptPath() {
     : path.join(__dirname, 'create-superuser.ps1');
 }
 
+function getCreateBackupScriptPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'scripts', 'create-backup.ps1')
+    : path.join(__dirname, 'create-backup.ps1');
+}
+
+function getStartBackendScriptPath() {
+  return app.isPackaged
+    ? path.join(process.resourcesPath, 'scripts', 'start-backend.ps1')
+    : path.join(__dirname, 'start-backend.ps1');
+}
+
+function getBackendConfigPath() {
+  return path.join(app.getPath('userData'), BACKEND_CONFIG_FILE);
+}
+
+function readBackendConfig() {
+  const configPath = getBackendConfigPath();
+
+  if (!fs.existsSync(configPath)) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  } catch (error) {
+    console.warn('[Tracklet Electron] Failed to read backend config', error);
+    return {};
+  }
+}
+
+function writeBackendConfig(nextConfig) {
+  const configPath = getBackendConfigPath();
+  fs.mkdirSync(path.dirname(configPath), { recursive: true });
+  fs.writeFileSync(configPath, JSON.stringify(nextConfig, null, 2));
+}
+
+function resolveManagePyPath(basePath) {
+  const candidates = [
+    path.join(basePath, 'manage.py'),
+    path.join(basePath, 'src', 'backend', 'Tracklet', 'manage.py')
+  ];
+
+  return candidates.find((candidate) => fs.existsSync(candidate));
+}
+
+function validateBackendSelection(selectedPath) {
+  if (!selectedPath || String(selectedPath).trim().length === 0) {
+    return {
+      ok: false,
+      error: 'No backend folder was selected.'
+    };
+  }
+
+  const resolvedPath = path.resolve(selectedPath);
+  const managePyPath = resolveManagePyPath(resolvedPath);
+
+  if (!managePyPath) {
+    return {
+      ok: false,
+      error:
+        'Wrong backend folder. Expected a Tracklet project root or backend folder containing src/backend/Tracklet/manage.py.'
+    };
+  }
+
+  const backendDir = path.dirname(managePyPath);
+  const normalizedManagePyPath = managePyPath.replace(/\\/g, '/').toLowerCase();
+  const projectRoot = normalizedManagePyPath.endsWith('/src/backend/tracklet/manage.py')
+    ? path.resolve(backendDir, '..', '..', '..')
+    : backendDir;
+  const backendScriptPath = path.join(projectRoot, 'contrib', 'windows', 'start-backend.ps1');
+  const settingsPath = path.join(backendDir, 'Tracklet', 'settings.py');
+  const pythonCandidates = [
+    path.join(projectRoot, 'env', 'Scripts', 'python.exe'),
+    path.join(path.dirname(projectRoot), 'env', 'Scripts', 'python.exe')
+  ];
+  const pythonPath = pythonCandidates.find((candidate) => fs.existsSync(candidate));
+
+  if (!fs.existsSync(settingsPath)) {
+    return {
+      ok: false,
+      error:
+        'Wrong backend folder. The selected path does not contain the expected Tracklet Django backend structure.',
+      managePyPath,
+      backendDir,
+      projectRoot
+    };
+  }
+
+  if (!fs.existsSync(backendScriptPath)) {
+    return {
+      ok: false,
+      error:
+        'Wrong backend folder. The Windows Tracklet backend launcher was not found in the selected project.',
+      managePyPath,
+      backendDir,
+      projectRoot
+    };
+  }
+
+  if (!pythonPath) {
+    return {
+      ok: false,
+      error:
+        'Missing Python/dependencies. A Tracklet virtual environment was not found next to the selected backend.',
+      managePyPath,
+      backendDir,
+      projectRoot
+    };
+  }
+
+  return {
+    ok: true,
+    selectedPath: resolvedPath,
+    managePyPath,
+    backendDir,
+    projectRoot,
+    backendScriptPath,
+    pythonPath
+  };
+}
+
+async function promptForBackendDir() {
+  const selectedDirectory = await dialog.showOpenDialog({
+    title: 'Select the Tracklet backend folder',
+    buttonLabel: 'Use Folder',
+    properties: ['openDirectory'],
+    message:
+      'Choose the Tracklet backend folder or the project root that contains src/backend/Tracklet/manage.py'
+  });
+
+  if (selectedDirectory.canceled || selectedDirectory.filePaths.length === 0) {
+    return { cancelled: true };
+  }
+
+  return validateBackendSelection(selectedDirectory.filePaths[0]);
+}
+
+async function getBackendHealth(backendUrl) {
+  try {
+    const response = await fetch(`${trimTrailingSlash(backendUrl)}/api/`, {
+      method: 'GET'
+    });
+
+    return {
+      ok: response.ok,
+      status: response.status
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+function wait(delayMs) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, delayMs);
+  });
+}
+
+async function waitForBackend(backendUrl, timeoutMs = 30000) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < timeoutMs) {
+    const health = await getBackendHealth(backendUrl);
+
+    if (health.ok) {
+      return {
+        ok: true,
+        health
+      };
+    }
+
+    await wait(1000);
+  }
+
+  return {
+    ok: false,
+    error: 'Timed out waiting for the Tracklet backend to become healthy.'
+  };
+}
+
+function writeBackendLaunchHeader(logPath, details) {
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  fs.writeFileSync(
+    logPath,
+    [
+      `=== Tracklet backend startup ${new Date().toISOString()} ===`,
+      `backendDir: ${details.backendDir}`,
+      `projectRoot: ${details.projectRoot}`,
+      `managePy: ${details.managePyPath}`,
+      `python: ${details.pythonPath}`,
+      `address: ${details.backendAddress}`,
+      ''
+    ].join('\n'),
+    'utf8'
+  );
+}
+
+function appendBackendLog(logPath, message) {
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  fs.appendFileSync(
+    logPath,
+    `[${new Date().toISOString()}] ${message}\n`,
+    'utf8'
+  );
+}
+
+function launchBackendProcess(validation, backendUrl) {
+  const scriptPath = getStartBackendScriptPath();
+
+  if (!fs.existsSync(scriptPath)) {
+    throw new Error(`The backend launcher script was not found: ${scriptPath}`);
+  }
+
+  const backendAddress = new URL(trimTrailingSlash(backendUrl)).host;
+  const logPath = getBackendLogPath();
+  writeBackendLaunchHeader(logPath, {
+    ...validation,
+    backendAddress
+  });
+  const logFd = fs.openSync(logPath, 'a');
+
+  const child = spawn(
+    getPowerShellCommand(),
+    [
+      '-ExecutionPolicy',
+      'Bypass',
+      '-File',
+      scriptPath,
+      '-BackendDir',
+      validation.backendDir,
+      '-Address',
+      backendAddress
+    ],
+    {
+      detached: true,
+      stdio: ['ignore', logFd, logFd],
+      windowsHide: true
+    }
+  );
+
+  fs.closeSync(logFd);
+  child.unref();
+
+  return {
+    child,
+    logPath
+  };
+}
+
+async function resolveBackendDirForDesktopAction(allowPrompt = true) {
+  const savedConfig = readBackendConfig();
+  let validation =
+    validateBackendSelection(process.env.TRACKLET_BACKEND_DIR || '');
+
+  if (!validation.ok) {
+    validation = validateBackendSelection(savedConfig.backendDir || '');
+  }
+
+  if (!validation.ok && allowPrompt) {
+    const prompted = await promptForBackendDir();
+
+    if (prompted?.cancelled) {
+      return {
+        ok: false,
+        cancelled: true
+      };
+    }
+
+    validation = prompted;
+  }
+
+  if (!validation.ok) {
+    return validation;
+  }
+
+  const backendDir = validation.backendDir;
+  if (!backendDir) {
+    return null;
+  }
+
+  writeBackendConfig({
+    ...savedConfig,
+    backendDir
+  });
+
+  return {
+    ok: true,
+    ...validation
+  };
+}
+
+async function ensurePackagedBackendAvailable(
+  backendUrl,
+  options = {}
+) {
+  const { forcePrompt = false } = options;
+  const currentHealth = await getBackendHealth(backendUrl);
+
+  if (currentHealth.ok) {
+    return {
+      ok: true,
+      alreadyRunning: true,
+      backendUrl
+    };
+  }
+
+  let validation = forcePrompt
+    ? { ok: false }
+    : await resolveBackendDirForDesktopAction(false);
+
+  if (!validation?.ok) {
+    if (forcePrompt) {
+      validation = await promptForBackendDir();
+    } else {
+      const choice = await dialog.showMessageBox({
+        type: 'question',
+        buttons: ['Locate Backend', 'Continue'],
+        defaultId: 0,
+        cancelId: 1,
+        title: 'Tracklet backend required',
+        message:
+          'Tracklet Desktop needs the local backend to run in the background. Choose your Tracklet backend folder once and Tracklet.exe will start it automatically next time.'
+      });
+
+      if (choice.response !== 0) {
+        return {
+          ok: false,
+          error:
+            currentHealth.status && currentHealth.status !== 200
+              ? `Backend is not healthy on ${backendUrl} (HTTP ${currentHealth.status}).`
+              : 'Tracklet backend startup was skipped.'
+        };
+      }
+
+      validation = await promptForBackendDir();
+    }
+
+    if (validation?.cancelled) {
+      return {
+        ok: false,
+        cancelled: true,
+        error: 'Tracklet backend startup was cancelled.'
+      };
+    }
+
+    if (!validation?.ok) {
+      return validation;
+    }
+
+    writeBackendConfig({
+      ...readBackendConfig(),
+      backendDir: validation.backendDir
+    });
+  }
+
+  const { child, logPath } = launchBackendProcess(validation, backendUrl);
+
+  const startupResult = await waitForBackend(backendUrl);
+
+  if (startupResult.ok) {
+    appendBackendLog(logPath, `backendHealth=ok url=${backendUrl}`);
+    return {
+      ok: true,
+      backendDir: validation.backendDir,
+      backendUrl,
+      logPath
+    };
+  }
+
+  let failureReason = startupResult.error;
+  let childExitCode = null;
+
+  if (child.exitCode !== null) {
+    childExitCode = child.exitCode;
+  }
+
+  const logTail = fs.existsSync(logPath)
+    ? fs
+        .readFileSync(logPath, 'utf8')
+        .split(/\r?\n/)
+        .slice(-40)
+        .join('\n')
+    : '';
+
+  if (/Python virtual environment not found/i.test(logTail)) {
+    failureReason = 'Missing Python/dependencies for the selected Tracklet backend.';
+  } else if (/Tracklet backend was not found/i.test(logTail)) {
+    failureReason = 'Wrong backend folder selected.';
+  } else if (/Address already in use|Only one usage of each socket address/i.test(logTail)) {
+    failureReason = `Port already in use for backend address ${new URL(trimTrailingSlash(backendUrl)).host}.`;
+  } else if (/exitCode\(runmigrations\)=([1-9]\d*)/i.test(logTail)) {
+    failureReason = 'Backend migration check failed. Check the startup log for details.';
+  } else if (/exitCode\(migrate\)=([1-9]\d*)/i.test(logTail)) {
+    failureReason = 'Backend migration step failed. Check the startup log for details.';
+  } else if (/exitCode\(dev\.server\)=([1-9]\d*)/i.test(logTail)) {
+    failureReason = 'Backend server command exited unexpectedly. Check the startup log for details.';
+  } else if (/Applying Tracklet database migrations|Database Migrations required|Traceback|Error/i.test(logTail)) {
+    failureReason =
+      'Backend failed during startup, migration, or configuration. Check the backend startup log for details.';
+  } else if (childExitCode !== null) {
+    failureReason = `Tracklet backend launcher exited with code ${childExitCode} before the backend became healthy.`;
+  }
+
+  appendBackendLog(
+    logPath,
+    `backendHealth=failed url=${backendUrl} reason=${failureReason}`
+  );
+
+  return {
+    ok: false,
+    error: failureReason,
+    logPath,
+    backendDir: validation.backendDir,
+    backendUrl
+  };
+}
+
+function buildStartupFailureMessage(startupFailure) {
+  return startupFailure?.error || 'Tracklet backend failed to start.';
+}
+
+function createStartupErrorWindow(startupFailure) {
+  const errorWindow = new BrowserWindow({
+    title: APP_TITLE,
+    width: 720,
+    height: 560,
+    minWidth: 640,
+    minHeight: 500,
+    autoHideMenuBar: true,
+    backgroundColor: '#f5f7fb',
+    icon: DEFAULT_ICON,
+    show: false,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: false
+    }
+  });
+
+  errorWindow.on('closed', () => {
+    if (mainWindow === errorWindow) {
+      mainWindow = undefined;
+    }
+  });
+
+  const logPath = startupFailure?.logPath || getBackendLogPath();
+  const reason = buildStartupFailureMessage(startupFailure);
+
+  const startupErrorHtml = `
+    <!doctype html>
+    <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <title>${APP_TITLE}</title>
+        <style>
+          :root {
+            color-scheme: light;
+            font-family: "Segoe UI", Arial, sans-serif;
+          }
+          body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background:
+              radial-gradient(circle at top, rgba(72, 201, 176, 0.18), transparent 38%),
+              linear-gradient(135deg, #eef6f5 0%, #f8fbff 100%);
+            color: #163137;
+          }
+          .panel {
+            width: min(560px, calc(100vw - 48px));
+            padding: 32px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.96);
+            box-shadow: 0 24px 70px rgba(20, 52, 61, 0.16);
+            border: 1px solid rgba(22, 49, 55, 0.08);
+          }
+          h1 {
+            margin: 0 0 12px;
+            font-size: 30px;
+            line-height: 1.15;
+          }
+          p {
+            margin: 0 0 16px;
+            line-height: 1.5;
+          }
+          .reason {
+            padding: 14px 16px;
+            border-radius: 14px;
+            background: #fff3f2;
+            color: #8a2d23;
+            border: 1px solid #f2c8c3;
+            margin-bottom: 18px;
+            white-space: pre-wrap;
+          }
+          .meta {
+            font-size: 13px;
+            color: #496068;
+            margin-bottom: 24px;
+            word-break: break-word;
+          }
+          .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+          }
+          button {
+            appearance: none;
+            border: 0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+          }
+          .primary {
+            background: #186f6a;
+            color: white;
+          }
+          .secondary {
+            background: #e6f3f1;
+            color: #18524f;
+          }
+          .ghost {
+            background: #f1f5f9;
+            color: #28424a;
+          }
+          .status {
+            min-height: 22px;
+            font-size: 13px;
+            color: #496068;
+          }
+        </style>
+      </head>
+      <body>
+        <main class="panel">
+          <h1>Tracklet backend failed to start</h1>
+          <p>Tracklet Desktop could not get the local backend into a healthy ready state, so login has been blocked until startup succeeds.</p>
+          <div class="reason">${escapeHtml(reason)}</div>
+          <div class="meta">
+            <strong>Backend log:</strong><br />
+            ${escapeHtml(logPath)}
+          </div>
+          <div class="actions">
+            <button class="primary" id="locate">Locate Backend Again</button>
+            <button class="secondary" id="retry">Retry Startup</button>
+            <button class="ghost" id="logs">Open Logs Folder</button>
+          </div>
+          <div class="status" id="status"></div>
+        </main>
+        <script>
+          const status = document.getElementById('status');
+          const buttons = Array.from(document.querySelectorAll('button'));
+          const setBusy = (busy, message = '') => {
+            buttons.forEach((button) => {
+              button.disabled = busy;
+              button.style.opacity = busy ? '0.7' : '1';
+              button.style.cursor = busy ? 'progress' : 'pointer';
+            });
+            status.textContent = message;
+          };
+
+          document.getElementById('locate').addEventListener('click', async () => {
+            setBusy(true, 'Opening backend folder picker...');
+            await window.TRACKLET_ELECTRON?.locateBackendAgain?.();
+          });
+
+          document.getElementById('retry').addEventListener('click', async () => {
+            setBusy(true, 'Retrying backend startup...');
+            await window.TRACKLET_ELECTRON?.retryBackendStartup?.();
+          });
+
+          document.getElementById('logs').addEventListener('click', async () => {
+            setBusy(true, 'Opening logs folder...');
+            try {
+              await window.TRACKLET_ELECTRON?.openLogsFolder?.();
+            } finally {
+              setBusy(false, '');
+            }
+          });
+        </script>
+      </body>
+    </html>
+  `;
+
+  errorWindow.loadURL(
+    `data:text/html;charset=utf-8,${encodeURIComponent(startupErrorHtml)}`
+  );
+
+  errorWindow.once('ready-to-show', () => {
+    errorWindow.setTitle(APP_TITLE);
+    errorWindow.show();
+  });
+
+  mainWindow = errorWindow;
+  return errorWindow;
+}
+
+function runPowerShellJsonCommand(scriptPath, args) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(
+      getPowerShellCommand(),
+      ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args],
+      {
+        windowsHide: true
+      }
+    );
+
+    let stdout = '';
+    let stderr = '';
+
+    child.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    child.on('error', (error) => {
+      reject(error);
+    });
+
+    child.on('close', (code) => {
+      const lines = stdout
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      const jsonLine = [...lines].reverse().find((line) => line.startsWith('{'));
+
+      if (!jsonLine) {
+        reject(
+          new Error(
+            stderr || stdout || `Tracklet helper exited with code ${code ?? 'unknown'}`
+          )
+        );
+        return;
+      }
+
+      try {
+        resolve(JSON.parse(jsonLine));
+      } catch (error) {
+        reject(
+          new Error(
+            `Tracklet helper returned invalid JSON: ${
+              error instanceof Error ? error.message : String(error)
+            }`
+          )
+        );
+      }
+    });
+  });
+}
+
 function trimTrailingSlash(value) {
   return value.replace(/\/+$/, '');
 }
@@ -189,22 +905,16 @@ function writeSmokeTestReport(payload) {
 }
 
 async function launchCreateSuperuserFlow() {
-  const selectedDirectory = await dialog.showOpenDialog({
-    title: 'Select the Tracklet backend folder',
-    buttonLabel: 'Use Folder',
-    properties: ['openDirectory'],
-    message:
-      'Choose the Tracklet backend folder or the project root that contains src/backend/Tracklet/manage.py'
-  });
+  const backendDir = await resolveBackendDirForDesktopAction(true);
 
-  if (selectedDirectory.canceled || selectedDirectory.filePaths.length === 0) {
+  if (!backendDir?.ok) {
     return {
       ok: false,
-      cancelled: true
+      cancelled: backendDir?.cancelled === true,
+      error: backendDir?.error
     };
   }
 
-  const backendDir = selectedDirectory.filePaths[0];
   const scriptPath = getCreateSuperuserScriptPath();
 
   if (!fs.existsSync(scriptPath)) {
@@ -224,7 +934,7 @@ async function launchCreateSuperuserFlow() {
         '-File',
         scriptPath,
         '-BackendDir',
-        backendDir
+        backendDir.backendDir
       ],
       {
         detached: true,
@@ -237,7 +947,7 @@ async function launchCreateSuperuserFlow() {
 
     return {
       ok: true,
-      backendDir
+      backendDir: backendDir.backendDir
     };
   } catch (error) {
     console.error('[Tracklet Electron] Failed to launch superuser helper', error);
@@ -250,8 +960,99 @@ async function launchCreateSuperuserFlow() {
 }
 
 ipcMain.handle('tracklet:create-superuser', async () => launchCreateSuperuserFlow());
+ipcMain.handle('tracklet:create-backup', async () => {
+  const backendUrl = getBackendUrl();
 
-async function createWindow() {
+  if (!(await getBackendHealth(backendUrl)).ok) {
+    return {
+      ok: false,
+      error:
+        'Tracklet backend is not currently available. Start the backend and try again.'
+    };
+  }
+
+  const backendDir = await resolveBackendDirForDesktopAction(true);
+
+  if (!backendDir?.ok) {
+    return {
+      ok: false,
+      cancelled: backendDir?.cancelled === true,
+      error: backendDir?.error
+    };
+  }
+
+  const scriptPath = getCreateBackupScriptPath();
+
+  if (!fs.existsSync(scriptPath)) {
+    return {
+      ok: false,
+      error: 'The desktop backup helper script was not found.'
+    };
+  }
+
+  try {
+    const result = await runPowerShellJsonCommand(scriptPath, [
+      '-BackendDir',
+      backendDir.backendDir
+    ]);
+
+    return {
+      ...result,
+      backendDir: backendDir.backendDir
+    };
+  } catch (error) {
+    console.error('[Tracklet Electron] Failed to run backup helper', error);
+
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+});
+ipcMain.handle('tracklet:open-logs-folder', async () =>
+  shell.openPath(getTrackletLogsDir())
+);
+ipcMain.handle('tracklet:retry-backend-startup', async () => {
+  const currentWindow = mainWindow;
+
+  if (currentWindow && !currentWindow.isDestroyed()) {
+    currentWindow.destroy();
+  }
+
+  mainWindow = undefined;
+
+  try {
+    await createWindow({ forcePromptBackend: false });
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+});
+ipcMain.handle('tracklet:locate-backend-again', async () => {
+  const currentWindow = mainWindow;
+
+  if (currentWindow && !currentWindow.isDestroyed()) {
+    currentWindow.destroy();
+  }
+
+  mainWindow = undefined;
+
+  try {
+    await createWindow({ forcePromptBackend: true });
+    return { ok: true };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+});
+
+async function createWindow(options = {}) {
+  const { forcePromptBackend = false } = options;
   let rendererUrl = getRendererUrl();
   let apiUrl = trimTrailingSlash(new URL(rendererUrl).origin);
   let splashWindow;
@@ -260,6 +1061,15 @@ async function createWindow() {
     splashWindow = createSplashWindow();
 
     try {
+      const backendStartup = await ensurePackagedBackendAvailable(getBackendUrl(), {
+        forcePrompt: forcePromptBackend
+      });
+
+      if (!backendStartup.ok) {
+        splashWindow?.destroy();
+        return createStartupErrorWindow(backendStartup);
+      }
+
       packagedDesktopServer = await startDesktopServer({
         staticDir: getBuildDir(),
         backendUrl: getBackendUrl()
@@ -268,13 +1078,13 @@ async function createWindow() {
       apiUrl = packagedDesktopServer.origin;
     } catch (error) {
       splashWindow?.destroy();
-      dialog.showErrorBox(
-        'Tracklet could not start',
-        error instanceof Error
-          ? error.message
-          : 'The packaged desktop server could not be started.'
-      );
-      throw error;
+      return createStartupErrorWindow({
+        error:
+          error instanceof Error
+            ? error.message
+            : 'The packaged desktop server could not be started.',
+        logPath: getBackendLogPath()
+      });
     }
   }
 
