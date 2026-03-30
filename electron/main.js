@@ -23,6 +23,7 @@ const DEFAULT_ICON = path.resolve(
 const SMOKE_TEST_REPORT = path.resolve(__dirname, '.smoke-test.json');
 const BACKEND_CONFIG_FILE = 'backend-config.json';
 const BACKEND_LOG_FILE = 'backend-startup.log';
+const DEFAULT_BACKEND_STARTUP_TIMEOUT_MS = 120000;
 let packagedDesktopServer;
 let mainWindow;
 
@@ -194,6 +195,21 @@ function getPowerShellCommand() {
     : 'powershell.exe';
 }
 
+function quotePowerShellArgument(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function buildPowerShellScriptCommand(scriptPath, args = []) {
+  const renderedArgs = args
+    .map((arg) => {
+      const text = String(arg);
+      return text.startsWith('-') ? text : quotePowerShellArgument(text);
+    })
+    .join(' ');
+  const suffix = renderedArgs.length > 0 ? ` ${renderedArgs}` : '';
+  return `& { & ${quotePowerShellArgument(scriptPath)}${suffix} }`;
+}
+
 function getCreateSuperuserScriptPath() {
   return app.isPackaged
     ? path.join(process.resourcesPath, 'scripts', 'create-superuser.ps1')
@@ -362,7 +378,10 @@ function wait(delayMs) {
   });
 }
 
-async function waitForBackend(backendUrl, timeoutMs = 30000) {
+async function waitForBackend(
+  backendUrl,
+  timeoutMs = DEFAULT_BACKEND_STARTUP_TIMEOUT_MS
+) {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < timeoutMs) {
@@ -390,11 +409,16 @@ function writeBackendLaunchHeader(logPath, details) {
     logPath,
     [
       `=== Tracklet backend startup ${new Date().toISOString()} ===`,
+      `scriptPath: ${details.scriptPath}`,
       `backendDir: ${details.backendDir}`,
       `projectRoot: ${details.projectRoot}`,
       `managePy: ${details.managePyPath}`,
       `python: ${details.pythonPath}`,
       `address: ${details.backendAddress}`,
+      `startupTimeoutMs: ${details.startupTimeoutMs}`,
+      `env.INVENTREE_DESKTOP_MODE: ${details.desktopMode}`,
+      `env.INVENTREE_DEBUG: ${details.debugMode}`,
+      `env.INVENTREE_DESKTOP_DATA_DIR: ${details.desktopDataDir}`,
       ''
     ].join('\n'),
     'utf8'
@@ -410,6 +434,11 @@ function appendBackendLog(logPath, message) {
   );
 }
 
+function appendBackendLogChunk(logPath, chunk) {
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  fs.appendFileSync(logPath, chunk.toString(), 'utf8');
+}
+
 function launchBackendProcess(validation, backendUrl) {
   const scriptPath = getStartBackendScriptPath();
 
@@ -421,31 +450,74 @@ function launchBackendProcess(validation, backendUrl) {
   const logPath = getBackendLogPath();
   writeBackendLaunchHeader(logPath, {
     ...validation,
-    backendAddress
+    backendAddress,
+    scriptPath,
+    startupTimeoutMs: DEFAULT_BACKEND_STARTUP_TIMEOUT_MS,
+    desktopMode: process.env.INVENTREE_DESKTOP_MODE || '1',
+    debugMode: process.env.INVENTREE_DEBUG || '1',
+    desktopDataDir: process.env.INVENTREE_DESKTOP_DATA_DIR || getTrackletDesktopRootDir()
   });
-  const logFd = fs.openSync(logPath, 'a');
+
+  const launchCommand = buildPowerShellScriptCommand(scriptPath, [
+    '-BackendDir',
+    validation.backendDir,
+    '-Address',
+    backendAddress
+  ]);
+
+  appendBackendLog(logPath, `launcher.command=${launchCommand}`);
 
   const child = spawn(
     getPowerShellCommand(),
     [
+      '-NoProfile',
+      '-NonInteractive',
       '-ExecutionPolicy',
       'Bypass',
-      '-File',
-      scriptPath,
-      '-BackendDir',
-      validation.backendDir,
-      '-Address',
-      backendAddress
+      '-Command',
+      launchCommand
     ],
     {
-      detached: true,
-      stdio: ['ignore', logFd, logFd],
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true
     }
   );
 
-  fs.closeSync(logFd);
-  child.unref();
+  appendBackendLog(logPath, `launcher.spawn pid=${child.pid ?? 'unknown'}`);
+
+  child.stdout?.on('data', (chunk) => {
+    appendBackendLogChunk(logPath, chunk);
+  });
+
+  child.stderr?.on('data', (chunk) => {
+    appendBackendLogChunk(logPath, chunk);
+  });
+
+  child.on('spawn', () => {
+    appendBackendLog(logPath, 'launcher.event=spawn');
+  });
+
+  child.on('error', (error) => {
+    appendBackendLog(
+      logPath,
+      `launcher.event=error message=${error instanceof Error ? error.message : String(error)}`
+    );
+  });
+
+  child.on('exit', (code, signal) => {
+    appendBackendLog(
+      logPath,
+      `launcher.event=exit code=${code ?? 'null'} signal=${signal ?? 'null'}`
+    );
+  });
+
+  child.on('close', (code, signal) => {
+    appendBackendLog(
+      logPath,
+      `launcher.event=close code=${code ?? 'null'} signal=${signal ?? 'null'}`
+    );
+  });
 
   return {
     child,
@@ -503,6 +575,10 @@ async function ensurePackagedBackendAvailable(
   const currentHealth = await getBackendHealth(backendUrl);
 
   if (currentHealth.ok) {
+    appendBackendLog(
+      getBackendLogPath(),
+      `backendHealth=ok url=${backendUrl} alreadyRunning=true`
+    );
     return {
       ok: true,
       alreadyRunning: true,
@@ -561,10 +637,11 @@ async function ensurePackagedBackendAvailable(
 
   const { child, logPath } = launchBackendProcess(validation, backendUrl);
 
+  appendBackendLog(logPath, `healthCheck.start url=${backendUrl}`);
   const startupResult = await waitForBackend(backendUrl);
 
   if (startupResult.ok) {
-    appendBackendLog(logPath, `backendHealth=ok url=${backendUrl}`);
+    appendBackendLog(logPath, `backendHealth=ok url=${backendUrl} firstSuccessfulHealthCheck=true`);
     return {
       ok: true,
       backendDir: validation.backendDir,
@@ -579,6 +656,11 @@ async function ensurePackagedBackendAvailable(
   if (child.exitCode !== null) {
     childExitCode = child.exitCode;
   }
+
+  appendBackendLog(
+    logPath,
+    `healthCheck.failed url=${backendUrl} childExitCode=${childExitCode ?? 'null'} reason=${startupResult.error}`
+  );
 
   const logTail = fs.existsSync(logPath)
     ? fs
@@ -600,9 +682,17 @@ async function ensurePackagedBackendAvailable(
     failureReason = 'Backend migration step failed. Check the startup log for details.';
   } else if (/exitCode\(dev\.server\)=([1-9]\d*)/i.test(logTail)) {
     failureReason = 'Backend server command exited unexpectedly. Check the startup log for details.';
-  } else if (/Applying Tracklet database migrations|Database Migrations required|Traceback|Error/i.test(logTail)) {
+  } else if (/exitCode\(runserver\)=([1-9]\d*)/i.test(logTail)) {
+    failureReason = 'Backend server command exited unexpectedly. Check the startup log for details.';
+  } else if (
+    /Applying Tracklet database migrations|Database Migrations required|Traceback|Error/i.test(
+      logTail
+    )
+  ) {
     failureReason =
       'Backend failed during startup, migration, or configuration. Check the backend startup log for details.';
+  } else if (startupResult.error && /Timed out waiting/i.test(startupResult.error)) {
+    failureReason = `Timed out waiting ${DEFAULT_BACKEND_STARTUP_TIMEOUT_MS}ms for the Tracklet backend to become healthy.`;
   } else if (childExitCode !== null) {
     failureReason = `Tracklet backend launcher exited with code ${childExitCode} before the backend became healthy.`;
   }
@@ -808,7 +898,14 @@ function runPowerShellJsonCommand(scriptPath, args) {
   return new Promise((resolve, reject) => {
     const child = spawn(
       getPowerShellCommand(),
-      ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args],
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-Command',
+        buildPowerShellScriptCommand(scriptPath, args)
+      ],
       {
         windowsHide: true
       }
@@ -928,13 +1025,16 @@ async function launchCreateSuperuserFlow() {
     const child = spawn(
       getPowerShellCommand(),
       [
+        '-NoProfile',
+        '-NonInteractive',
         '-ExecutionPolicy',
         'Bypass',
         '-NoExit',
-        '-File',
-        scriptPath,
-        '-BackendDir',
-        backendDir.backendDir
+        '-Command',
+        buildPowerShellScriptCommand(scriptPath, [
+          '-BackendDir',
+          backendDir.backendDir
+        ])
       ],
       {
         detached: true,
@@ -1107,7 +1207,34 @@ async function createWindow(options = {}) {
     }
   });
 
+  function shouldOpenInternally(targetUrl) {
+    if (!targetUrl) {
+      return false;
+    }
+
+    try {
+      const parsedUrl = new URL(targetUrl);
+      const rendererOrigin = new URL(rendererUrl).origin;
+      const apiOrigin = apiUrl ? new URL(apiUrl).origin : undefined;
+
+      return (
+        parsedUrl.origin === rendererOrigin ||
+        (!!apiOrigin && parsedUrl.origin === apiOrigin)
+      );
+    } catch (error) {
+      console.warn('[Tracklet Electron] Could not classify window.open target', {
+        targetUrl,
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return false;
+    }
+  }
+
   window.webContents.setWindowOpenHandler(({ url }) => {
+    if (shouldOpenInternally(url)) {
+      return { action: 'allow' };
+    }
+
     shell.openExternal(url);
     return { action: 'deny' };
   });

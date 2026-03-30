@@ -91,34 +91,44 @@ Write-Step "managePy=$managePy"
 Write-Step "python=$python"
 Write-Step "address=$Address"
 Write-Step "cwd=$projectRoot"
+Write-Step "env.INVENTREE_DESKTOP_MODE=$env:INVENTREE_DESKTOP_MODE"
+Write-Step "env.INVENTREE_DEBUG=$env:INVENTREE_DEBUG"
+Write-Step "env.INVENTREE_DESKTOP_DATA_DIR=$env:INVENTREE_DESKTOP_DATA_DIR"
 
 Push-Location $projectRoot
 
 try {
   if ($env:INVENTREE_DESKTOP_MODE -eq '1') {
+    Write-Step 'stage=runmigrations.before'
     Write-Step "command=$python $managePy runmigrations"
     & $python $managePy runmigrations
     $runMigrationsExit = $LASTEXITCODE
     Write-Step "exitCode(runmigrations)=$runMigrationsExit"
+    Write-Step 'stage=runmigrations.after'
 
     if ($runMigrationsExit -ne 0) {
       exit $runMigrationsExit
     }
 
+    Write-Step 'stage=migrate.before'
     Write-Step "command=$python $managePy migrate --run-syncdb --noinput"
     & $python $managePy migrate --run-syncdb --noinput
     $migrateExit = $LASTEXITCODE
     Write-Step "exitCode(migrate)=$migrateExit"
+    Write-Step 'stage=migrate.after'
 
     if ($migrateExit -ne 0) {
       exit $migrateExit
     }
   }
 
-  Write-Step "command=$python -m invoke dev.server -a $Address"
-  & $python -m invoke dev.server -a $Address
+  # Match the known-good manual desktop launch path.
+  Write-Step 'stage=runserver.before'
+  Write-Step "command=$python $managePy runserver $Address --noreload"
+  & $python $managePy runserver $Address --noreload
   $serverExit = $LASTEXITCODE
-  Write-Step "exitCode(dev.server)=$serverExit"
+  Write-Step "exitCode(runserver)=$serverExit"
+  Write-Step 'stage=runserver.after'
   exit $serverExit
 }
 finally {

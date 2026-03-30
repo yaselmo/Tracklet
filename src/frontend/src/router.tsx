@@ -194,18 +194,18 @@ export const routes = (
       <Route path='notifications/*' element={<Notifications />} />,
       <Route path='scan/' element={<Scan />} />,
       <Route path='settings/'>
-        <Route index element={<Navigate to='admin/' />} />
+        <Route index element={<Navigate to='admin/' replace />} />
         <Route path='admin/*' element={<AdminCenter />} />
         <Route path='system/*' element={<SystemSettings />} />
         <Route path='user/*' element={<UserSettings />} />
       </Route>
       <Route path='part/'>
-        <Route index element={<Navigate to='category/index/' />} />
+        <Route index element={<Navigate to='category/index/' replace />} />
         <Route path='category/:id?/*' element={<CategoryDetail />} />
         <Route path=':id/*' element={<PartDetail />} />
       </Route>
       <Route path='stock/'>
-        <Route index element={<Navigate to='location/index/' />} />
+        <Route index element={<Navigate to='location/index/' replace />} />
         <Route path='location/:id?/*' element={<LocationDetail />} />
         <Route path='item/:id/*' element={<StockDetail />} />
       </Route>
@@ -214,7 +214,7 @@ export const routes = (
           index
           element={
             <ModuleRoute module='manufacturing'>
-              <Navigate to='index/' />
+              <Navigate to='index/' replace />
             </ModuleRoute>
           }
         />
@@ -240,7 +240,7 @@ export const routes = (
           index
           element={
             <ModuleRoute module='purchasing'>
-              <Navigate to='index/' />
+              <Navigate to='index/' replace />
             </ModuleRoute>
           }
         />
@@ -295,7 +295,7 @@ export const routes = (
       </Route>
       <Route path='company/:id/*' element={<CompanyDetail />} />
       <Route path='suppliers/'>
-        <Route index element={<Navigate to='index/' />} />
+        <Route index element={<Navigate to='index/' replace />} />
         <Route path='index/*' element={<SuppliersIndex />} />
         <Route path='supplier/:id/*' element={<SupplierDetail />} />
       </Route>
@@ -304,7 +304,7 @@ export const routes = (
           index
           element={
             <ModuleRoute module='sales'>
-              <Navigate to='index/' />
+              <Navigate to='index/' replace />
             </ModuleRoute>
           }
         />
@@ -350,12 +350,12 @@ export const routes = (
         />
       </Route>
       <Route path='projects/'>
-        <Route index element={<Navigate to='index/' />} />
+        <Route index element={<Navigate to='index/' replace />} />
         <Route path='index/*' element={<ProjectsIndex />} />
         <Route path=':id/*' element={<ProjectDetail />} />
       </Route>
       <Route path='core/'>
-        <Route index element={<Navigate to='index/' />} />
+        <Route index element={<Navigate to='index/' replace />} />
         <Route path='index/*' element={<CoreIndex />} />
         <Route path='user/:id/*' element={<UserDetail />} />
         <Route path='group/:id/*' element={<GroupDetail />} />

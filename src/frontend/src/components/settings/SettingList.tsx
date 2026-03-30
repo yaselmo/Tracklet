@@ -20,6 +20,12 @@ import {
 } from '../../states/SettingsStates';
 import { SettingItem } from './SettingItem';
 
+const SETTINGS_MIN_ZERO_KEYS = new Set([
+  'DASHBOARD_CALIBRATION_DUE_DAYS',
+  'DASHBOARD_RESERVED_SOON_DAYS',
+  'DASHBOARD_LOW_STOCK_THRESHOLD'
+]);
+
 /**
  * Display a list of setting items, based on a list of provided keys
  */
@@ -67,6 +73,21 @@ export function SettingList({
 
   const key: string = useMemo(() => setting?.key ?? '', [setting]);
 
+  const settingFieldConfig = useMemo(() => {
+    if (!setting) {
+      return {};
+    }
+
+    if (SETTINGS_MIN_ZERO_KEYS.has(setting.key)) {
+      return {
+        min: 0,
+        clampBehavior: 'strict' as const
+      };
+    }
+
+    return {};
+  }, [setting]);
+
   const editSettingModal = useEditApiFormModal({
     url: settingsState.endpoint,
     pk: key,
@@ -81,7 +102,8 @@ export function SettingList({
         api_url: setting?.api_url ?? '',
         model: (setting?.model_name?.split('.')[1] as ModelType) ?? null,
         filters: setting?.model_filters || undefined,
-        choices: setting?.choices ?? undefined
+        choices: setting?.choices ?? undefined,
+        ...settingFieldConfig
       }
     },
     successMessage: t`Setting ${key} updated successfully`,

@@ -121,7 +121,7 @@ msgstr "Деталь"
 
 #: lib/enums/ModelInformation.tsx:30
 #: lib/enums/Roles.tsx:36
-#: src/pages/Index/Settings/SystemSettings.tsx:203
+#: src/pages/Index/Settings/SystemSettings.tsx:218
 #: src/pages/part/CategoryDetail.tsx:141
 #: src/pages/part/CategoryDetail.tsx:299
 #: src/pages/part/CategoryDetail.tsx:354
@@ -147,7 +147,7 @@ msgstr "Параметр"
 #: src/components/panels/ParametersPanel.tsx:21
 #: src/components/wizards/ImportPartWizard.tsx:807
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:206
-#: src/pages/Index/Settings/SystemSettings.tsx:197
+#: src/pages/Index/Settings/SystemSettings.tsx:212
 #: src/pages/part/PartDetail.tsx:946
 msgid "Parameters"
 msgstr "Параметры"
@@ -239,7 +239,6 @@ msgstr "Складская позиция"
 
 #: lib/enums/ModelInformation.tsx:89
 #: lib/enums/Roles.tsx:48
-#: src/pages/company/CompanyDetail.tsx:211
 #: src/pages/part/CategoryDetail.tsx:328
 #: src/pages/part/PartStockHistoryDetail.tsx:117
 #: src/pages/stock/LocationDetail.tsx:132
@@ -269,7 +268,7 @@ msgid "Stock Location Types"
 msgstr "Типы места хранения"
 
 #: lib/enums/ModelInformation.tsx:114
-#: src/pages/Index/Settings/SystemSettings.tsx:260
+#: src/pages/Index/Settings/SystemSettings.tsx:275
 #: src/pages/part/PartDetail.tsx:903
 msgid "Stock History"
 msgstr "История склада"
@@ -303,7 +302,7 @@ msgid "Build Items"
 msgstr "Товары производства"
 
 #: lib/enums/ModelInformation.tsx:144
-#: src/pages/company/CompanyDetail.tsx:346
+#: src/pages/company/CompanyDetail.tsx:324
 #: src/tables/company/CompanyTable.tsx:47
 #: src/tables/company/ContactTable.tsx:67
 #: src/tables/company/ParametricCompanyTable.tsx:18
@@ -344,8 +343,7 @@ msgstr "Заказ на закупку"
 #: lib/enums/ModelInformation.tsx:160
 #: lib/enums/Roles.tsx:40
 #: src/defaults/actions.tsx:114
-#: src/pages/Index/Settings/SystemSettings.tsx:306
-#: src/pages/company/CompanyDetail.tsx:204
+#: src/pages/Index/Settings/SystemSettings.tsx:321
 #: src/pages/company/SupplierPartDetail.tsx:267
 #: src/pages/part/PartDetail.tsx:867
 #: src/pages/purchasing/PurchasingIndex.tsx:66
@@ -361,7 +359,7 @@ msgid "Purchase Order Lines"
 msgstr "Позиции заказа на закупку"
 
 #: lib/enums/ModelInformation.tsx:175
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:520
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:566
 #: src/pages/projects/ProjectDetail.tsx:296
 #: src/pages/projects/ProjectDetail.tsx:301
 #: src/tables/projects/ProjectAutomaticReportsPanel.tsx:192
@@ -401,8 +399,8 @@ msgstr "Заказ на продажу"
 #: lib/enums/ModelInformation.tsx:190
 #: lib/enums/Roles.tsx:46
 #: src/defaults/actions.tsx:125
-#: src/pages/Index/Settings/SystemSettings.tsx:322
-#: src/pages/company/CompanyDetail.tsx:224
+#: src/pages/Index/Settings/SystemSettings.tsx:337
+#: src/pages/company/CompanyDetail.tsx:201
 #: src/pages/part/PartDetail.tsx:879
 #: src/pages/sales/SalesIndex.tsx:53
 msgid "Sales Orders"
@@ -426,8 +424,8 @@ msgstr "Заказ на возврат"
 #: lib/enums/ModelInformation.tsx:209
 #: lib/enums/Roles.tsx:44
 #: src/defaults/actions.tsx:145
-#: src/pages/Index/Settings/SystemSettings.tsx:339
-#: src/pages/company/CompanyDetail.tsx:231
+#: src/pages/Index/Settings/SystemSettings.tsx:354
+#: src/pages/company/CompanyDetail.tsx:208
 #: src/pages/part/PartDetail.tsx:886
 #: src/pages/sales/SalesIndex.tsx:99
 msgid "Return Orders"
@@ -447,7 +445,7 @@ msgid "Address"
 msgstr "Адрес"
 
 #: lib/enums/ModelInformation.tsx:225
-#: src/pages/company/CompanyDetail.tsx:265
+#: src/pages/company/CompanyDetail.tsx:242
 msgid "Addresses"
 msgstr "Адреса"
 
@@ -461,7 +459,7 @@ msgid "Contact"
 msgstr "Контакт"
 
 #: lib/enums/ModelInformation.tsx:232
-#: src/pages/company/CompanyDetail.tsx:259
+#: src/pages/company/CompanyDetail.tsx:236
 #: src/pages/core/CoreIndex.tsx:33
 msgid "Contacts"
 msgstr "Контакты"
@@ -579,7 +577,7 @@ msgstr "Списки выбора"
 #: src/components/nav/NavigationTree.tsx:211
 #: src/components/nav/NotificationDrawer.tsx:235
 #: src/components/nav/SearchDrawer.tsx:589
-#: src/components/settings/SettingList.tsx:145
+#: src/components/settings/SettingList.tsx:167
 #: src/components/wizards/ImportPartWizard.tsx:574
 #: src/components/wizards/ImportPartWizard.tsx:719
 #: src/forms/BomForms.tsx:74
@@ -612,7 +610,7 @@ msgstr "Администрирование пользователей"
 
 #: lib/enums/Roles.tsx:34
 #: src/defaults/actions.tsx:165
-#: src/pages/Index/Settings/SystemSettings.tsx:287
+#: src/pages/Index/Settings/SystemSettings.tsx:302
 #: src/pages/build/BuildIndex.tsx:67
 #: src/pages/part/PartDetail.tsx:896
 #: src/pages/sales/SalesOrderDetail.tsx:422
@@ -938,7 +936,7 @@ msgid "Error updating order"
 msgstr "Ошибка обновления заказа"
 
 #: src/components/calendar/OrderCalendar.tsx:178
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:583
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:642
 #: src/tables/Filter.tsx:152
 msgid "Overdue"
 msgstr "Просроченный"
@@ -1004,165 +1002,165 @@ msgstr "Нет доступных виджетов"
 msgid "There are no more widgets available for the dashboard"
 msgstr "Больше нет виджетов, доступных для вывода на панель"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:33
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:34
 msgid "Subscribed Parts"
 msgstr "Отслеживаемые детали"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:34
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:35
 msgid "Show the number of parts which you have subscribed to"
 msgstr "Количество деталей, на которые вы подписаны"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:40
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:41
 msgid "Subscribed Categories"
 msgstr "Отслеживаемые категории"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:41
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:42
 msgid "Show the number of part categories which you have subscribed to"
 msgstr "Количество категорий деталей, на которые вы подписаны"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:50
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:51
 msgid "Invalid BOMs"
 msgstr "Неутверждённые спецификации"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:51
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:52
 msgid "Assemblies requiring bill of materials validation"
 msgstr "Сборки, для которых требуется утвердить спецификацию"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:62
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:63
 #: src/tables/part/PartTable.tsx:283
 msgid "Low Stock"
 msgstr "Низкий запас"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:64
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:65
 msgid "Show the number of parts which are low on stock"
 msgstr "Количество деталей с низким запасом"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:73
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:74
 msgid "Required for Build Orders"
 msgstr "Требуется для заказов на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:75
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:76
 msgid "Show parts which are required for active build orders"
 msgstr "Детали, необходимые для запущенных заказов на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:80
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:81
 msgid "Expired Stock Items"
 msgstr "Просроченные запасы"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:82
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:83
 msgid "Show the number of stock items which have expired"
 msgstr "Количество просроченных запасов"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:88
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:89
 msgid "Stale Stock Items"
 msgstr "Залежавшиеся запасы"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:90
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:91
 msgid "Show the number of stock items which are stale"
 msgstr "Количество залежавшихся запасов"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:96
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:97
 msgid "Active Build Orders"
 msgstr "Активные заказы на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:98
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:99
 msgid "Show the number of build orders which are currently active"
 msgstr "Количество активных заказов на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:103
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:104
 msgid "Overdue Build Orders"
 msgstr "Просроченные заказы на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:105
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:106
 msgid "Show the number of build orders which are overdue"
 msgstr "Количество просроченных заказов на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:110
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:111
 msgid "Assigned Build Orders"
 msgstr "Назначенные заказы на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:112
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:113
 msgid "Show the number of build orders which are assigned to you"
 msgstr "Количество назначенных на вас заказов на сборку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:117
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:118
 msgid "Active Sales Orders"
 msgstr "Активные сбытовые заказы"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:119
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:120
 msgid "Show the number of sales orders which are currently active"
 msgstr "Количество активных сбытовых заказов"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:124
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:125
 msgid "Overdue Sales Orders"
 msgstr "Просроченные заказы на продажу"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:126
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:127
 msgid "Show the number of sales orders which are overdue"
 msgstr "Количество просроченных заказов на продажу"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:131
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:132
 msgid "Assigned Sales Orders"
 msgstr "Назначенные сбытовые заказы"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:133
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:134
 msgid "Show the number of sales orders which are assigned to you"
 msgstr "Количество назначенных вам заказов на продажу"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:138
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:139
 #: src/pages/sales/SalesIndex.tsx:87
 msgid "Pending Shipments"
 msgstr "Ожидающие отгрузки"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:140
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:141
 msgid "Show the number of pending sales order shipments"
 msgstr "Показать количество необработанных отгрузок по заказам на продажу"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:145
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:146
 msgid "Active Purchase Orders"
 msgstr "Активные заказы на поставку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:147
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:148
 msgid "Show the number of purchase orders which are currently active"
 msgstr "Количество активных заказов на поставку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:152
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:153
 msgid "Overdue Purchase Orders"
 msgstr "Просроченные заказы на закупку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:154
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:155
 msgid "Show the number of purchase orders which are overdue"
 msgstr "Количество просроченных заказов на поставку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:159
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:160
 msgid "Assigned Purchase Orders"
 msgstr "Назначенные заказы на поставку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:161
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:162
 msgid "Show the number of purchase orders which are assigned to you"
 msgstr "Количество назначенных на вас заказов на поставку"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:166
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:167
 msgid "Active Return Orders"
 msgstr "Активные заказы на возврат"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:168
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:169
 msgid "Show the number of return orders which are currently active"
 msgstr "Количество активных заказов на возврат"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:173
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:174
 msgid "Overdue Return Orders"
 msgstr "Просроченные заказы на возврат"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:175
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:176
 msgid "Show the number of return orders which are overdue"
 msgstr "Количество просроченных заказов на возврат"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:180
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:181
 msgid "Assigned Return Orders"
 msgstr "Назначенные заказы на возврат"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:182
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:183
 msgid "Show the number of return orders which are assigned to you"
 msgstr "Количество назначенных на вас заказов на возврат"
 
@@ -1175,12 +1173,12 @@ msgstr "Количество назначенных на вас заказов �
 #~ msgid "The latest news from InvenTree"
 #~ msgstr "Свежие новости от InvenTree"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:226
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:228
 #: src/components/dashboard/widgets/NewsWidget.tsx:123
 msgid "News Updates"
 msgstr "Новости"
 
-#: src/components/dashboard/DashboardWidgetLibrary.tsx:227
+#: src/components/dashboard/DashboardWidgetLibrary.tsx:229
 msgid "The latest news from Tracklet"
 msgstr ""
 
@@ -1206,6 +1204,64 @@ msgstr "Сменить язык"
 msgid "Change the language of the user interface"
 msgstr "Сменить язык интерфейса"
 
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:119
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:394
+msgid "Sign in required"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:121
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:396
+msgid "Sign in to load the operations dashboard data."
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:129
+msgid "Location data unavailable"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:131
+msgid "The location allocation dashboard could not be loaded right now."
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:139
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:720
+msgid "No stock locations yet"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:141
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:721
+msgid "Location totals will be shown once stock items are placed in locations."
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:165
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:264
+msgid "Location Allocation"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:167
+msgid "Stock items distributed across rooms, labs, storage areas, and unassigned inventory."
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:171
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:176
+msgid "Open all stock items"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:189
+msgid "Locations"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:193
+msgid "Total"
+msgstr "Total"
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:197
+msgid "items"
+msgstr ""
+
+#: src/components/dashboard/widgets/LocationAllocationDashboardWidget.tsx:265
+msgid "Show allocation of stock items by location"
+msgstr ""
+
 #: src/components/dashboard/widgets/NewsWidget.tsx:60
 #: src/components/nav/NotificationDrawer.tsx:94
 #: src/pages/Notifications.tsx:53
@@ -1228,30 +1284,30 @@ msgstr "Новостей нет"
 msgid "There are no unread news items"
 msgstr "Нет непрочитанных новостей"
 
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:46
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:52
 msgid "No Ongoing Projects"
 msgstr ""
 
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:47
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:53
 msgid "There are currently no ongoing projects"
 msgstr ""
 
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:55
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:61
 #: src/pages/stock/StockDetail.tsx:599
 msgid "No start"
 msgstr ""
 
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:56
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:62
 #: src/pages/stock/StockDetail.tsx:599
 msgid "No end"
 msgstr ""
 
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:78
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:84
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:88
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:94
 msgid "Ongoing Projects"
 msgstr ""
 
-#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:79
+#: src/components/dashboard/widgets/OngoingProjectsWidget.tsx:89
 msgid "Display ongoing projects"
 msgstr ""
 
@@ -1278,7 +1334,40 @@ msgstr ""
 msgid "Generate a new stocktake report"
 msgstr "Создать новый отчёт инвентаризации"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:309
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:271
+#: src/pages/part/CategoryDetail.tsx:178
+#: src/pages/part/PartDetail.tsx:712
+#: src/tables/part/PartCategoryTable.tsx:92
+msgid "days"
+msgstr "дней"
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:271
+msgid "day"
+msgstr ""
+
+#. placeholder {0}: pluralizeDays(days)
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:276
+msgid "Project allocations and instrumentation scheduled in the next {days} {0} will appear here."
+msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:277
+msgid "Project allocations and instrumentation starting today will appear here."
+msgstr ""
+
+#. placeholder {0}: pluralizeDays(days)
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:282
+msgid "Equipment due within {days} {0} and overdue calibration checks will be shown here."
+msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:283
+msgid "Equipment due today and overdue calibration checks will be shown here."
+msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:287
+msgid "Items with available quantity at or below {threshold} will be flagged here."
+msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:347
 #: src/components/items/TransferList.tsx:161
 #: src/components/render/Stock.tsx:102
 #: src/pages/part/PartDetail.tsx:1013
@@ -1293,11 +1382,11 @@ msgstr "Создать новый отчёт инвентаризации"
 msgid "Available"
 msgstr "Доступно"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:314
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:352
 msgid "Reserved"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:319
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:357
 #: src/forms/StockForms.tsx:1024
 #: src/pages/stock/StockDetail.tsx:363
 #: src/pages/stock/StockDetail.tsx:974
@@ -1308,7 +1397,7 @@ msgstr ""
 msgid "Broken"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:324
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:362
 #: src/forms/StockForms.tsx:1030
 #: src/pages/stock/StockDetail.tsx:370
 #: src/pages/stock/StockDetail.tsx:980
@@ -1319,28 +1408,20 @@ msgstr ""
 msgid "Missing"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:329
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:434
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:367
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:472
 msgid "Out of Service"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:356
-msgid "Sign in required"
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:358
-msgid "Sign in to load the operations dashboard data."
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:373
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:411
 msgid "Dashboard data unavailable"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:375
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:413
 msgid "The operations dashboard could not be loaded right now."
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:379
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:417
 #: src/forms/BuildForms.tsx:341
 #: src/forms/BuildForms.tsx:416
 #: src/forms/BuildForms.tsx:485
@@ -1373,37 +1454,37 @@ msgstr ""
 msgid "Status"
 msgstr "Статус"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:404
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:442
 msgid "Total Stock Items"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:410
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:448
 msgid "Available Equipment"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:416
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:454
 msgid "Reserved Equipment"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:422
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:460
 msgid "Broken Items"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:428
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:466
 msgid "Missing Items"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:444
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:482
 msgid "Current equipment state mix"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:452
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:490
 #: src/components/nav/NavigationDrawer.tsx:77
 #: src/components/render/Part.tsx:36
 #: src/components/wizards/ImportPartWizard.tsx:808
 #: src/defaults/links.tsx:43
 #: src/forms/StockForms.tsx:800
-#: src/pages/Index/Settings/SystemSettings.tsx:236
+#: src/pages/Index/Settings/SystemSettings.tsx:251
 #: src/pages/part/PartDetail.tsx:796
 #: src/pages/stock/LocationDetail.tsx:435
 #: src/pages/stock/LocationDetail.tsx:465
@@ -1412,23 +1493,23 @@ msgstr ""
 msgid "Stock"
 msgstr "Склад"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:477
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:515
 msgid "Upcoming Projects"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:504
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:547
 msgid "No projects starting soon"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:505
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:548
 msgid "Projects with start dates in the next planning window will appear here."
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:511
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:554
 msgid "Reserved Equipment Soon"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:519
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:565
 #: src/forms/StockForms.tsx:797
 #: src/forms/StockForms.tsx:843
 #: src/forms/StockForms.tsx:889
@@ -1442,102 +1523,94 @@ msgstr ""
 msgid "Item"
 msgstr "Элемент"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:521
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:567
 msgid "Window"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:554
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:574
+#~ msgid "Project allocations and instrumentation scheduled in the next few days will appear here."
+#~ msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:606
 msgid "No near-term reservations"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:555
-msgid "Project allocations and instrumentation scheduled in the next few days will appear here."
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:562
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:614
 msgid "Calibration Due"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:573
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:615
+#~ msgid "Upcoming and overdue calibration checks will be shown here."
+#~ msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:632
 msgid "Last calibration"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:576
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:635
 msgid "Next due"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:583
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:642
 msgid "Due Soon"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:591
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:650
 msgid "No calibration alerts"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:592
-msgid "Upcoming and overdue calibration checks will be shown here."
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:598
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:657
 msgid "Low Stock Warning"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:611
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:664
+#~ msgid "Items below the configured availability threshold will be flagged here."
+#~ msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:677
 msgid "No location"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:616
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:682
 msgid "available"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:636
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:702
 msgid "Stock levels look healthy"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:637
-msgid "Items below the configured availability threshold will be flagged here."
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:644
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:710
 msgid "Stock by Location"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:650
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:716
 #: src/tables/projects/ProjectAutomaticReportsPanel.tsx:75
 #: src/tables/sales/SalesOrderShipmentTable.tsx:164
 msgid "Items"
 msgstr "Элементы"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:654
-msgid "No stock locations yet"
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:655
-msgid "Location totals will be shown once stock items are placed in locations."
-msgstr ""
-
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:661
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:727
 msgid "Category Distribution"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:671
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:737
 #: src/pages/stock/LocationDetail.tsx:213
 msgid "Categories"
 msgstr "Categories"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:694
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:760
 msgid "No category data"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:695
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:761
 msgid "Once stock exists, this chart will show how equipment is distributed across categories."
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:703
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:769
 msgid "Recently Added Equipment"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:711
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:777
 #: src/components/forms/HostOptionsForm.tsx:42
 #: src/components/forms/HostOptionsForm.tsx:70
 #: src/components/forms/InstanceOptions.tsx:124
@@ -1563,7 +1636,7 @@ msgstr ""
 msgid "Name"
 msgstr "Название"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:712
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:778
 #: src/components/render/Part.tsx:112
 #: src/components/wizards/ImportPartWizard.tsx:807
 #: src/pages/part/PartDetail.tsx:487
@@ -1577,7 +1650,7 @@ msgstr "Название"
 msgid "Category"
 msgstr "Категория"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:713
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:779
 #: src/components/render/Stock.tsx:36
 #: src/components/render/Stock.tsx:114
 #: src/components/render/Stock.tsx:132
@@ -1606,7 +1679,7 @@ msgstr "Категория"
 msgid "Location"
 msgstr "Расположение"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:714
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:780
 #: src/pages/build/BuildDetail.tsx:369
 #: src/tables/projects/ProjectAutomaticReportsPanel.tsx:65
 #: src/tables/settings/ApiTokenTable.tsx:97
@@ -1614,45 +1687,50 @@ msgstr "Расположение"
 msgid "Created"
 msgstr "Создано"
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:735
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:805
 msgid "No recent equipment"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:736
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:806
 msgid "Newly created stock items will appear here."
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:742
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:812
 msgid "Most Used Equipment"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:755
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:829
 msgid "allocations"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:758
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:832
 msgid "reserved"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:767
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:841
 msgid "No usage history yet"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:768
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:842
 msgid "Equipment usage will appear once projects start reserving instruments and stock."
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:782
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:790
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:860
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:868
 msgid "Operations Hub"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:783
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:861
 msgid "Daily operations dashboard for stock, projects, reservations, and calibration"
 msgstr ""
 
-#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:792
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:870
 msgid "Live stock, project, reservation, calibration, and usage signals for daily lab operations"
+msgstr ""
+
+#: src/components/dashboard/widgets/TrackletOperationsWidget.tsx:874
+#: src/pages/Index/Settings/SystemSettings.tsx:129
+msgid "Dashboard Alerts"
 msgstr ""
 
 #: src/components/details/Details.tsx:117
@@ -2313,7 +2391,7 @@ msgstr "Сохранить выбор хоста"
 #~ msgstr "State: <0>worker</0> ({0}), <1>plugins</1>{1}"
 
 #: src/components/forms/InstanceOptions.tsx:118
-#: src/pages/Index/Settings/SystemSettings.tsx:52
+#: src/pages/Index/Settings/SystemSettings.tsx:53
 msgid "Server"
 msgstr "Сервер"
 
@@ -3020,7 +3098,7 @@ msgstr "Подробнее о {code}"
 
 #: src/components/nav/Header.tsx:190
 #: src/components/nav/NotificationDrawer.tsx:181
-#: src/pages/Index/Settings/SystemSettings.tsx:128
+#: src/pages/Index/Settings/SystemSettings.tsx:143
 #: src/pages/Index/Settings/UserSettings.tsx:116
 #: src/pages/Notifications.tsx:45
 #: src/pages/Notifications.tsx:130
@@ -3245,8 +3323,8 @@ msgstr "Пользовательские настройки"
 
 #: src/components/nav/SettingsHeader.tsx:31
 #: src/defaults/actions.tsx:174
-#: src/pages/Index/Settings/SystemSettings.tsx:403
-#: src/pages/Index/Settings/SystemSettings.tsx:410
+#: src/pages/Index/Settings/SystemSettings.tsx:418
+#: src/pages/Index/Settings/SystemSettings.tsx:425
 msgid "System Settings"
 msgstr "Системные настройки"
 
@@ -3306,7 +3384,7 @@ msgstr "Информация о плагине"
 #: src/components/plugins/PluginDrawer.tsx:73
 #: src/forms/selectionListFields.tsx:102
 #: src/pages/build/BuildDetail.tsx:269
-#: src/pages/company/CompanyDetail.tsx:94
+#: src/pages/company/CompanyDetail.tsx:91
 #: src/pages/company/ManufacturerPartDetail.tsx:92
 #: src/pages/company/ManufacturerPartDetail.tsx:119
 #: src/pages/company/SupplierPartDetail.tsx:146
@@ -3354,14 +3432,14 @@ msgstr "Дата"
 #: src/tables/plugin/PluginListTable.tsx:96
 #: src/tables/plugin/PluginListTable.tsx:418
 #: src/tables/purchasing/SupplierPartTable.tsx:104
-#: src/tables/purchasing/SupplierPartTable.tsx:215
+#: src/tables/purchasing/SupplierPartTable.tsx:228
 #: src/tables/settings/ApiTokenTable.tsx:62
 #: src/tables/settings/UserTable.tsx:400
 msgid "Active"
 msgstr "Активно"
 
 #: src/components/plugins/PluginDrawer.tsx:99
-#: src/pages/company/CompanyDetail.tsx:100
+#: src/pages/company/CompanyDetail.tsx:97
 #: src/tables/plugin/PluginListTable.tsx:140
 msgid "Website"
 msgstr "Веб-сайт"
@@ -3388,7 +3466,7 @@ msgstr "Пакет"
 
 #: src/components/plugins/PluginDrawer.tsx:141
 #: src/pages/Index/Settings/AdminCenter/PluginManagementPanel.tsx:55
-#: src/pages/Index/Settings/SystemSettings.tsx:354
+#: src/pages/Index/Settings/SystemSettings.tsx:369
 #: src/pages/Index/Settings/UserSettings.tsx:138
 msgid "Plugin Settings"
 msgstr "Настройки плагинов"
@@ -3478,7 +3556,7 @@ msgstr "Отгрузка"
 #: src/components/render/Part.tsx:28
 #: src/components/render/Plugin.tsx:17
 #: src/components/render/User.tsx:37
-#: src/pages/company/CompanyDetail.tsx:329
+#: src/pages/company/CompanyDetail.tsx:307
 #: src/pages/company/SupplierPartDetail.tsx:379
 #: src/pages/core/UserDetail.tsx:211
 #: src/pages/part/PartDetail.tsx:1052
@@ -3676,40 +3754,40 @@ msgstr "Вы действительно хотите изменить эту н�
 msgid "This setting requires confirmation"
 msgstr "Этот параметр требует подтверждения"
 
-#: src/components/settings/SettingList.tsx:74
+#: src/components/settings/SettingList.tsx:95
 msgid "Edit Setting"
 msgstr "Редактирование настроек"
 
-#: src/components/settings/SettingList.tsx:87
+#: src/components/settings/SettingList.tsx:109
 msgid "Setting {key} updated successfully"
 msgstr "Значение {key} успешно обновлено"
 
-#: src/components/settings/SettingList.tsx:120
+#: src/components/settings/SettingList.tsx:142
 msgid "Setting updated"
 msgstr "Настройки обновлены"
 
 #. placeholder {0}: setting.key
-#: src/components/settings/SettingList.tsx:121
+#: src/components/settings/SettingList.tsx:143
 msgid "Setting {0} updated successfully"
 msgstr "Настройки {0} успешно обновлены"
 
-#: src/components/settings/SettingList.tsx:130
+#: src/components/settings/SettingList.tsx:152
 msgid "Error editing setting"
 msgstr "Ошибка при редактировании настроек"
 
-#: src/components/settings/SettingList.tsx:146
+#: src/components/settings/SettingList.tsx:168
 msgid "Error loading settings"
 msgstr "Ошибка загрузки настроек"
 
-#: src/components/settings/SettingList.tsx:157
+#: src/components/settings/SettingList.tsx:179
 msgid "No Settings"
 msgstr "Настройки отсутствуют"
 
-#: src/components/settings/SettingList.tsx:158
+#: src/components/settings/SettingList.tsx:180
 msgid "There are no configurable settings available"
 msgstr "Нет доступных настраиваемых параметров"
 
-#: src/components/settings/SettingList.tsx:197
+#: src/components/settings/SettingList.tsx:219
 msgid "No settings specified"
 msgstr "Настройки не указаны"
 
@@ -4082,7 +4160,7 @@ msgid "Already Imported"
 msgstr "Уже импортировано"
 
 #: src/components/wizards/ImportPartWizard.tsx:205
-#: src/pages/company/CompanyDetail.tsx:137
+#: src/pages/company/CompanyDetail.tsx:134
 #: src/pages/company/SupplierDetail.tsx:8
 #: src/pages/company/SupplierPartDetail.tsx:131
 #: src/pages/company/SupplierPartDetail.tsx:236
@@ -4256,7 +4334,7 @@ msgstr "Требования продаж"
 #: src/pages/part/PartDetail.tsx:534
 #: src/pages/part/PartDetail.tsx:1003
 #: src/tables/Filter.tsx:92
-#: src/tables/purchasing/SupplierPartTable.tsx:230
+#: src/tables/purchasing/SupplierPartTable.tsx:243
 msgid "In Stock"
 msgstr "На складе"
 
@@ -4278,8 +4356,8 @@ msgid "New Supplier Part"
 msgstr "Создать деталь поставщика"
 
 #: src/components/wizards/OrderPartsWizard.tsx:219
-#: src/tables/purchasing/SupplierPartTable.tsx:180
-#: src/tables/purchasing/SupplierPartTable.tsx:258
+#: src/tables/purchasing/SupplierPartTable.tsx:193
+#: src/tables/purchasing/SupplierPartTable.tsx:273
 msgid "Supplier part created"
 msgstr "Деталь поставщика создана"
 
@@ -5069,6 +5147,10 @@ msgstr "Израсходовано"
 #: src/forms/SalesOrderForms.tsx:187
 msgid "Select project code for this line item"
 msgstr "Выберите код проекта для этой позиции"
+
+#: src/forms/CompanyForms.tsx:73
+msgid "Select an existing stock item to link this supplier part to"
+msgstr ""
 
 #: src/forms/CompanyForms.tsx:150
 #~ msgid "Company updated"
@@ -7221,7 +7303,7 @@ msgid "Data Management"
 msgstr "Управление данными"
 
 #: src/pages/Index/Settings/AdminCenter/Index.tsx:281
-#: src/pages/Index/Settings/SystemSettings.tsx:182
+#: src/pages/Index/Settings/SystemSettings.tsx:197
 #: src/pages/Index/Settings/UserSettings.tsx:128
 msgid "Reporting"
 msgstr "Отчёты"
@@ -7427,11 +7509,11 @@ msgstr "Токены"
 msgid "The settings below are specific to each available plugin"
 msgstr "Настройки ниже специфичны для каждого доступного плагина"
 
-#: src/pages/Index/Settings/SystemSettings.tsx:84
+#: src/pages/Index/Settings/SystemSettings.tsx:85
 msgid "Authentication"
 msgstr "Аутентификация"
 
-#: src/pages/Index/Settings/SystemSettings.tsx:110
+#: src/pages/Index/Settings/SystemSettings.tsx:111
 msgid "Barcodes"
 msgstr "Штрих-коды"
 
@@ -7443,28 +7525,28 @@ msgstr "Штрих-коды"
 #~ msgid "This panel is a placeholder."
 #~ msgstr "This panel is a placeholder."
 
-#: src/pages/Index/Settings/SystemSettings.tsx:134
-#: src/pages/Index/Settings/UserSettings.tsx:122
-msgid "The settings below are specific to each available notification method"
-msgstr "Настройки ниже специфичны для каждого доступного метода уведомлений"
-
 #: src/pages/Index/Settings/SystemSettings.tsx:135
 #~ msgid "Exchange Rates"
 #~ msgstr "Exchange Rates"
 
-#: src/pages/Index/Settings/SystemSettings.tsx:140
+#: src/pages/Index/Settings/SystemSettings.tsx:149
+#: src/pages/Index/Settings/UserSettings.tsx:122
+msgid "The settings below are specific to each available notification method"
+msgstr "Настройки ниже специфичны для каждого доступного метода уведомлений"
+
+#: src/pages/Index/Settings/SystemSettings.tsx:155
 msgid "Pricing"
 msgstr "Цены"
 
-#: src/pages/Index/Settings/SystemSettings.tsx:176
+#: src/pages/Index/Settings/SystemSettings.tsx:191
 msgid "Labels"
 msgstr "Метки"
 
-#: src/pages/Index/Settings/SystemSettings.tsx:265
+#: src/pages/Index/Settings/SystemSettings.tsx:280
 msgid "Part Stocktake"
 msgstr ""
 
-#: src/pages/Index/Settings/SystemSettings.tsx:276
+#: src/pages/Index/Settings/SystemSettings.tsx:291
 #: src/pages/part/PartStockHistoryDetail.tsx:296
 #: src/pages/stock/StockDetail.tsx:698
 msgid "Stock Tracking"
@@ -7913,23 +7995,23 @@ msgstr "В виде календаря"
 msgid "Parametric View"
 msgstr "Параметрическое представление"
 
-#: src/pages/company/CompanyDetail.tsx:108
+#: src/pages/company/CompanyDetail.tsx:105
 msgid "Phone Number"
 msgstr "Номер телефона"
 
-#: src/pages/company/CompanyDetail.tsx:115
+#: src/pages/company/CompanyDetail.tsx:112
 msgid "Email Address"
 msgstr "Адрес электронной почты"
 
-#: src/pages/company/CompanyDetail.tsx:122
+#: src/pages/company/CompanyDetail.tsx:119
 msgid "Tax ID"
 msgstr "Налоговый номер"
 
-#: src/pages/company/CompanyDetail.tsx:132
+#: src/pages/company/CompanyDetail.tsx:129
 msgid "Default Currency"
 msgstr "Валюта по умолчанию"
 
-#: src/pages/company/CompanyDetail.tsx:143
+#: src/pages/company/CompanyDetail.tsx:140
 #: src/pages/company/ManufacturerDetail.tsx:8
 #: src/pages/company/ManufacturerPartDetail.tsx:103
 #: src/pages/company/ManufacturerPartDetail.tsx:272
@@ -7940,7 +8022,7 @@ msgstr "Валюта по умолчанию"
 msgid "Manufacturer"
 msgstr "Производитель"
 
-#: src/pages/company/CompanyDetail.tsx:149
+#: src/pages/company/CompanyDetail.tsx:146
 #: src/pages/company/CustomerDetail.tsx:8
 #: src/pages/part/pricing/SaleHistoryPanel.tsx:31
 #: src/pages/sales/ReturnOrderDetail.tsx:124
@@ -7961,11 +8043,11 @@ msgstr "Покупатель"
 #~ msgid "Edit company"
 #~ msgstr "Edit company"
 
-#: src/pages/company/CompanyDetail.tsx:182
+#: src/pages/company/CompanyDetail.tsx:179
 msgid "Company Details"
 msgstr "Сведения о компании"
 
-#: src/pages/company/CompanyDetail.tsx:188
+#: src/pages/company/CompanyDetail.tsx:185
 msgid "Supplied Parts"
 msgstr "Поставляемые детали"
 
@@ -7973,24 +8055,24 @@ msgstr "Поставляемые детали"
 #~ msgid "Delete company"
 #~ msgstr "Delete company"
 
-#: src/pages/company/CompanyDetail.tsx:195
+#: src/pages/company/CompanyDetail.tsx:192
 msgid "Manufactured Parts"
 msgstr "Детали производителя"
 
-#: src/pages/company/CompanyDetail.tsx:242
+#: src/pages/company/CompanyDetail.tsx:219
 msgid "Assigned Stock"
 msgstr "Назначенный запас"
 
-#: src/pages/company/CompanyDetail.tsx:288
+#: src/pages/company/CompanyDetail.tsx:266
 #: src/tables/company/CompanyTable.tsx:82
 msgid "Edit Company"
 msgstr "Редактирование компании"
 
-#: src/pages/company/CompanyDetail.tsx:296
+#: src/pages/company/CompanyDetail.tsx:274
 msgid "Delete Company"
 msgstr "Удалить компанию"
 
-#: src/pages/company/CompanyDetail.tsx:311
+#: src/pages/company/CompanyDetail.tsx:289
 msgid "Company Actions"
 msgstr "Действия с компанией"
 
@@ -8093,18 +8175,18 @@ msgid "Supplier Part Actions"
 msgstr "Действия с деталью поставщика"
 
 #: src/pages/company/SupplierPartDetail.tsx:338
-#: src/tables/purchasing/SupplierPartTable.tsx:244
+#: src/tables/purchasing/SupplierPartTable.tsx:259
 msgid "Edit Supplier Part"
 msgstr "Редактировать деталь поставщика"
 
 #: src/pages/company/SupplierPartDetail.tsx:346
-#: src/tables/purchasing/SupplierPartTable.tsx:264
+#: src/tables/purchasing/SupplierPartTable.tsx:279
 msgid "Delete Supplier Part"
 msgstr "Удалить деталь поставщика"
 
 #: src/pages/company/SupplierPartDetail.tsx:354
-#: src/tables/purchasing/SupplierPartTable.tsx:172
-#: src/tables/purchasing/SupplierPartTable.tsx:251
+#: src/tables/purchasing/SupplierPartTable.tsx:174
+#: src/tables/purchasing/SupplierPartTable.tsx:266
 msgid "Add Supplier Part"
 msgstr "Создать деталь поставщика"
 
@@ -8196,12 +8278,6 @@ msgstr "Место хранения по-умолчанию"
 #: src/tables/part/PartCategoryTable.tsx:87
 msgid "Calibration Interval"
 msgstr ""
-
-#: src/pages/part/CategoryDetail.tsx:178
-#: src/pages/part/PartDetail.tsx:712
-#: src/tables/part/PartCategoryTable.tsx:92
-msgid "days"
-msgstr "дней"
 
 #: src/pages/part/CategoryDetail.tsx:187
 msgid "Top level part category"
@@ -10213,7 +10289,7 @@ msgstr "Показать отслеживаемые позиции"
 #: src/tables/bom/BomTable.tsx:430
 #: src/tables/purchasing/ManufacturerPartParametricTable.tsx:44
 #: src/tables/purchasing/ManufacturerPartTable.tsx:135
-#: src/tables/purchasing/SupplierPartTable.tsx:220
+#: src/tables/purchasing/SupplierPartTable.tsx:233
 msgid "Active Part"
 msgstr "Активная деталь"
 
@@ -12258,17 +12334,17 @@ msgstr "Получить позиции"
 msgid "Base units"
 msgstr "Базовая единица измерения"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:192
-msgid "Add supplier part"
-msgstr "Создать деталь поставщика"
+#: src/tables/purchasing/SupplierPartTable.tsx:185
+msgid "Please select a stock item"
+msgstr ""
 
 #: src/tables/purchasing/SupplierPartTable.tsx:193
 #~ msgid "Supplier part updated"
 #~ msgstr "Supplier part updated"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:200
-msgid "Import supplier part"
-msgstr "Импортировать деталь поставщика"
+#: src/tables/purchasing/SupplierPartTable.tsx:205
+msgid "Add supplier part"
+msgstr "Создать деталь поставщика"
 
 #: src/tables/purchasing/SupplierPartTable.tsx:205
 #~ msgid "Supplier part deleted"
@@ -12278,23 +12354,27 @@ msgstr "Импортировать деталь поставщика"
 #~ msgid "Are you sure you want to remove this supplier part?"
 #~ msgstr "Are you sure you want to remove this supplier part?"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:216
+#: src/tables/purchasing/SupplierPartTable.tsx:213
+msgid "Import supplier part"
+msgstr "Импортировать деталь поставщика"
+
+#: src/tables/purchasing/SupplierPartTable.tsx:229
 msgid "Show active supplier parts"
 msgstr "Показать активные детали поставщиков"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:221
+#: src/tables/purchasing/SupplierPartTable.tsx:234
 msgid "Show active internal parts"
 msgstr "Показать активные детали"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:225
+#: src/tables/purchasing/SupplierPartTable.tsx:238
 msgid "Active Supplier"
 msgstr "Активный поставщик"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:226
+#: src/tables/purchasing/SupplierPartTable.tsx:239
 msgid "Show active suppliers"
 msgstr "Показать активных поставщиков"
 
-#: src/tables/purchasing/SupplierPartTable.tsx:231
+#: src/tables/purchasing/SupplierPartTable.tsx:244
 msgid "Show supplier parts with stock"
 msgstr "Показать детали поставщиков в наличии"
 
@@ -13402,11 +13482,6 @@ msgstr "Складская позиция не существует"
 #: src/tables/stock/StockTrackingTable.tsx:279
 msgid "No user information"
 msgstr "Нет информации о пользователе"
-
-#: src/tables/stock/TestStatisticsTable.tsx:34
-#: src/tables/stock/TestStatisticsTable.tsx:64
-#~ msgid "Total"
-#~ msgstr "Total"
 
 #: src/views/MobileAppView.tsx:25
 msgid "Mobile viewport detected"

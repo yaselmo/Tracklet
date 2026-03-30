@@ -12,6 +12,7 @@ import { useUserState } from '../../states/UserState';
 import type { DashboardWidgetProps } from './DashboardWidget';
 import ColorToggleDashboardWidget from './widgets/ColorToggleWidget';
 import LanguageSelectDashboardWidget from './widgets/LanguageSelectWidget';
+import LocationAllocationDashboardWidget from './widgets/LocationAllocationDashboardWidget';
 import NewsWidget from './widgets/NewsWidget';
 import OngoingProjectsDashboardWidget from './widgets/OngoingProjectsWidget';
 import QueryCountDashboardWidget from './widgets/QueryCountDashboardWidget';
@@ -220,6 +221,7 @@ function BuiltinQueryCountWidgets(): DashboardWidgetProps[] {
 function BuiltinGettingStartedWidgets(): DashboardWidgetProps[] {
   return [
     TrackletOperationsDashboardWidget(),
+    LocationAllocationDashboardWidget(),
     OngoingProjectsDashboardWidget(),
     {
       label: 'news',

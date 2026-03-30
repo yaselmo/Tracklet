@@ -41,7 +41,7 @@ try {
         & $Python -m invoke migrate
     }
 
-    & $Python -m invoke dev.server -a $Address
+    & $Python "$Root\src\backend\Tracklet\manage.py" runserver $Address --noreload
 }
 finally {
     Pop-Location

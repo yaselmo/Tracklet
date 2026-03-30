@@ -2,6 +2,7 @@ import { t } from '@lingui/core/macro';
 import { Alert, Anchor, Group, Loader, Stack, Text } from '@mantine/core';
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { ModelType } from '@lib/enums/ModelType';
@@ -15,6 +16,7 @@ import type { DashboardWidgetProps } from '../DashboardWidget';
 
 function OngoingProjectsContent() {
   const api = useApi();
+  const navigate = useNavigate();
 
   const projectsQuery = useQuery({
     queryKey: ['dashboard-ongoing-projects'],
@@ -32,6 +34,10 @@ function OngoingProjectsContent() {
   });
 
   const projects = useMemo(() => projectsQuery.data ?? [], [projectsQuery.data]);
+
+  const openProjectDetails = (projectId: number) => {
+    navigate(`${getDetailUrl(ModelType.project, projectId)}details`);
+  };
 
   if (projectsQuery.isFetching) {
     return (
@@ -57,7 +63,11 @@ function OngoingProjectsContent() {
 
         return (
           <Group key={project.pk} justify='space-between' wrap='nowrap'>
-            <Anchor href={getDetailUrl(ModelType.project, project.pk)}>
+            <Anchor
+              component='button'
+              type='button'
+              onClick={() => openProjectDetails(project.pk)}
+            >
               {project.name}
             </Anchor>
             <Text size='sm' c='dimmed'>

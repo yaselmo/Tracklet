@@ -279,6 +279,32 @@ SYSTEM_SETTINGS: dict[str, InvenTreeSettingsKeyType] = {
         'validator': bool,
         'default': False,
     },
+    'DASHBOARD_CALIBRATION_DUE_DAYS': {
+        'name': _('Calibration due alert days'),
+        'description': _(
+            'How many days before a calibration due date an item should appear in dashboard alerts'
+        ),
+        'default': 14,
+        'units': _('days'),
+        'validator': [int, MinValueValidator(0)],
+    },
+    'DASHBOARD_RESERVED_SOON_DAYS': {
+        'name': _('Reservation alert days'),
+        'description': _(
+            'How many days before a reservation or project start equipment should appear in dashboard alerts'
+        ),
+        'default': 7,
+        'units': _('days'),
+        'validator': [int, MinValueValidator(0)],
+    },
+    'DASHBOARD_LOW_STOCK_THRESHOLD': {
+        'name': _('Low stock threshold'),
+        'description': _(
+            'Stock items with available quantity at or below this value will appear in dashboard alerts'
+        ),
+        'default': 2,
+        'validator': [int, MinValueValidator(0)],
+    },
     'INVENTREE_DOWNLOAD_IMAGE_MAX_SIZE': {
         'name': _('Download Size Limit'),
         'description': _('Maximum allowable download size for remote image'),

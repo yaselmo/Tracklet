@@ -4,7 +4,9 @@ from collections import OrderedDict
 from datetime import timedelta
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.db.models import (
     Count,
     DecimalField,
@@ -37,6 +39,7 @@ from rest_framework.response import Response
 
 import build.models
 import common.models
+from common.settings import get_global_setting
 import order.models
 from Tracklet.status_codes import StockStatus
 from stock.models import StockItem, TrackletStockStatus
@@ -44,6 +47,7 @@ from stock.serializers import StockItemSerializer
 from .models import (
     Project,
     ProjectInstrument,
+    ProjectInstrumentReleaseStatus,
     ProjectReport,
     ProjectReportItem,
     ProjectStatus,
@@ -61,10 +65,10 @@ from .serializers import (
     ProjectStockAllocationSerializer,
 )
 
-DEFAULT_LOW_STOCK_THRESHOLD = 1
+DEFAULT_LOW_STOCK_THRESHOLD = 2
 DASHBOARD_UPCOMING_PROJECT_DAYS = 30
 DASHBOARD_RESERVED_SOON_DAYS = 7
-DASHBOARD_CALIBRATION_WARNING_DAYS = 7
+DASHBOARD_CALIBRATION_WARNING_DAYS = 14
 DASHBOARD_LIST_LIMIT = 8
 
 logger = logging.getLogger(__name__)
@@ -84,6 +88,24 @@ def dashboard_stock_item_name(item) -> str:
         return serial
 
     return str(item)
+
+
+def get_dashboard_threshold(key: str, default: int) -> int:
+    """Return a non-negative dashboard threshold value with a safe fallback."""
+    value = get_global_setting(key, backup_value=default, create=False)
+
+    if value in [None, '']:
+        return default
+
+    try:
+        return max(int(value), 0)
+    except (TypeError, ValueError):
+        logger.warning(
+            'Invalid dashboard threshold setting encountered',
+            extra={'setting': key, 'value': value, 'default': default},
+        )
+        return default
+
 from .pdf_templates import build_broken_report_pdf
 
 
@@ -157,9 +179,19 @@ class ProjectDashboard(RetrieveAPI):
         """Return a combined dashboard payload."""
         try:
             today = timezone.localdate()
+            reserved_soon_days = get_dashboard_threshold(
+                'DASHBOARD_RESERVED_SOON_DAYS', DASHBOARD_RESERVED_SOON_DAYS
+            )
+            calibration_warning_days = get_dashboard_threshold(
+                'DASHBOARD_CALIBRATION_DUE_DAYS',
+                DASHBOARD_CALIBRATION_WARNING_DAYS,
+            )
+            low_stock_threshold = get_dashboard_threshold(
+                'DASHBOARD_LOW_STOCK_THRESHOLD', DEFAULT_LOW_STOCK_THRESHOLD
+            )
             upcoming_cutoff = today + timedelta(days=DASHBOARD_UPCOMING_PROJECT_DAYS)
-            reserved_cutoff = today + timedelta(days=DASHBOARD_RESERVED_SOON_DAYS)
-            calibration_cutoff = today + timedelta(days=DASHBOARD_CALIBRATION_WARNING_DAYS)
+            reserved_cutoff = today + timedelta(days=reserved_soon_days)
+            calibration_cutoff = today + timedelta(days=calibration_warning_days)
 
             active_project_filter = Q(status__in=ProjectStatus.active_values())
             primary_out_of_service_statuses = [
@@ -329,12 +361,16 @@ class ProjectDashboard(RetrieveAPI):
                         F('location__name'), Value(str(_('Unassigned')))
                     )
                 )
-                .values('dashboard_label')
+                .values('location', 'dashboard_label')
                 .annotate(value=Count('pk'))
                 .order_by('-value', 'dashboard_label')[:DASHBOARD_LIST_LIMIT]
             )
             stock_by_location = [
-                {'label': row['dashboard_label'], 'value': row['value']}
+                {
+                    'pk': row['location'],
+                    'label': row['dashboard_label'],
+                    'value': row['value'],
+                }
                 for row in stock_by_location
             ]
 
@@ -382,7 +418,7 @@ class ProjectDashboard(RetrieveAPI):
                 }
                 for item in annotated_available.filter(
                     available__gt=0,
-                    available__lte=Decimal(DEFAULT_LOW_STOCK_THRESHOLD),
+                    available__lte=Decimal(low_stock_threshold),
                 )
                 .order_by('available', '-updated', 'pk')[:DASHBOARD_LIST_LIMIT]
             ]
@@ -433,10 +469,10 @@ class ProjectDashboard(RetrieveAPI):
             payload = {
                 'summary': summary,
                 'thresholds': {
-                    'low_stock': DEFAULT_LOW_STOCK_THRESHOLD,
+                    'low_stock': low_stock_threshold,
                     'project_window_days': DASHBOARD_UPCOMING_PROJECT_DAYS,
-                    'reservation_window_days': DASHBOARD_RESERVED_SOON_DAYS,
-                    'calibration_warning_days': DASHBOARD_CALIBRATION_WARNING_DAYS,
+                    'reservation_window_days': reserved_soon_days,
+                    'calibration_warning_days': calibration_warning_days,
                 },
                 'upcoming_projects': upcoming_projects,
                 'reserved_equipment_soon': reserved_equipment_soon,
@@ -556,10 +592,28 @@ class ProjectInstrumentList(ListCreateDestroyAPIView):
 
         serializer = self.get_serializer(data=self.clean_data(data))
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        try:
+            self.perform_create(serializer)
+        except (IntegrityError, DjangoValidationError) as exc:
+            detail = (
+                exc.message_dict
+                if isinstance(exc, DjangoValidationError) and hasattr(exc, 'message_dict')
+                else {
+                    'non_field_errors': [
+                        _(
+                            'Unable to create the project instrument with the provided data.'
+                        )
+                    ]
+                }
+            )
+            raise serializers.ValidationError(detail) from exc
         headers = self.get_success_headers(serializer.data)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        """Explicitly set release status during API creates."""
+        serializer.save(release_status=ProjectInstrumentReleaseStatus.PENDING)
 
 
 class ProjectInstrumentDetail(RetrieveUpdateDestroyAPI):

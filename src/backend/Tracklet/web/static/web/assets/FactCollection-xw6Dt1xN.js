@@ -1,2 +1,0 @@
-import{j as s,a0 as i,S as l,d as n,aV as x}from"./index-DMRhoVon.js";import{S as c}from"./moduleFlags-BIttAbqB.js";function o({title:t,value:a}){return s.jsx(i,{p:"md",shadow:"xs",children:s.jsxs(l,{gap:"xs",children:[s.jsx(c,{size:"md",children:t}),s.jsx(n,{children:a})]})})}function h({items:t,minItems:a=3}){return s.jsx(x,{cols:{base:1,sm:Math.min(2,a),md:Math.min(3,a),lg:a},spacing:"xs",children:t.map((e,r)=>s.jsx(o,{title:e.title,value:e.value},`${r}-${e.value}`))})}export{h as F};
-//# sourceMappingURL=FactCollection-xw6Dt1xN.js.map

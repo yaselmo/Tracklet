@@ -79,6 +79,7 @@ export function getSystemPanelAccess(
     case 'server':
     case 'authentication':
     case 'barcode':
+    case 'dashboard':
     case 'notifications':
     case 'pricing':
     case 'reporting':

@@ -1,0 +1,2 @@
+import{j as a,ac as n,aS as o}from"./index-Dv9D8_TG.js";import{P as m}from"./ParameterTable-DRMjtPEF.js";import{as as i}from"./moduleFlags-C205GnXt.js";function P({model_type:e,model_id:r,hidden:s,allowEdit:t=!0}){return{name:"parameters",label:n._({id:"F18WP3"}),icon:a.jsx(i,{}),hidden:s??!1,content:e&&r?a.jsx(m,{allowEdit:t,modelType:e,modelId:r}):a.jsx(o,{})}}export{P};
+//# sourceMappingURL=ParametersPanel-Ch8rh0Oa.js.map

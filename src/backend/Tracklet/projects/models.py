@@ -31,6 +31,15 @@ class ProjectStatus(models.TextChoices):
         return [cls.FUTURE, cls.ONGOING]
 
 
+class ProjectInstrumentReleaseStatus(models.TextChoices):
+    """Lifecycle states for a project instrument row."""
+
+    PENDING = 'PENDING', _('Pending')
+    RETURNED = 'RETURNED', _('Returned')
+    BROKEN = 'BROKEN', _('Broken')
+    MISSING = 'MISSING', _('Missing')
+
+
 def overlapping_project_reservation_filter(
     project: 'Project',
     prefix: str = 'project__',
@@ -252,6 +261,17 @@ class ProjectInstrument(Tracklet.models.InvenTreeModel):
         default=1,
         verbose_name=_('Quantity'),
         help_text=_('Quantity of stock item tracked as project instrument'),
+    )
+    release_status = models.CharField(
+        max_length=16,
+        choices=ProjectInstrumentReleaseStatus.choices,
+        default=ProjectInstrumentReleaseStatus.PENDING,
+        verbose_name=_('Release Status'),
+    )
+    released_at = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name=_('Released At'),
     )
     notes = models.TextField(blank=True, default='', verbose_name=_('Notes'))
     created = models.DateTimeField(auto_now_add=True, verbose_name=_('Created'))

@@ -5,6 +5,7 @@ import {
   getSystemPanelAccess
 } from '../../../functions/settingsPermissions';
 import {
+  IconAlertTriangle,
   IconBellCog,
   IconCategory,
   IconClipboardList,
@@ -119,6 +120,20 @@ export default function SystemSettings() {
               'BARCODE_GENERATION_PLUGIN',
               'BARCODE_STORE_RESULTS',
               'BARCODE_RESULTS_MAX_NUM'
+            ]}
+          />
+        )
+      },
+      {
+        name: 'dashboard',
+        label: t`Dashboard Alerts`,
+        icon: <IconAlertTriangle />,
+        content: (
+          <GlobalSettingList
+            keys={[
+              'DASHBOARD_CALIBRATION_DUE_DAYS',
+              'DASHBOARD_RESERVED_SOON_DAYS',
+              'DASHBOARD_LOW_STOCK_THRESHOLD'
             ]}
           />
         )

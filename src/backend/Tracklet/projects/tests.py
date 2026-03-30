@@ -3,12 +3,16 @@
 from datetime import date, timedelta
 from decimal import Decimal
 from importlib import import_module
+from unittest import mock
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.apps import apps as django_apps
+from django.db.utils import IntegrityError
 from django.urls import reverse
 
 from Tracklet.unit_test import InvenTreeAPITestCase
 from common.models import Attachment
+from common.settings import set_global_setting
 from part.models import Part, PartCategory
 from stock.models import StockItem, StockLocation
 from stock.status_codes import StockStatus
@@ -16,6 +20,7 @@ from stock.status_codes import StockStatus
 from .models import (
     Project,
     ProjectInstrument,
+    ProjectInstrumentReleaseStatus,
     ProjectReport,
     ProjectStatus,
     ProjectStockAllocation,
@@ -138,6 +143,55 @@ class ProjectApiTests(InvenTreeAPITestCase):
         instrument = ProjectInstrument.objects.get(pk=response.data['pk'])
         self.assertEqual(instrument.project, project)
         self.assertEqual(instrument.stock_item, item)
+        self.assertEqual(
+            instrument.release_status, ProjectInstrumentReleaseStatus.PENDING
+        )
+
+    def test_add_instrument_returns_validation_error_on_integrity_failure(self):
+        """Instrument create should return 400 instead of surfacing a raw DB error."""
+        self.assignRole('project.add')
+
+        project = Project.objects.create(name='Instrument Create Error Project')
+        item = self._make_stock_item(quantity=4)
+
+        url = reverse('api-project-instrument-list-by-project', kwargs={'pk': project.pk})
+
+        with mock.patch(
+            'projects.api.ProjectInstrumentList.perform_create',
+            side_effect=IntegrityError('NOT NULL constraint failed'),
+        ):
+            response = self.post(
+                url,
+                {'stock_item': item.pk, 'quantity': '1.0'},
+                expected_code=400,
+            )
+
+        self.assertIn('non_field_errors', response.data)
+
+    def test_add_instrument_returns_validation_error_on_model_validation_failure(self):
+        """Instrument create should map model validation errors to a 400 response."""
+        self.assignRole('project.add')
+
+        project = Project.objects.create(name='Instrument Validation Error Project')
+        item = self._make_stock_item(quantity=4)
+
+        url = reverse('api-project-instrument-list-by-project', kwargs={'pk': project.pk})
+
+        with mock.patch(
+            'projects.api.ProjectInstrumentList.perform_create',
+            side_effect=DjangoValidationError(
+                {'quantity': ['Instrument quantity must be greater than zero']}
+            ),
+        ):
+            response = self.post(
+                url,
+                {'stock_item': item.pk, 'quantity': '1.0'},
+                expected_code=400,
+            )
+
+        self.assertEqual(
+            response.data['quantity'][0], 'Instrument quantity must be greater than zero'
+        )
 
     def test_prevent_duplicate_instrument(self):
         """Prevent duplicate stock item instrument rows for same project."""
@@ -1334,6 +1388,11 @@ class ProjectApiTests(InvenTreeAPITestCase):
             quantity=1,
             tracklet_status='BROKEN',
         )
+        StockItem.objects.create(
+            part=part_camera,
+            location=None,
+            quantity=1,
+        )
         partial_issue_item = StockItem.objects.create(
             part=part_probe,
             location=location_a,
@@ -1391,7 +1450,9 @@ class ProjectApiTests(InvenTreeAPITestCase):
         response = self.get(reverse('api-project-dashboard'), expected_code=200)
         data = response.data
 
-        self.assertEqual(data['thresholds']['low_stock'], 1)
+        self.assertEqual(data['thresholds']['low_stock'], 2)
+        self.assertEqual(data['thresholds']['reservation_window_days'], 7)
+        self.assertEqual(data['thresholds']['calibration_warning_days'], 14)
         self.assertGreaterEqual(data['summary']['total_stock_items'], 4)
         self.assertGreaterEqual(data['summary']['available_equipment'], 1)
         self.assertGreaterEqual(data['summary']['reserved_equipment'], 1)
@@ -1419,6 +1480,12 @@ class ProjectApiTests(InvenTreeAPITestCase):
         location_rows = {entry['label']: entry['value'] for entry in data['stock_by_location']}
         self.assertGreaterEqual(location_rows[location_a.name], 2)
         self.assertGreaterEqual(location_rows[location_b.name], 2)
+        self.assertGreaterEqual(location_rows['Unassigned'], 1)
+
+        location_ids = {entry['label']: entry.get('pk') for entry in data['stock_by_location']}
+        self.assertEqual(location_ids[location_a.name], location_a.pk)
+        self.assertEqual(location_ids[location_b.name], location_b.pk)
+        self.assertIsNone(location_ids['Unassigned'])
 
         category_rows = {
             entry['label']: entry['value'] for entry in data['category_distribution']
@@ -1433,6 +1500,90 @@ class ProjectApiTests(InvenTreeAPITestCase):
         }
         self.assertIn(low_stock_item.pk, low_stock_rows)
         self.assertEqual(str(low_stock_rows[low_stock_item.pk]['available_quantity']), '1.000000')
+
+    def test_project_dashboard_uses_configured_thresholds(self):
+        """Dashboard endpoint honors configurable threshold settings."""
+        self.assignRole('project.view')
+
+        today = date.today()
+        location = StockLocation.objects.first()
+        assert location
+
+        category = PartCategory.objects.create(
+            name='Configured Thresholds',
+            requires_calibration=True,
+            calibration_interval_days=30,
+        )
+        part = Part.objects.create(name='Threshold Item', category=category)
+
+        reserved_item = StockItem.objects.create(
+            part=part,
+            location=location,
+            quantity=5,
+            last_calibration_date=today - timedelta(days=20),
+        )
+        low_stock_item = StockItem.objects.create(
+            part=part,
+            location=location,
+            quantity=2,
+        )
+
+        future_project = Project.objects.create(
+            name='Far Future Reservation',
+            status=ProjectStatus.FUTURE,
+            start_date=today + timedelta(days=10),
+            end_date=today + timedelta(days=12),
+            location=location,
+        )
+
+        ProjectInstrument.objects.create(
+            project=future_project,
+            stock_item=reserved_item,
+            quantity=1,
+        )
+
+        set_global_setting('DASHBOARD_RESERVED_SOON_DAYS', 14)
+        set_global_setting('DASHBOARD_CALIBRATION_DUE_DAYS', 14)
+        set_global_setting('DASHBOARD_LOW_STOCK_THRESHOLD', 2)
+
+        response = self.get(reverse('api-project-dashboard'), expected_code=200)
+        data = response.data
+
+        self.assertEqual(data['thresholds']['reservation_window_days'], 14)
+        self.assertEqual(data['thresholds']['calibration_warning_days'], 14)
+        self.assertEqual(data['thresholds']['low_stock'], 2)
+        self.assertIn(
+            reserved_item.pk,
+            {entry['stock_item'] for entry in data['reserved_equipment_soon']},
+        )
+        self.assertIn(
+            reserved_item.pk,
+            {entry['stock_item'] for entry in data['calibration_due']},
+        )
+        self.assertIn(
+            low_stock_item.pk,
+            {entry['stock_item'] for entry in data['low_stock_warning']},
+        )
+
+        set_global_setting('DASHBOARD_RESERVED_SOON_DAYS', 0)
+        set_global_setting('DASHBOARD_CALIBRATION_DUE_DAYS', 0)
+        set_global_setting('DASHBOARD_LOW_STOCK_THRESHOLD', 0)
+
+        response = self.get(reverse('api-project-dashboard'), expected_code=200)
+        data = response.data
+
+        self.assertEqual(data['thresholds']['reservation_window_days'], 0)
+        self.assertEqual(data['thresholds']['calibration_warning_days'], 0)
+        self.assertEqual(data['thresholds']['low_stock'], 0)
+        self.assertNotIn(
+            reserved_item.pk,
+            {entry['stock_item'] for entry in data['reserved_equipment_soon']},
+        )
+        self.assertIn(
+            reserved_item.pk,
+            {entry['stock_item'] for entry in data['calibration_due']},
+        )
+        self.assertEqual(data['low_stock_warning'], [])
 
         usage_rows = {entry['stock_item']: entry for entry in data['most_used_equipment']}
         self.assertIn(reserved_item.pk, usage_rows)

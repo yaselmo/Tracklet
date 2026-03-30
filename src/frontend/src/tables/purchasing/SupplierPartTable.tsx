@@ -164,7 +164,9 @@ export function SupplierPartTable({
   }, [partId]);
 
   const supplierPartFields = useSupplierPartFields({
-    partId: partId
+    supplierId: supplierId,
+    partId: partId,
+    useStockSelection: !!supplierId && !partId
   });
 
   const addSupplierPart = useCreateApiFormModal({
@@ -175,6 +177,17 @@ export function SupplierPartTable({
       part: partId,
       supplier: supplierId,
       manufacturer_part: manufacturerPartId
+    },
+    processFormData: (data) => {
+      const processed = { ...data };
+
+      if (!processed.part) {
+        throw new Error(t`Please select a stock item`);
+      }
+
+      delete processed.stock_item;
+
+      return processed;
     },
     table: table,
     successMessage: t`Supplier part created`
@@ -233,7 +246,9 @@ export function SupplierPartTable({
     ];
   }, []);
 
-  const editSupplierPartFields = useSupplierPartFields({});
+  const editSupplierPartFields = useSupplierPartFields({
+    supplierId: supplierId
+  });
 
   const [selectedSupplierPart, setSelectedSupplierPart] =
     useState<any>(undefined);

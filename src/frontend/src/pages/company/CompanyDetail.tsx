@@ -5,8 +5,6 @@ import {
   IconInfoCircle,
   IconMap2,
   IconPackageExport,
-  IconPackages,
-  IconShoppingCart,
   IconTruckDelivery,
   IconTruckReturn,
   IconUsersGroup
@@ -50,7 +48,6 @@ import { useUserState } from '../../states/UserState';
 import { AddressTable } from '../../tables/company/AddressTable';
 import { ContactTable } from '../../tables/company/ContactTable';
 import { ManufacturerPartTable } from '../../tables/purchasing/ManufacturerPartTable';
-import { PurchaseOrderTable } from '../../tables/purchasing/PurchaseOrderTable';
 import { SupplierPartTable } from '../../tables/purchasing/SupplierPartTable';
 import { ReturnOrderTable } from '../../tables/sales/ReturnOrderTable';
 import { SalesOrderTable } from '../../tables/sales/SalesOrderTable';
@@ -200,26 +197,6 @@ export default function CompanyDetail(props: Readonly<CompanyDetailProps>) {
         )
       },
       {
-        name: 'purchase-orders',
-        label: t`Purchase Orders`,
-        icon: <IconShoppingCart />,
-        hidden: !company?.is_supplier,
-        content: company?.pk && <PurchaseOrderTable supplierId={company.pk} />
-      },
-      {
-        name: 'stock-items',
-        label: t`Stock Items`,
-        icon: <IconPackages />,
-        hidden: !company?.is_manufacturer && !company?.is_supplier,
-        content: company?.pk && (
-          <StockItemTable
-            allowAdd={false}
-            tableName='company-stock'
-            params={{ company: company.pk }}
-          />
-        )
-      },
-      {
         name: 'sales-orders',
         label: t`Sales Orders`,
         icon: <IconTruckDelivery />,
@@ -268,7 +245,8 @@ export default function CompanyDetail(props: Readonly<CompanyDetailProps>) {
       },
       ParametersPanel({
         model_type: ModelType.company,
-        model_id: company?.pk
+        model_id: company?.pk,
+        hidden: !!company?.is_supplier
       }),
       AttachmentPanel({
         model_type: ModelType.company,

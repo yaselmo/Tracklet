@@ -1,6 +1,7 @@
 import { t } from '@lingui/core/macro';
 import { BarChart, DonutChart } from '@mantine/charts';
 import {
+  ActionIcon,
   Alert,
   Anchor,
   Badge,
@@ -15,7 +16,8 @@ import {
   Stack,
   Table,
   Text,
-  ThemeIcon
+  ThemeIcon,
+  Tooltip
 } from '@mantine/core';
 import {
   IconActivityHeartbeat,
@@ -24,6 +26,7 @@ import {
   IconChartDonut3,
   IconChartHistogram,
   IconClipboardList,
+  IconSettings,
   IconMapPin,
   IconTool
 } from '@tabler/icons-react';
@@ -37,6 +40,10 @@ import { apiUrl } from '@lib/functions/Api';
 import { getDetailUrl, getOverviewUrl } from '@lib/functions/Navigation';
 import { useApi } from '../../../contexts/ApiContext';
 import { formatDate } from '../../../defaults/formatters';
+import {
+  canViewSettingsRoot,
+  getSystemPanelAccess
+} from '../../../functions/settingsPermissions';
 import { useUserState } from '../../../states/UserState';
 import { StylishText } from '../../items/StylishText';
 import type { DashboardWidgetProps } from '../DashboardWidget';
@@ -260,6 +267,26 @@ function quantityLabel(value: string) {
   return Number.isFinite(parsed) ? parsed.toLocaleString() : value;
 }
 
+function pluralizeDays(days: number) {
+  return days === 1 ? t`day` : t`days`;
+}
+
+function reservationWindowDescription(days: number) {
+  return days > 0
+    ? t`Project allocations and instrumentation scheduled in the next ${days} ${pluralizeDays(days)} will appear here.`
+    : t`Project allocations and instrumentation starting today will appear here.`;
+}
+
+function calibrationWindowDescription(days: number) {
+  return days > 0
+    ? t`Equipment due within ${days} ${pluralizeDays(days)} and overdue calibration checks will be shown here.`
+    : t`Equipment due today and overdue calibration checks will be shown here.`;
+}
+
+function lowStockWindowDescription(threshold: number) {
+  return t`Items with available quantity at or below ${threshold} will be flagged here.`;
+}
+
 function getSummaryCounts(summary?: DashboardSummary) {
   return {
     totalStockItems: summary?.total_stock_items ?? 0,
@@ -291,12 +318,23 @@ function OperationsContent() {
 
   const data = dashboardQuery.data;
   const summaryCounts = useMemo(() => getSummaryCounts(data?.summary), [data?.summary]);
+  const reservationWindowDays = data?.thresholds.reservation_window_days ?? 7;
+  const calibrationWarningDays = data?.thresholds.calibration_warning_days ?? 14;
+  const lowStockThreshold = data?.thresholds.low_stock ?? 2;
 
   const openStockList = (filters?: Record<string, string>) => {
     const overviewUrl = getOverviewUrl(ModelType.stockitem);
     const params = new URLSearchParams(filters);
     const query = params.toString();
     navigate(query ? `${overviewUrl}?${query}` : overviewUrl);
+  };
+
+  const openStockItemDetails = (stockItemId: number) => {
+    navigate(`${getDetailUrl(ModelType.stockitem, stockItemId)}details`);
+  };
+
+  const openProjectDetails = (projectId: number) => {
+    navigate(`${getDetailUrl(ModelType.project, projectId)}details`);
   };
 
   const summaryChart = useMemo(() => {
@@ -481,7 +519,12 @@ function OperationsContent() {
                 <Paper key={project.pk} withBorder radius='md' p='sm'>
                   <Group justify='space-between' align='start'>
                     <Stack gap={2}>
-                      <Anchor href={getDetailUrl(ModelType.project, project.pk)} fw={600}>
+                      <Anchor
+                        component='button'
+                        type='button'
+                        onClick={() => openProjectDetails(project.pk)}
+                        fw={600}
+                      >
                         {project.name}
                       </Anchor>
                       <Text size='sm' c='dimmed'>
@@ -511,6 +554,9 @@ function OperationsContent() {
           title={t`Reserved Equipment Soon`}
           icon={<IconClipboardList size={18} />}
         >
+          <Text size='sm' c='dimmed'>
+            {reservationWindowDescription(reservationWindowDays)}
+          </Text>
           {data.reserved_equipment_soon.length > 0 ? (
             <ScrollArea.Autosize mah={320}>
               <Table striped highlightOnHover>
@@ -526,13 +572,19 @@ function OperationsContent() {
                     <Table.Tr key={`${entry.project}-${entry.stock_item}`}>
                       <Table.Td>
                         <Anchor
-                          href={getDetailUrl(ModelType.stockitem, entry.stock_item)}
+                          component='button'
+                          type='button'
+                          onClick={() => openStockItemDetails(entry.stock_item)}
                         >
                           {entry.item_name}
                         </Anchor>
                       </Table.Td>
                       <Table.Td>
-                        <Anchor href={getDetailUrl(ModelType.project, entry.project)}>
+                        <Anchor
+                          component='button'
+                          type='button'
+                          onClick={() => openProjectDetails(entry.project)}
+                        >
                           {entry.project_name}
                         </Anchor>
                       </Table.Td>
@@ -552,7 +604,7 @@ function OperationsContent() {
           ) : (
             <EmptyState
               title={t`No near-term reservations`}
-              description={t`Project allocations and instrumentation scheduled in the next few days will appear here.`}
+              description={reservationWindowDescription(reservationWindowDays)}
             />
           )}
         </SectionCard>
@@ -560,13 +612,20 @@ function OperationsContent() {
 
       <SimpleGrid cols={{ base: 1, xl: 2 }}>
         <SectionCard title={t`Calibration Due`} icon={<IconTool size={18} />}>
+          <Text size='sm' c='dimmed'>
+            {calibrationWindowDescription(calibrationWarningDays)}
+          </Text>
           {data.calibration_due.length > 0 ? (
             <Stack gap='sm'>
               {data.calibration_due.map((entry) => (
                 <Paper key={entry.stock_item} withBorder radius='md' p='sm'>
                   <Group justify='space-between' align='start'>
                     <Stack gap={2}>
-                      <Anchor href={getDetailUrl(ModelType.stockitem, entry.stock_item)}>
+                      <Anchor
+                        component='button'
+                        type='button'
+                        onClick={() => openStockItemDetails(entry.stock_item)}
+                      >
                         {entry.item_name}
                       </Anchor>
                       <Text size='sm' c='dimmed'>
@@ -589,7 +648,7 @@ function OperationsContent() {
           ) : (
             <EmptyState
               title={t`No calibration alerts`}
-              description={t`Upcoming and overdue calibration checks will be shown here.`}
+              description={calibrationWindowDescription(calibrationWarningDays)}
             />
           )}
         </SectionCard>
@@ -598,13 +657,20 @@ function OperationsContent() {
           title={t`Low Stock Warning`}
           icon={<IconAlertTriangle size={18} />}
         >
+          <Text size='sm' c='dimmed'>
+            {lowStockWindowDescription(lowStockThreshold)}
+          </Text>
           {data.low_stock_warning.length > 0 ? (
             <Stack gap='sm'>
               {data.low_stock_warning.map((entry) => (
                 <Paper key={entry.stock_item} withBorder radius='md' p='sm'>
                   <Group justify='space-between' align='center'>
                     <Stack gap={2}>
-                      <Anchor href={getDetailUrl(ModelType.stockitem, entry.stock_item)}>
+                      <Anchor
+                        component='button'
+                        type='button'
+                        onClick={() => openStockItemDetails(entry.stock_item)}
+                      >
                         {entry.item_name}
                       </Anchor>
                       <Text size='sm' c='dimmed'>
@@ -618,7 +684,7 @@ function OperationsContent() {
                       <Progress
                         value={Math.min(
                           (Number.parseFloat(entry.available_quantity) /
-                            Math.max(data.thresholds.low_stock, 1)) *
+                            Math.max(lowStockThreshold, 1)) *
                             100,
                           100
                         )}
@@ -634,7 +700,7 @@ function OperationsContent() {
           ) : (
             <EmptyState
               title={t`Stock levels look healthy`}
-              description={t`Items below the configured availability threshold will be flagged here.`}
+              description={lowStockWindowDescription(lowStockThreshold)}
             />
           )}
         </SectionCard>
@@ -718,7 +784,11 @@ function OperationsContent() {
                   {data.recently_added_equipment.map((entry) => (
                     <Table.Tr key={entry.stock_item}>
                       <Table.Td>
-                        <Anchor href={getDetailUrl(ModelType.stockitem, entry.stock_item)}>
+                        <Anchor
+                          component='button'
+                          type='button'
+                          onClick={() => openStockItemDetails(entry.stock_item)}
+                        >
                           {entry.name}
                         </Anchor>
                       </Table.Td>
@@ -747,7 +817,11 @@ function OperationsContent() {
               {data.most_used_equipment.map((entry) => (
                 <Paper key={entry.stock_item} withBorder radius='md' p='sm'>
                   <Group justify='space-between' align='center'>
-                    <Anchor href={getDetailUrl(ModelType.stockitem, entry.stock_item)}>
+                    <Anchor
+                      component='button'
+                      type='button'
+                      onClick={() => openStockItemDetails(entry.stock_item)}
+                    >
                       {entry.item_name}
                     </Anchor>
                     <Group gap='xs'>
@@ -776,6 +850,10 @@ function OperationsContent() {
 
 export default function TrackletOperationsDashboardWidget(): DashboardWidgetProps {
   const user = useUserState();
+  const navigate = useNavigate();
+  const canOpenDashboardAlerts =
+    canViewSettingsRoot(user, 'system') &&
+    getSystemPanelAccess(user, 'dashboard').view;
 
   return {
     label: 'ops-hub',
@@ -792,6 +870,20 @@ export default function TrackletOperationsDashboardWidget(): DashboardWidgetProp
               {t`Live stock, project, reservation, calibration, and usage signals for daily lab operations`}
             </Text>
           </Stack>
+          {canOpenDashboardAlerts && (
+            <Tooltip label={t`Dashboard Alerts`} position='left'>
+              <ActionIcon
+                variant='light'
+                size='lg'
+                aria-label='dashboard-alert-settings'
+                onClick={() => {
+                  navigate('/settings/system/dashboard');
+                }}
+              >
+                <IconSettings size={18} />
+              </ActionIcon>
+            </Tooltip>
+          )}
         </Group>
         <OperationsContent />
       </Stack>
