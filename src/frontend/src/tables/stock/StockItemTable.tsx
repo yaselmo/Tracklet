@@ -6,7 +6,6 @@ import {
   HoverCard,
   Image,
   Pagination,
-  SimpleGrid,
   Stack,
   Text
 } from '@mantine/core';
@@ -63,6 +62,7 @@ import { getStockAvailabilityStyle } from './stockAvailabilityStyles';
 const STOCK_IMAGE_SIZE_PX = 48;
 const STOCK_IMAGE_PREVIEW_SIZE_PX = 220;
 const STOCK_GRID_PAGE_SIZE = 24;
+const STOCK_GRID_MIN_CARD_WIDTH_PX = 160;
 
 function StockItemImageCell({ record }: Readonly<{ record: any }>) {
   const [imageError, setImageError] = useState(false);
@@ -138,7 +138,10 @@ function StockItemCard({
   const [imageError, setImageError] = useState(false);
 
   const imageSource =
-    record?.image || record?.part_detail?.thumbnail || record?.part_detail?.image;
+    record?.image ||
+    record?.part_detail?.preview ||
+    record?.part_detail?.thumbnail ||
+    record?.part_detail?.image;
   const resolvedSource = imageSource ? generateUrl(imageSource) : '';
   const showImage = !!resolvedSource && !imageError;
 
@@ -152,17 +155,24 @@ function StockItemCard({
       withBorder
       radius='md'
       shadow='xs'
-      p='sm'
+      p='xs'
       onClick={() => onOpen(record)}
-      style={{ cursor: 'pointer', height: '100%' }}
+      style={{
+        cursor: 'pointer',
+        height: '100%',
+        width: '100%',
+        minWidth: 0,
+        maxWidth: 'none'
+      }}
     >
       <Card.Section withBorder>
         <Center
-          h={170}
           style={{
+            aspectRatio: '4 / 3',
             backgroundColor: showImage
               ? 'var(--mantine-color-body)'
-              : 'var(--mantine-color-gray-1)'
+              : 'var(--mantine-color-gray-1)',
+            overflow: 'hidden'
           }}
         >
           {showImage ? (
@@ -182,7 +192,7 @@ function StockItemCard({
           )}
         </Center>
       </Card.Section>
-      <Stack gap={6} mt='sm'>
+      <Stack gap={4} mt='xs' style={{ minWidth: 0 }}>
         <Text fw={600} lineClamp={2}>
           {record?.title || record?.part_detail?.name || record?.part || '-'}
         </Text>
@@ -317,10 +327,25 @@ function StockItemGridView({
       {!gridQuery.isFetching && (tableState.records?.length ?? 0) == 0 ? (
         <Text c='dimmed'>{t`No records found`}</Text>
       ) : (
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3, xl: 4 }}>
+        <div
+          style={{
+            display: 'grid',
+            width: '100%',
+            gridTemplateColumns: `repeat(auto-fill, minmax(min(100%, ${STOCK_GRID_MIN_CARD_WIDTH_PX}px), 1fr))`,
+            gap: 'var(--mantine-spacing-xs)',
+            alignItems: 'stretch'
+          }}
+        >
           {gridQuery.isFetching
             ? Array.from({ length: 8 }).map((_, idx) => (
-                <Card key={idx} withBorder radius='md' shadow='xs' h={310} />
+                <Card
+                  key={idx}
+                  withBorder
+                  radius='md'
+                  shadow='xs'
+                  h={280}
+                  style={{ width: '100%', minWidth: 0 }}
+                />
               ))
             : tableState.records.map((record: any) => (
                 <StockItemCard
@@ -332,7 +357,7 @@ function StockItemGridView({
                   }
                 />
               ))}
-        </SimpleGrid>
+        </div>
       )}
       {totalPages > 1 && (
         <Center>

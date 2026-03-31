@@ -22,6 +22,7 @@ from django.urls import reverse
 from PIL import Image
 
 import common.validators
+from common.icons import _get_tabler_icons_path
 from common.notifications import trigger_notification
 from common.settings import get_global_setting, set_global_setting
 from Tracklet.helpers import str2bool
@@ -1878,6 +1879,16 @@ class ValidatorsTest(TestCase):
             common.validators.validate_icon('ti:package:non-existing-variant')
 
         common.validators.validate_icon('ti:package:outline')
+
+
+class IconPathTest(TestCase):
+    """Unit tests for icon asset path discovery."""
+
+    def test_tabler_icon_manifest_exists(self):
+        """The bundled Tabler icons manifest should resolve in this repo layout."""
+        path = _get_tabler_icons_path()
+        self.assertTrue(path.exists())
+        self.assertEqual(path.name, 'icons.json')
 
 
 class CustomStatusTest(TestCase):

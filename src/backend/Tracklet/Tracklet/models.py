@@ -1501,7 +1501,7 @@ class InvenTreeImageMixin(models.Model):
         upload_to=rename_image,
         null=True,
         blank=True,
-        variations={'thumbnail': (128, 128), 'preview': (256, 256)},
+        variations={'thumbnail': (128, 128), 'preview': (512, 512)},
         delete_orphans=False,
         verbose_name=_('Image'),
     )
@@ -1517,3 +1517,9 @@ class InvenTreeImageMixin(models.Model):
         if self.image:
             return Tracklet.helpers.getMediaUrl(self.image, 'thumbnail')
         return Tracklet.helpers.getBlankThumbnail()
+
+    def get_preview_url(self) -> str:
+        """Return the URL of the image preview for this object."""
+        if self.image:
+            return Tracklet.helpers.getMediaUrl(self.image, 'preview')
+        return self.get_thumbnail_url()

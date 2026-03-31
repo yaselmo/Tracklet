@@ -48,14 +48,30 @@ class IconPack:
     icons: dict[str, Icon]
 
 
+def _get_tabler_icons_path() -> Path:
+    """Locate the bundled Tabler icon manifest in supported project layouts."""
+    base_path = Path(__file__).resolve().parent.parent
+
+    candidate_paths = [
+        base_path / 'Tracklet/static/tabler-icons/icons.json',
+        base_path / 'InvenTree/static/tabler-icons/icons.json',
+    ]
+
+    for path in candidate_paths:
+        if path.exists():
+            return path
+
+    raise FileNotFoundError(
+        f'Could not locate bundled tabler-icons manifest in: {candidate_paths}'
+    )
+
+
 def get_icon_packs():
     """Return a dictionary of available icon packs including their icons."""
     global _icon_packs
 
     if _icon_packs is None:
-        tabler_icons_path = Path(__file__).parent.parent.joinpath(
-            'InvenTree/static/tabler-icons/icons.json'
-        )
+        tabler_icons_path = _get_tabler_icons_path()
         with open(tabler_icons_path, encoding='utf-8') as tabler_icons_file:
             tabler_icons = json.load(tabler_icons_file)
 

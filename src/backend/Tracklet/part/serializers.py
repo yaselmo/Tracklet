@@ -306,6 +306,7 @@ class PartBriefSerializer(
             'description',
             'image',
             'thumbnail',
+            'preview',
             'active',
             'locked',
             'assembly',
@@ -331,6 +332,7 @@ class PartBriefSerializer(
         read_only=True, allow_null=True
     )
     thumbnail = serializers.CharField(source='get_thumbnail_url', read_only=True)
+    preview = serializers.CharField(source='get_preview_url', read_only=True)
 
     IPN = serializers.CharField(
         required=False,
@@ -599,6 +601,7 @@ class PartSerializer(
             'salable',
             'starred',
             'thumbnail',
+            'preview',
             'testable',
             'trackable',
             'units',
@@ -876,6 +879,7 @@ class PartSerializer(
         required=False, allow_null=True
     )
     thumbnail = serializers.CharField(source='get_thumbnail_url', read_only=True)
+    preview = serializers.CharField(source='get_preview_url', read_only=True)
     starred = serializers.SerializerMethodField()
 
     # PrimaryKeyRelated fields (Note: enforcing field type here results in much faster queries, somehow...)
