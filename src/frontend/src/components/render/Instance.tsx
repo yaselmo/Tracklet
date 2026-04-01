@@ -51,6 +51,7 @@ import {
 import { RenderPart, RenderPartCategory, RenderPartTestTemplate } from './Part';
 import { RenderPlugin } from './Plugin';
 import { RenderLabelTemplate, RenderReportTemplate } from './Report';
+import { RenderEvent, RenderRentalOrder } from './Tracklet';
 import {
   RenderStockCategory,
   RenderStockItem,
@@ -69,6 +70,7 @@ export const RendererLookup: ModelRendererDict = {
   [ModelType.builditem]: RenderBuildItem,
   [ModelType.company]: RenderCompany,
   [ModelType.contact]: RenderContact,
+  [ModelType.event]: RenderEvent,
   [ModelType.parameter]: RenderParameter,
   [ModelType.parametertemplate]: RenderParameterTemplate,
   [ModelType.manufacturerpart]: RenderManufacturerPart,
@@ -79,6 +81,7 @@ export const RendererLookup: ModelRendererDict = {
   [ModelType.projectcode]: RenderProjectCode,
   [ModelType.purchaseorder]: RenderPurchaseOrder,
   [ModelType.purchaseorderlineitem]: RenderPurchaseOrder,
+  [ModelType.rentalorder]: RenderRentalOrder,
   [ModelType.returnorder]: RenderReturnOrder,
   [ModelType.returnorderlineitem]: RenderReturnOrderLineItem,
   [ModelType.salesorder]: RenderSalesOrder,
