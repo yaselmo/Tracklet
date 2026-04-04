@@ -1,7 +1,9 @@
 import { DonutChart } from '@mantine/charts';
+import { ModelInformationDict } from '@lib/enums/ModelInformation';
 import { ModelType } from '@lib/index';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
+import { navigateToLink } from '@lib/functions/Navigation';
 import { t } from '@lingui/core/macro';
 import { IconTool } from '@tabler/icons-react';
 import {
@@ -17,6 +19,7 @@ import {
 import { useDocumentVisibility } from '@mantine/hooks';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApi } from '../../../contexts/ApiContext';
 import { useUserState } from '../../../states/UserState';
 import type { DashboardWidgetProps } from '../DashboardWidget';
@@ -77,12 +80,16 @@ interface StockSummaryResponse {
   out_of_service_items: number;
 }
 
+type StockFilterKey = (typeof STOCK_STATS)[number]['key'];
+
 function StockOverviewWidgetContent() {
   const api = useApi();
+  const navigate = useNavigate();
   const user = useUserState();
   const visibility = useDocumentVisibility();
-  const [activeStat, setActiveStat] =
-    useState<(typeof STOCK_STATS)[number]['key']>('total');
+  const [selectedFilter, setSelectedFilter] = useState<StockFilterKey>('total');
+  const stockOverviewUrl =
+    ModelInformationDict[ModelType.stockitem].url_overview ?? '/stock/location/index/stock-items';
 
   const summaryQuery = useQuery({
     queryKey: ['dashboard-stock-summary', visibility],
@@ -134,6 +141,36 @@ function StockOverviewWidgetContent() {
     }
   ];
 
+  const selectedStat =
+    stockStats.find((stat) => stat.key === selectedFilter) ?? stockStats[0];
+
+  const filteredEquipmentStateMix =
+    selectedFilter === 'total'
+      ? equipmentStateMix
+      : equipmentStateMix.filter((item) => {
+          if (selectedFilter === 'available') {
+            return item.name === 'Available';
+          }
+
+          if (selectedFilter === 'reserved') {
+            return item.name === 'Reserved';
+          }
+
+          if (selectedFilter === 'broken') {
+            return item.name === 'Broken';
+          }
+
+          if (selectedFilter === 'missing') {
+            return item.name === 'Missing';
+          }
+
+          if (selectedFilter === 'out-of-service') {
+            return item.name === 'Out of Service';
+          }
+
+          return true;
+        });
+
   const formatValue = (value: number | null) => {
     if (summaryQuery.isLoading && value === null) {
       return '...';
@@ -144,6 +181,40 @@ function StockOverviewWidgetContent() {
     }
 
     return value.toLocaleString();
+  };
+
+  const getStockFilterUrl = (filterKey: StockFilterKey) => {
+    const params = new URLSearchParams();
+
+    switch (filterKey) {
+      case 'available':
+        params.set('availability', 'AVAILABLE');
+        break;
+      case 'reserved':
+        params.set('availability', 'RESERVED');
+        break;
+      case 'broken':
+        params.set('availability', 'BROKEN');
+        break;
+      case 'missing':
+        params.set('availability', 'MISSING');
+        break;
+      case 'out-of-service':
+        params.set('availability', 'UNAVAILABLE');
+        break;
+      case 'total':
+      default:
+        break;
+    }
+
+    const queryString = params.toString();
+
+    return queryString ? `${stockOverviewUrl}?${queryString}` : stockOverviewUrl;
+  };
+
+  const handleStatClick = (filterKey: StockFilterKey, event: React.MouseEvent) => {
+    setSelectedFilter(filterKey);
+    navigateToLink(getStockFilterUrl(filterKey), navigate, event);
   };
 
   return (
@@ -176,8 +247,8 @@ function StockOverviewWidgetContent() {
           {stockStats.map((stat) => (
             <UnstyledButton
               key={stat.title}
-              onClick={() => setActiveStat(stat.key)}
-              aria-pressed={activeStat === stat.key}
+              onClick={(event) => handleStatClick(stat.key, event)}
+              aria-pressed={selectedFilter === stat.key}
             >
               <Paper
                 p='lg'
@@ -187,11 +258,11 @@ function StockOverviewWidgetContent() {
                   height: '100%',
                   background: stat.tint,
                   border:
-                    activeStat === stat.key
+                    selectedFilter === stat.key
                       ? `1px solid var(--mantine-color-${stat.color}-3)`
                       : '1px solid rgba(148, 163, 184, 0.18)',
                   boxShadow:
-                    activeStat === stat.key
+                    selectedFilter === stat.key
                       ? '0 14px 32px rgba(15, 23, 42, 0.10)'
                       : '0 8px 20px rgba(15, 23, 42, 0.05)',
                   transition: 'all 160ms ease'
@@ -231,7 +302,9 @@ function StockOverviewWidgetContent() {
                 </Text>
               ) : (
                 <Text c='dimmed' size='sm' maw={420}>
-                  {t`This section shows the current distribution of equipment across the main operational states using the same backend summary payload as the cards above.`}
+                  {selectedFilter === 'total'
+                    ? t`This section shows the current distribution of equipment across the main operational states using the same backend summary payload as the cards above.`
+                    : t`This section is filtered to ${selectedStat.title.toLowerCase()} using the selected card above. The chart and legend are both derived from the same backend summary response.`}
                 </Text>
               )}
             </Stack>
@@ -242,17 +315,17 @@ function StockOverviewWidgetContent() {
                   <Loader size='md' />
                 ) : (
                   <DonutChart
-                    data={equipmentStateMix}
+                    data={filteredEquipmentStateMix}
                     size={220}
                     thickness={36}
                     withLabels={false}
                     withLabelsLine={false}
-                    chartLabel='100%'
+                    chartLabel={formatValue(selectedStat.value)}
                   />
                 )}
 
                 <Stack gap='xs' w='100%' maw={260}>
-                  {equipmentStateMix.map((item) => (
+                  {filteredEquipmentStateMix.map((item) => (
                     <Group key={item.name} justify='space-between' wrap='nowrap'>
                       <Group gap='xs' wrap='nowrap'>
                         <ThemeIcon
