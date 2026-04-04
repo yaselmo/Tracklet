@@ -1,6 +1,6 @@
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
-import { Anchor, Divider, Group, Loader, Text } from '@mantine/core';
+import { Divider, Group, Loader, Text } from '@mantine/core';
 import { useToggle } from '@mantine/hooks';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -31,16 +31,9 @@ export default function Login() {
   const hostname =
     hostList[hostKey] === undefined ? t`No selection` : hostList[hostKey]?.name;
   const [hostEdit, setHostEdit] = useToggle([false, true] as const);
-  const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const [sso_registration, registration_enabled] = useServerApiState(
-    useShallow((state) => [
-      state.sso_registration_enabled,
-      state.registration_enabled
-    ])
-  );
-  const any_reg_enabled = registration_enabled() || sso_registration() || false;
+  const navigate = useNavigate();
 
   const LoginMessage = useMemo(() => {
     const val = server.customize?.login_message;
@@ -99,7 +92,14 @@ export default function Login() {
         />
       ) : (
         <>
-          <Wrapper titleText={t`Login`} smallPadding>
+          <Wrapper
+            titleText='Tracklet'
+            smallPadding
+            logoSrc='/tracklet.svg'
+            logoHeight={340}
+            showTitle
+            showDivider={false}
+          >
             {isLoggingIn ? (
               <>
                 <Group justify='center'>
@@ -110,20 +110,6 @@ export default function Login() {
             ) : (
               <>
                 <AuthenticationForm />
-                {any_reg_enabled && (
-                  <Text ta='center' size={'xs'} mt={'md'}>
-                    <Trans>Don&apos;t have an account?</Trans>{' '}
-                    <Anchor
-                      component='button'
-                      type='button'
-                      c='dimmed'
-                      size='xs'
-                      onClick={() => navigate('/register')}
-                    >
-                      <Trans>Register</Trans>
-                    </Anchor>
-                  </Text>
-                )}
                 {LoginMessage}{' '}
               </>
             )}

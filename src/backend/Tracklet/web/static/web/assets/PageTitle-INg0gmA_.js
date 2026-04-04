@@ -1,2 +1,0 @@
-import{aA as c,r as i,j as E}from"./index-BwcFHVoW.js";function f({title:t,subtitle:s}){const a=c(),n=i.useMemo(()=>{const o=a.getSetting("INVENTREE_INSTANCE","Tracklet"),r=a.isSet("INVENTREE_INSTANCE_TITLE",!1);let e="";return t&&(e+=t),s&&(e+=` - ${s}`),r&&(e=`${o} | ${e}`),e||(e=o),e},[t,s,a]);return i.useEffect(()=>{document.title=n},[n]),E.jsx("title",{children:n})}export{f as P};
-//# sourceMappingURL=PageTitle-INg0gmA_.js.map

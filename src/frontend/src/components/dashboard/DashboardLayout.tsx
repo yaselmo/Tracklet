@@ -5,7 +5,6 @@ import {
   Center,
   Divider,
   Loader,
-  Space,
   Text
 } from '@mantine/core';
 import { useDisclosure, useHotkeys } from '@mantine/hooks';
@@ -224,10 +223,21 @@ export default function DashboardLayout() {
   const defaultLayouts = {
     lg: [
       {
+        w: 12,
+        h: 12,
+        x: 0,
+        y: 0,
+        i: 'ops-hub',
+        minW: 10,
+        minH: 12,
+        moved: false,
+        static: false
+      },
+      {
         w: 6,
         h: 4,
         x: 0,
-        y: 0,
+        y: 12,
         i: 'gstart',
         minW: 5,
         minH: 4,
@@ -238,7 +248,7 @@ export default function DashboardLayout() {
         w: 6,
         h: 4,
         x: 6,
-        y: 0,
+        y: 12,
         i: 'news',
         minW: 5,
         minH: 4,
@@ -247,7 +257,7 @@ export default function DashboardLayout() {
       }
     ]
   };
-  const loadWigs = ['news', 'gstart'];
+  const loadWigs = ['ops-hub', 'news', 'gstart'];
   const defaultWidgets = useMemo(() => {
     return loadWigs
       .map((lwid: string) =>
@@ -286,20 +296,8 @@ export default function DashboardLayout() {
         <>
           {widgetLabels.length == 0 ? (
             <>
-              <Center>
-                <Card shadow='xs' padding='xl' style={{ width: '100%' }}>
-                  <Alert
-                    color='blue'
-                    title={t`No Widgets Selected`}
-                    icon={<IconInfoCircle />}
-                  >
-                    <Text>{t`Use the menu to add widgets to the dashboard`}</Text>
-                  </Alert>
-                </Card>
-              </Center>
-              {showSampleDashboard && (
+              {showSampleDashboard ? (
                 <>
-                  <Space h='lg' />
                   {WidgetGrid(
                     defaultLayouts,
                     () => {},
@@ -309,6 +307,18 @@ export default function DashboardLayout() {
                     () => {}
                   )}
                 </>
+              ) : (
+                <Center>
+                  <Card shadow='xs' padding='xl' style={{ width: '100%' }}>
+                    <Alert
+                      color='blue'
+                      title={t`No Widgets Selected`}
+                      icon={<IconInfoCircle />}
+                    >
+                      <Text>{t`Use the menu to add widgets to the dashboard`}</Text>
+                    </Alert>
+                  </Card>
+                </Center>
               )}
             </>
           ) : (

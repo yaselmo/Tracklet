@@ -2,6 +2,7 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
 import { t } from '@lingui/core/macro';
 import { Trans } from '@lingui/react/macro';
+import { IconLock, IconUser } from '@tabler/icons-react';
 import {
   Alert,
   Anchor,
@@ -48,11 +49,18 @@ export function AuthenticationForm() {
         state.password_forgotten_enabled
       ])
     );
+  const [registration_enabled, sso_registration] = useServerApiState(
+    useShallow((state) => [
+      state.registration_enabled,
+      state.sso_registration_enabled
+    ])
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const { isLoggedIn } = useUserState();
 
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const anyRegEnabled = registration_enabled() || sso_registration() || false;
 
   function handleLogin() {
     setIsLoggingIn(true);
@@ -130,19 +138,23 @@ export function AuthenticationForm() {
       ) : null}
       <form onSubmit={classicForm.onSubmit(() => {})}>
         {classicLoginMode ? (
-          <Stack gap={0}>
+          <Stack gap='md'>
             <TextInput
               required
-              label={t`Username`}
               aria-label='login-username'
-              placeholder={t`Your username`}
+              placeholder={t`Username`}
+              size='lg'
+              radius='md'
+              leftSection={<IconUser size={20} />}
               {...classicForm.getInputProps('username')}
             />
             <PasswordInput
               required
-              label={t`Password`}
               aria-label='login-password'
-              placeholder={t`Your password`}
+              placeholder={t`Password`}
+              size='lg'
+              radius='md'
+              leftSection={<IconLock size={20} />}
               {...classicForm.getInputProps('password')}
             />
             <VisuallyHidden>
@@ -152,19 +164,53 @@ export function AuthenticationForm() {
                 hidden={true}
               />
             </VisuallyHidden>
-            {password_forgotten_enabled() === true && (
-              <Group justify='space-between' mt='0'>
+            <Button
+              type='submit'
+              disabled={isLoggingIn}
+              onClick={handleLogin}
+              size='lg'
+              radius='md'
+              mt='xs'
+              fullWidth
+            >
+              {isLoggingIn ? <Loader size='sm' /> : <Trans>Sign In</Trans>}
+            </Button>
+            <Group justify='space-between' mt='sm'>
+              {anyRegEnabled ? (
                 <Anchor
                   component='button'
                   type='button'
-                  c='dimmed'
-                  size='xs'
+                  c='blue.7'
+                  size='sm'
+                  onClick={() => navigate('/register')}
+                >
+                  <Trans>Sign up</Trans>
+                </Anchor>
+              ) : (
+                <span />
+              )}
+              {password_forgotten_enabled() === true && (
+                <Anchor
+                  component='button'
+                  type='button'
+                  c='blue.7'
+                  size='sm'
                   onClick={() => navigate('/reset-password')}
                 >
-                  <Trans>Reset password</Trans>
+                  <Trans>Forgot Password?</Trans>
                 </Anchor>
-              </Group>
-            )}
+              )}
+            </Group>
+            <Anchor
+              component='button'
+              type='button'
+              c='dimmed'
+              size='xs'
+              onClick={() => setMode.toggle()}
+              ta='center'
+            >
+              <Trans>Send me an email</Trans>
+            </Anchor>
           </Stack>
         ) : (
           <Stack>
@@ -178,34 +224,22 @@ export function AuthenticationForm() {
           </Stack>
         )}
 
-        <Group justify='space-between' mt='xl'>
-          <Anchor
-            component='button'
-            type='button'
-            c='dimmed'
-            size='xs'
-            onClick={() => setMode.toggle()}
-          >
-            {classicLoginMode ? (
-              <Trans>Send me an email</Trans>
-            ) : (
+        {!classicLoginMode && (
+          <Group justify='space-between' mt='xl'>
+            <Anchor
+              component='button'
+              type='button'
+              c='dimmed'
+              size='xs'
+              onClick={() => setMode.toggle()}
+            >
               <Trans>Use username and password</Trans>
-            )}
-          </Anchor>
-          <Button type='submit' disabled={isLoggingIn} onClick={handleLogin}>
-            {isLoggingIn ? (
-              <Loader size='sm' />
-            ) : (
-              <>
-                {classicLoginMode ? (
-                  <Trans>Log In</Trans>
-                ) : (
-                  <Trans>Send Email</Trans>
-                )}
-              </>
-            )}
-          </Button>
-        </Group>
+            </Anchor>
+            <Button type='submit' disabled={isLoggingIn} onClick={handleLogin}>
+              {isLoggingIn ? <Loader size='sm' /> : <Trans>Send Email</Trans>}
+            </Button>
+          </Group>
+        )}
       </form>
     </>
   );

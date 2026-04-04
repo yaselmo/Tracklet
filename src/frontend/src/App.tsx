@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import { ApiEndpoints, apiUrl } from '@lib/index';
 import { frontendID, serviceName } from './defaults/defaults';
+import { safeRandomUUID } from './functions/crypto';
 import { useLocalState } from './states/LocalState';
 
 // Global API instance
@@ -36,7 +37,7 @@ export const queryClient = new QueryClient({
   }
 });
 export function setTraceId() {
-  const runID = crypto.randomUUID().replace(/-/g, '');
+  const runID = safeRandomUUID().replace(/-/g, '');
   const traceid = `00-${runID}-${frontendID}-01`;
   api.defaults.headers['traceparent'] = traceid;
 

@@ -10,6 +10,7 @@ import LanguageSelectDashboardWidget from './widgets/LanguageSelectWidget';
 import NewsWidget from './widgets/NewsWidget';
 import QueryCountDashboardWidget from './widgets/QueryCountDashboardWidget';
 import StocktakeDashboardWidget from './widgets/StocktakeDashboardWidget';
+import StockOverviewWidget from './widgets/StockOverviewWidget';
 
 /**
  *
@@ -213,7 +214,7 @@ function BuiltinSettingsWidgets(): DashboardWidgetProps[] {
 }
 
 function BuiltinActionWidgets(): DashboardWidgetProps[] {
-  return [StocktakeDashboardWidget()];
+  return [StocktakeDashboardWidget(), StockOverviewWidget()];
 }
 
 /**

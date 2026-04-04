@@ -5,7 +5,7 @@ from datetime import timedelta
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
-from django.db.models import F, Q
+from django.db.models import Count, F, Q
 from django.urls import include, path
 from django.utils.translation import gettext_lazy as _
 
@@ -17,6 +17,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from rest_framework.views import APIView
 
 import common.models
 import common.settings
@@ -103,6 +104,36 @@ class GenerateSerialNumber(GenericAPIView):
         data = {'serial_number': generate_serial_number(**serializer.validated_data)}
 
         return Response(data, status=status.HTTP_201_CREATED)
+
+
+class StockSummaryView(APIView):
+    """Read-only stock summary endpoint for dashboard widgets."""
+
+    permission_classes = [Tracklet.permissions.IsAuthenticatedOrReadScope]
+
+    @extend_schema(responses={200: OpenApiTypes.OBJECT})
+    def get(self, request, *args, **kwargs):
+        """Return aggregated stock summary counts from the canonical availability field."""
+        queryset = StockItem.objects.all()
+
+        summary = queryset.aggregate(
+            total_stock_items=Count('pk'),
+            available_equipment=Count(
+                'pk', filter=Q(availability=StockItem.Availability.AVAILABLE)
+            ),
+            reserved_equipment=Count(
+                'pk', filter=Q(availability=StockItem.Availability.RESERVED)
+            ),
+            broken_items=Count('pk', filter=Q(availability=StockItem.Availability.BROKEN)),
+            missing_items=Count(
+                'pk', filter=Q(availability=StockItem.Availability.MISSING)
+            ),
+            out_of_service_items=Count(
+                'pk', filter=Q(availability=StockItem.Availability.UNAVAILABLE)
+            ),
+        )
+
+        return Response(summary)
 
 
 class StockItemContextMixin:
@@ -1999,6 +2030,7 @@ stock_api_urls = [
         {StatusView.MODEL_REF: StockStatus},
         name='api-stock-status-codes',
     ),
+    path('summary/', StockSummaryView.as_view(), name='api-stock-summary'),
     # Anything else
     path('', StockList.as_view(), name='api-stock-list'),
 ]

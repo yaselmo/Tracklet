@@ -1,2 +1,0 @@
-import{j as e,i as n,b4 as o}from"./index-BwcFHVoW.js";import{P as i}from"./ParameterTable-CBbFOqoi.js";import{ap as m}from"./featureFlags-C19xzCQM.js";function P({model_type:a,model_id:r,hidden:s,allowEdit:t=!0}){return{name:"parameters",label:n._({id:"F18WP3"}),icon:e.jsx(m,{}),hidden:s??!1,content:a&&r?e.jsx(i,{allowEdit:t,modelType:a,modelId:r}):e.jsx(o,{})}}export{P};
-//# sourceMappingURL=ParametersPanel-aPQ_c0Pm.js.map

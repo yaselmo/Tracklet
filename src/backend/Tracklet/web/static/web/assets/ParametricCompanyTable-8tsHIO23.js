@@ -1,0 +1,2 @@
+import{r as s,i as t,j as a,ap as n,bb as m}from"./index-BZqHtqHA.js";import{D as i,C as p}from"./ColumnRenderers-BOUXQrJk.js";import{P as c}from"./ParametricDataTable-Bo1emyqh.js";function b({queryParams:r}){const e=s.useMemo(()=>[{accessor:"name",title:t._({id:"7i8j3G"}),sortable:!0,switchable:!1,render:o=>a.jsx(p,{company:o})},i({})],[]);return a.jsx(c,{modelType:m.company,endpoint:n.company_list,customColumns:e,queryParams:{...r}})}export{b as P};
+//# sourceMappingURL=ParametricCompanyTable-8tsHIO23.js.map

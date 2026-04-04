@@ -1,0 +1,2 @@
+import{cN as i,r as s,i as e,j as a}from"./index-BZqHtqHA.js";import{E as u}from"./DesktopAppView-Czlq7DbA.js";import{aL as f}from"./featureFlags-CGUnnV-k.js";function m(t){i(()=>{typeof t=="string"&&t.trim().length>0&&(document.title=t.trim())},[t])}function E(){const t=f(),[r,o]=s.useState(e._({id:"SlfejT"}));return m(r),s.useEffect(()=>{t?.statusText&&o(e._({id:"TpqeIh",values:{0:t.statusText}}))},[t]),a.jsx(u,{title:r,message:e._({id:"MVDSZK"})})}export{E as default};
+//# sourceMappingURL=ErrorPage-B36OyQ8j.js.map
