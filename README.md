@@ -16,14 +16,6 @@ At its core, Tracklet uses the same proven architecture: a Python/Django backend
 
 Tracklet is based on InvenTree and includes significant custom improvements. Full credit for the original foundation goes to the InvenTree maintainers and contributors.
 
-## :compass: Roadmap
-
-Want to see what we’re working on?
-
-- Check the roadmap issues: `label:roadmap`
-- Follow upcoming work in the horizon milestone
-
-(Replace these with your Tracklet repo links once you publish them.)
 
 ## :hammer_and_wrench: Integration
 
