@@ -95,8 +95,8 @@ export default function Login() {
           <Wrapper
             titleText='Tracklet'
             smallPadding
-            logoSrc='/static/web/tracklet.svg'
-            logoHeight={340}
+            logoSrc='/static/web/tracklet-logo.png'
+            logoHeight={180}
             showTitle
             showDivider={false}
           >

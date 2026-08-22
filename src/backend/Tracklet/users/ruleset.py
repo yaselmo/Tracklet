@@ -116,6 +116,7 @@ def get_ruleset_models() -> dict:
         ],
         RuleSetEnum.STOCK_LOCATION: ['stock_stocklocation', 'stock_stocklocationtype'],
         RuleSetEnum.STOCK: [
+            'stock_stockcategory',
             'stock_stockitem',
             'stock_stockitemtracking',
             'stock_stockitemtestresult',
@@ -155,6 +156,8 @@ def get_ruleset_models() -> dict:
             'operations_eventtype',
             'operations_venue',
             'operations_planner',
+            'operations_furnitureitem',
+            'operations_eventfurnitureassignment',
             'operations_rentalorder',
             'operations_rentallineitem',
             'operations_rentalasset',

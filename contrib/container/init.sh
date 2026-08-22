@@ -65,9 +65,11 @@ if [[ "${INVENTREE_AUTO_UPDATE,,}" == "true" || "${INVENTREE_AUTO_UPDATE}" == "1
 fi
 
 if [[ "${should_auto_update}" == "true" ]]; then
-    if [[ "$1" == "invoke" && ( "$2" == "dev.server" || "$2" == "server" || "$2" == "gunicorn" ) ]]; then
-        echo "INVENTREE_AUTO_UPDATE enabled - running migrations before startup"
+    if [[ "$1" == "invoke" && ( "$2" == "dev.server" || "$2" == "server" || "$2" == "gunicorn" ) ]] || \
+       [[ "$1" == "sh" && "$2" == "-c" && "$3" == *"gunicorn"* ]]; then
+        echo "INVENTREE_AUTO_UPDATE enabled - running migrations and collecting static files before startup"
         invoke migrate
+        invoke static --skip-plugins
     fi
 fi
 

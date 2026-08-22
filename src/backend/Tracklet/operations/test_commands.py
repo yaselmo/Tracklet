@@ -1,14 +1,24 @@
 """Management command tests for operations app."""
 
+import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import mock
 
+from django.contrib.auth.models import User
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase
 
+from operations.models import (
+    Event,
+    EventFurnitureAssignment,
+    RentalLineItem,
+    RentalOrder,
+)
 from part.models import Part, PartCategory
-from stock.models import StockItem, StockLocation
+from stock.models import StockCategory, StockItem, StockLocation
+from users.models import RuleSet
 
 
 class ImportRentalPdfCommandTests(TestCase):
@@ -172,3 +182,69 @@ class ImportRentalPdfCommandTests(TestCase):
         self.assertEqual(Part.objects.filter(IPN='LEGACY-1').count(), 0)
         self.assertEqual(Part.objects.filter(IPN__isnull=True).count(), 0)
         self.assertEqual(Part.objects.filter(IPN='RENTAL-3001').count(), 1)
+
+
+class SeedDemoCommandTests(TestCase):
+    """Verify that the fictional portfolio seed is safe and repeatable."""
+
+    def run_seed(self, *, reset=False):
+        """Run the demo command with a disposable test password."""
+        with mock.patch.dict(
+            os.environ, {'TRACKLET_DEMO_PASSWORD': 'not-a-real-password'}
+        ):
+            call_command('seed_demo', reset=reset, verbosity=0)
+
+    def assert_demo_counts(self):
+        """Assert the stable public-demo object counts."""
+        self.assertEqual(
+            StockItem.objects.filter(serial__startswith='DEMO-').count(), 32
+        )
+        self.assertEqual(
+            StockCategory.objects.filter(metadata__tracklet_demo=True).count(), 10
+        )
+        self.assertEqual(
+            StockLocation.objects.filter(metadata__tracklet_demo=True).count(), 10
+        )
+        self.assertEqual(
+            Event.objects.filter(reference__startswith='DEMO-EV-').count(), 8
+        )
+        self.assertEqual(
+            EventFurnitureAssignment.objects.filter(
+                event__reference__startswith='DEMO-EV-'
+            ).count(),
+            12,
+        )
+        self.assertEqual(
+            RentalOrder.objects.filter(reference__startswith='DEMO-RN-').count(), 4
+        )
+        self.assertEqual(
+            RentalLineItem.objects.filter(
+                order__reference__startswith='DEMO-RN-'
+            ).count(),
+            8,
+        )
+
+    def test_seed_is_idempotent_and_resettable(self):
+        """Repeated and reset runs preserve exact demo object counts."""
+        self.run_seed()
+        self.run_seed()
+        self.assert_demo_counts()
+
+        self.run_seed(reset=True)
+        self.assert_demo_counts()
+
+        user = User.objects.get(username='demo')
+        self.assertFalse(user.is_staff)
+        self.assertFalse(user.is_superuser)
+        self.assertEqual(user.groups.count(), 1)
+
+        for ruleset in RuleSet.objects.filter(group=user.groups.get()):
+            self.assertFalse(ruleset.can_add)
+            self.assertFalse(ruleset.can_change)
+            self.assertFalse(ruleset.can_delete)
+
+    def test_seed_requires_password_environment_variable(self):
+        """The demo password must never be embedded in source."""
+        with mock.patch.dict(os.environ, {}, clear=True):
+            with self.assertRaises(CommandError):
+                call_command('seed_demo', verbosity=0)

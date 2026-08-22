@@ -72,6 +72,7 @@ paths_own_security = [
     '/anymail/',  # Mails - webhooks etc
     '/accounts/',  # allauth account management - has its own auth model
     '/assets/',  # Web assets - only used for testing, no security model needed
+    '/favicon.ico',  # Public redirect to the application favicon
     ensure_slashes(
         settings.STATIC_URL
     ),  # Static files  - static files are considered safe to serve

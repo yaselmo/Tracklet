@@ -36,6 +36,10 @@ class MiddlewareTests(InvenTreeTestCase):
         # check that account things are rereouted
         self.check_path(reverse('account_login'), 302)
 
+        # Public favicon requests must reach the static asset redirect
+        response = self.check_path('/favicon.ico', 302)
+        self.assertEqual(response.url, f'{settings.STATIC_URL}img/favicon/favicon.ico')
+
         # check that frontend code is redirected to login
         response = self.check_path(reverse('index'), 302)
         self.assertEqual(response.url, '/accounts/login/?next=/')

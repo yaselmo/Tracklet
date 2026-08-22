@@ -149,6 +149,17 @@ ENV PATH=/root/.local/bin:$PATH
 COPY --from=builder_stage ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web
 COPY --from=builder_stage /root/.local /root/.local
 
+# Package the canonical Tracklet demo branding alongside the compiled frontend.
+COPY assets/images/logo/Tracklet.png \
+     ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web/tracklet-logo.png
+COPY assets/images/login/background.png \
+     ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web/tracklet-login-background.png
+
+# Rebuild the complete favicon set from the same canonical Tracklet logo.
+RUN python ${INVENTREE_BACKEND_DIR}/Tracklet/script/generate_favicons.py \
+    --source ${INVENTREE_BACKEND_DIR}/Tracklet/web/static/web/tracklet-logo.png \
+    --output-dir ${INVENTREE_BACKEND_DIR}/Tracklet/Tracklet/static/img/favicon
+
 # Launch the production server
 CMD ["sh", "-c", "exec gunicorn -c ./gunicorn.conf.py Tracklet.wsgi -b ${INVENTREE_WEB_ADDR}:${INVENTREE_WEB_PORT} --chdir ${INVENTREE_BACKEND_DIR}/Tracklet"]
 
