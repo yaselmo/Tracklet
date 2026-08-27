@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import uuid
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -74,8 +75,12 @@ STOCK_ITEM_IMAGE_DIR = 'stock_images'
 def rename_stock_item_image(instance, filename):
     """Return the upload path for a stock item image."""
     fname = os.path.basename(filename)
+    extension = os.path.splitext(fname)[1].lower()
 
-    return os.path.join(STOCK_ITEM_IMAGE_DIR, fname)
+    # Give every upload a new URL. This prevents a repeated client filename
+    # from overwriting another stock item's image or being served from a stale
+    # browser cache after an image replacement.
+    return os.path.join(STOCK_ITEM_IMAGE_DIR, f'{uuid.uuid4().hex}{extension}')
 
 
 def get_stock_item_image_directory():

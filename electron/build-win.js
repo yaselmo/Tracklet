@@ -302,4 +302,5 @@ console.log(`[tracklet-electron] Using Electron Builder cache: ${cacheDir}`);
 cleanBrokenNsisCache();
 
 run('npm', ['run', 'build:frontend']);
+run('node', ['prepare-runtime.js']);
 runBuilder();

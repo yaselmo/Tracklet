@@ -78,7 +78,7 @@ export function useSupplierPartFields({
   }, [manufacturerId, manufacturerPartId, partId]);
 }
 
-export function useManufacturerPartFields() {
+export function useManufacturerPartFields({ includeMPN = true } = {}) {
   return useMemo(() => {
     const fields: ApiFormFieldSet = {
       part: {},
@@ -88,13 +88,16 @@ export function useManufacturerPartFields() {
           is_manufacturer: true
         }
       },
-      MPN: {},
       description: {},
       link: {}
     };
 
+    if (includeMPN) {
+      fields.MPN = {};
+    }
+
     return fields;
-  }, []);
+  }, [includeMPN]);
 }
 
 /**

@@ -280,8 +280,8 @@ export default function CategoryDetail() {
     defaultValue: 'table'
   });
 
-  const panels: PanelType[] = useMemo(
-    () => [
+  const panels: PanelType[] = useMemo(() => {
+    const categoryDetailPanels = [
       {
         name: 'details',
         label: t`Category Details`,
@@ -345,9 +345,17 @@ export default function CategoryDetail() {
         hidden: !id || !category.pk,
         content: <PartCategoryTemplateTable categoryId={category?.pk} />
       }
-    ],
-    [category, id, partsView]
-  );
+    ];
+
+    if (!id) {
+      return categoryDetailPanels;
+    }
+
+    return categoryDetailPanels.filter(
+      (panel) =>
+        !['parts', 'stockitem', 'category_parameters'].includes(panel.name)
+    );
+  }, [category, id, partsView]);
 
   const breadcrumbs = useMemo(
     () => [

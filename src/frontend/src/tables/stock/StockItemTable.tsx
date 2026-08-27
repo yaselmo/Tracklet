@@ -143,12 +143,6 @@ function stockItemTableColumns({
       defaultVisible: false
     },
     {
-      accessor: 'MPN',
-      title: t`Manufacturer Part`,
-      sortable: true,
-      defaultVisible: false
-    },
-    {
       accessor: 'purchase_price',
       title: t`Unit Price`,
       sortable: true,

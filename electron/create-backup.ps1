@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory = $true)]
-  [string]$BackendDir
+  [string]$BackendDir,
+  [string]$PythonPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -46,10 +47,14 @@ if (-not $managePy) {
 }
 
 $projectRoot = Resolve-ProjectRoot -ManagePyPath $managePy
-$pythonCandidates = @(
-  (Join-Path $projectRoot 'env\Scripts\python.exe'),
-  (Join-Path (Split-Path $projectRoot -Parent) 'env\Scripts\python.exe')
-)
+$pythonCandidates = if ($PythonPath) {
+  @($PythonPath)
+} else {
+  @(
+    (Join-Path $projectRoot 'env\Scripts\python.exe'),
+    (Join-Path (Split-Path $projectRoot -Parent) 'env\Scripts\python.exe')
+  )
+}
 $python = $pythonCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if (-not $python) {

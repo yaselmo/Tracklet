@@ -12,7 +12,7 @@ import {
   useDocumentVisibility,
   useHotkeys
 } from '@mantine/hooks';
-import { IconBell, IconSearch } from '@tabler/icons-react';
+import { IconBell, IconInfoCircle, IconSearch } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
 import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { useMatch, useNavigate } from 'react-router-dom';
@@ -24,7 +24,7 @@ import { t } from '@lingui/core/macro';
 import { useShallow } from 'zustand/react/shallow';
 import { api } from '../../App';
 import type { NavigationUIFeature } from '../../components/plugins/PluginUIFeatureTypes';
-import { getNavTabs } from '../../defaults/links';
+import { aboutTracklet, getNavTabs } from '../../defaults/links';
 import { usePluginUIFeature } from '../../hooks/UsePluginUIFeature';
 import * as classes from '../../main.css';
 import { useLocalState } from '../../states/LocalState';
@@ -36,7 +36,6 @@ import {
 import { useUserState } from '../../states/UserState';
 import { ScanButton } from '../buttons/ScanButton';
 import { SpotlightButton } from '../buttons/SpotlightButton';
-import { Alerts } from './Alerts';
 import { MainMenu } from './MainMenu';
 import { NavHoverMenu } from './NavHoverMenu';
 import { NavigationDrawer } from './NavigationDrawer';
@@ -192,12 +191,22 @@ export function Header() {
                   onClick={openNotificationDrawer}
                   variant='transparent'
                   aria-label='open-notifications'
+                  color='blue'
                 >
                   <IconBell />
                 </ActionIcon>
               </Tooltip>
             </Indicator>
-            <Alerts />
+            <Tooltip position='bottom-end' label={t`About`}>
+              <ActionIcon
+                onClick={() => aboutTracklet()}
+                variant='transparent'
+                aria-label='open-about'
+                color='orange'
+              >
+                <IconInfoCircle />
+              </ActionIcon>
+            </Tooltip>
             <MainMenu />
           </Group>
         </Group>

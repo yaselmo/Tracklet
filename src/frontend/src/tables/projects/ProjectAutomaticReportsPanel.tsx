@@ -11,7 +11,8 @@ import {
   TextInput
 } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { IconFilePlus, IconPlus, IconTrash } from '@tabler/icons-react';
+import { IconFileTypePdf, IconPlus, IconTrash } from '@tabler/icons-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 
 import { ActionButton } from '@lib/components/ActionButton';
@@ -19,8 +20,6 @@ import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
 import { apiUrl } from '@lib/functions/Api';
 import { useApi } from '../../contexts/ApiContext';
 import { showApiErrorMessage } from '../../functions/notifications';
-import { useTable } from '../../hooks/UseTable';
-import { TrackletTable } from '../TrackletTable';
 
 type ManualReportItem = {
   part_name: string;
@@ -50,46 +49,13 @@ export default function ProjectAutomaticReportsPanel({
   onReportCreated?: () => void;
 }>) {
   const api = useApi();
-  const table = useTable(`project-automatic-reports-${projectId}`);
+  const queryClient = useQueryClient();
 
   const [opened, setOpened] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reportType, setReportType] = useState('BROKEN');
   const [title, setTitle] = useState('');
   const [items, setItems] = useState<ManualReportItem[]>([{ ...EMPTY_ITEM }]);
-
-  const columns = useMemo(() => {
-    return [
-      {
-        accessor: 'created',
-        title: t`Created`,
-        sortable: true
-      },
-      {
-        accessor: 'report_type',
-        title: t`Type`,
-        sortable: true
-      },
-      {
-        accessor: 'item_count',
-        title: t`Items`,
-        sortable: true
-      },
-      {
-        accessor: 'attachment_filename',
-        title: t`PDF`,
-        sortable: false,
-        render: (record: any) =>
-          record.attachment_url ? (
-            <a href={record.attachment_url} target='_blank' rel='noreferrer'>
-              {record.attachment_filename || t`Download`}
-            </a>
-          ) : (
-            '-'
-          )
-      }
-    ];
-  }, []);
 
   const resetForm = useCallback(() => {
     setReportType('BROKEN');
@@ -107,7 +73,9 @@ export default function ProjectAutomaticReportsPanel({
       !reportType ||
       !title.trim() ||
       items.length <= 0 ||
-      items.some((item) => !item.part_name.trim() || Number(item.quantity || 0) <= 0)
+      items.some(
+        (item) => !item.part_name.trim() || Number(item.quantity || 0) <= 0
+      )
     ) {
       showNotification({
         title: t`Missing required fields`,
@@ -129,7 +97,7 @@ export default function ProjectAutomaticReportsPanel({
             quantity: Number(item.quantity || 1),
             notes: item.notes || ''
           })),
-          location: projectLocation || null,
+          location: projectLocation || null
         }
       );
 
@@ -147,7 +115,9 @@ export default function ProjectAutomaticReportsPanel({
       });
 
       setOpened(false);
-      table.refreshTable();
+      await queryClient.invalidateQueries({
+        queryKey: ['tabledata', apiUrl(ApiEndpoints.attachment_list)]
+      });
       onReportCreated?.();
     } catch (error) {
       showApiErrorMessage({
@@ -164,7 +134,7 @@ export default function ProjectAutomaticReportsPanel({
     title,
     items,
     projectLocation,
-    table,
+    queryClient,
     onReportCreated
   ]);
 
@@ -235,7 +205,8 @@ export default function ProjectAutomaticReportsPanel({
                     onChange={(event) => {
                       const next = [...items];
                       const parsed = Number(event.currentTarget.value);
-                      next[index].quantity = Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+                      next[index].quantity =
+                        Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
                       setItems(next);
                     }}
                     required
@@ -247,7 +218,9 @@ export default function ProjectAutomaticReportsPanel({
                       if (items.length <= 1) {
                         return;
                       }
-                      setItems(items.filter((_, itemIndex) => itemIndex !== index));
+                      setItems(
+                        items.filter((_, itemIndex) => itemIndex !== index)
+                      );
                     }}
                     disabled={items.length <= 1}
                     mb={4}
@@ -284,34 +257,22 @@ export default function ProjectAutomaticReportsPanel({
             >
               {t`Add Row`}
             </Button>
-            <Button onClick={submitReport} loading={submitting} disabled={!canGenerate}>
+            <Button
+              onClick={submitReport}
+              loading={submitting}
+              disabled={!canGenerate}
+            >
               {t`Generate PDF`}
             </Button>
           </Group>
         </Stack>
       </Modal>
-      <Text fw={600}>{t`Automatic Reports`}</Text>
-      <TrackletTable
-        url={apiUrl(ApiEndpoints.project_reports, projectId)}
-        tableState={table}
-        columns={columns}
-        props={{
-          enableSelection: false,
-          enablePagination: false,
-          enableSearch: false,
-          enableFilters: false,
-          enableDownload: false,
-          noRecordsText: t`No automatic reports generated`,
-          tableActions: [
-            <ActionButton
-              key='add-broken-report'
-              tooltip={t`New Broken Report`}
-              onClick={openModal}
-              hidden={!!readOnly}
-              icon={<IconFilePlus />}
-            />
-          ]
-        }}
+      <ActionButton
+        key='generate-project-report'
+        tooltip={t`Generate Report`}
+        onClick={openModal}
+        hidden={!!readOnly}
+        icon={<IconFileTypePdf />}
       />
     </>
   );

@@ -3,8 +3,11 @@
 from datetime import date, timedelta
 from decimal import Decimal
 from importlib import import_module
+from unittest import mock
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.apps import apps as django_apps
+from django.db.utils import IntegrityError
 from django.urls import reverse
 
 from Tracklet.unit_test import InvenTreeAPITestCase
@@ -16,6 +19,7 @@ from stock.status_codes import StockStatus
 from .models import (
     Project,
     ProjectInstrument,
+    ProjectInstrumentReleaseStatus,
     ProjectReport,
     ProjectStatus,
     ProjectStockAllocation,
@@ -138,6 +142,55 @@ class ProjectApiTests(InvenTreeAPITestCase):
         instrument = ProjectInstrument.objects.get(pk=response.data['pk'])
         self.assertEqual(instrument.project, project)
         self.assertEqual(instrument.stock_item, item)
+        self.assertEqual(
+            instrument.release_status, ProjectInstrumentReleaseStatus.PENDING
+        )
+
+    def test_add_instrument_returns_validation_error_on_integrity_failure(self):
+        """Instrument create should return 400 instead of surfacing a raw DB error."""
+        self.assignRole('project.add')
+
+        project = Project.objects.create(name='Instrument Create Error Project')
+        item = self._make_stock_item(quantity=4)
+
+        url = reverse('api-project-instrument-list-by-project', kwargs={'pk': project.pk})
+
+        with mock.patch(
+            'projects.api.ProjectInstrumentList.perform_create',
+            side_effect=IntegrityError('NOT NULL constraint failed'),
+        ):
+            response = self.post(
+                url,
+                {'stock_item': item.pk, 'quantity': '1.0'},
+                expected_code=400,
+            )
+
+        self.assertIn('non_field_errors', response.data)
+
+    def test_add_instrument_returns_validation_error_on_model_validation_failure(self):
+        """Instrument create should map model validation errors to a 400 response."""
+        self.assignRole('project.add')
+
+        project = Project.objects.create(name='Instrument Validation Error Project')
+        item = self._make_stock_item(quantity=4)
+
+        url = reverse('api-project-instrument-list-by-project', kwargs={'pk': project.pk})
+
+        with mock.patch(
+            'projects.api.ProjectInstrumentList.perform_create',
+            side_effect=DjangoValidationError(
+                {'quantity': ['Instrument quantity must be greater than zero']}
+            ),
+        ):
+            response = self.post(
+                url,
+                {'stock_item': item.pk, 'quantity': '1.0'},
+                expected_code=400,
+            )
+
+        self.assertEqual(
+            response.data['quantity'][0], 'Instrument quantity must be greater than zero'
+        )
 
     def test_prevent_duplicate_instrument(self):
         """Prevent duplicate stock item instrument rows for same project."""
@@ -1021,6 +1074,18 @@ class ProjectApiTests(InvenTreeAPITestCase):
         self.assertEqual(report.attachment.model_type, 'project')
         self.assertEqual(report.attachment.model_id, project.pk)
         self.assertTrue(Attachment.objects.filter(pk=report.attachment.pk).exists())
+
+        attachment_url = reverse(
+            'api-attachment-detail', kwargs={'pk': report.attachment.pk}
+        )
+        attachment_response = self.get(attachment_url, expected_code=200)
+        self.assertEqual(
+            attachment_response.data['report_type'], 'BROKEN_INVENTORY'
+        )
+        self.assertEqual(
+            attachment_response.data['report_type_label'], 'Broken Inventory'
+        )
+        self.assertEqual(attachment_response.data['report_item_count'], 1)
 
     def test_create_broken_report_manual_form_payload(self):
         """Manual payload (no instruments/items) generates a single report row."""

@@ -727,7 +727,9 @@ class AttachmentFilter(FilterSet):
 class AttachmentMixin:
     """Mixin class for Attachment views."""
 
-    queryset = common.models.Attachment.objects.all()
+    queryset = common.models.Attachment.objects.prefetch_related(
+        'project_reports__items'
+    )
     serializer_class = common.serializers.AttachmentSerializer
     permission_classes = [IsAuthenticatedOrReadScope]
 

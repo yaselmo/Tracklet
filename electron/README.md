@@ -1,8 +1,6 @@
 # Tracklet Electron Wrapper
 
-This folder contains an optional Electron shell for running Tracklet as a desktop app without replacing the existing web application.
-
-The packaged desktop app currently targets an external Tracklet backend. It does not bundle the Django backend or database into the installer.
+This folder contains the Electron shell for Tracklet Desktop. Development still uses the repository’s Django and Vite processes; the packaged Windows app bundles its own portable Python runtime, Django backend, and production frontend.
 
 ## Development
 
@@ -51,6 +49,8 @@ Packaged desktop origin:
 - This port is configured in `electron/desktopServer.js`
 - Override it only with `ELECTRON_DESKTOP_PORT` if you also update Django trusted origins to match
 
+The packaged app does not use Vite or port `5173`; that port is development-only.
+
 ## Windows Installer
 
 Generate the Windows installer from the `electron` folder:
@@ -71,8 +71,11 @@ This command:
 
 1. Extracts and compiles Lingui translations so packaged widgets use real labels
 2. Builds the production frontend into `src/backend/Tracklet/web/static/web`
-3. Packages the Electron app
-4. Produces an NSIS Windows installer `.exe`
+3. Stages a relocatable Python 3.11 x64 runtime from the build machine’s base Python installation (not its virtual-environment launcher), copies the runtime dependency closure, and copies the Django backend source
+4. Packages the Electron app
+5. Produces an NSIS Windows installer `.exe`
+
+The build machine must have the existing Tracklet development environment and Python 3.11 x64 available. Set `TRACKLET_BUILD_PYTHON` to an explicit interpreter path if the environment is not at `env\Scripts\python.exe`. These are build-time requirements only; an installed user needs only the installer.
 
 Installer output folder:
 
@@ -96,28 +99,22 @@ Installed app behavior:
 
 - Uses the packaged production frontend assets
 - Starts a small internal local server to serve the UI and proxy `/api` and `/auth`
-- Tries to reach a local Tracklet backend at `http://127.0.0.1:8000`
-- If the backend is not already running, Tracklet.exe can start it automatically in the background using a configured backend folder
-- Can be pointed at a different backend by setting `ELECTRON_API_URL` before launch
+- Starts the bundled Django backend with the private Python runtime at `http://127.0.0.1:8000` when no healthy Tracklet backend is already serving that address
+- Runs first-use database initialization and only performs migration work when pending migrations are detected
+- Never asks the user to locate a backend folder in packaged mode
+- Uses the bundled backend for the packaged Create Superuser and backup helpers
 - Uses the green Tracklet image for the desktop window icon, and the packaging script generates a Windows `.ico` from that same Tracklet image for the app executable and installer
-- Shows a desktop-only `Create Superuser` helper on the login screen that launches Django `createsuperuser` against your existing backend checkout
+- Shows a desktop-only `Create Superuser` helper on the login screen that launches Django `createsuperuser` against the bundled backend
 - Stores Electron user data outside the install folder. On Windows the default path is `%LOCALAPPDATA%\\TrackletDesktop\\electron`
 - The NSIS uninstaller is configured to preserve that Electron data directory by default
 
-Backend auto-start notes:
-
-- The first time Tracklet.exe cannot reach the backend, it prompts for the Tracklet project root or backend folder containing `src/backend/Tracklet/manage.py`
-- That choice is saved in `%LOCALAPPDATA%\\TrackletDesktop\\electron\\backend-config.json`
-- Future launches reuse that saved folder and start the backend automatically in the background before the UI connects
-- If the backend is already running, Tracklet.exe leaves it alone
+Bundled runtime files are installed under the application’s `resources\runtime` directory. They contain no machine-specific source paths. Runtime diagnostics are written to `%LOCALAPPDATA%\\TrackletDesktop\\logs\\backend-startup.log` without recording secrets.
 
 After installation, launch Tracklet from the Start Menu or desktop shortcut created by the installer.
 
 ## Persistent Desktop Data
 
-The Electron wrapper does not bundle the Django backend, so Tracklet business data is owned by the backend configuration, not by the installer itself.
-
-When you launch the backend with the Windows scripts in `contrib/windows`, Tracklet now defaults to a persistent Windows data root:
+The installer never stores the business database or media inside the install directory. The bundled backend is pointed at the persistent desktop root:
 
 ```text
 %LOCALAPPDATA%\TrackletDesktop
@@ -141,7 +138,7 @@ That means:
 - Uploaded images and attachments survive updates because they live in `data\media`
 - Uninstalling the Electron shell does not remove the Tracklet backend data folders unless you delete them yourself
 
-If you want a different persistent location, set `INVENTREE_DESKTOP_DATA_DIR` before starting the backend, or set explicit Tracklet config values for database, media, backup, and log paths.
+The packaged app uses this root by default. The standalone Windows development scripts continue to support `INVENTREE_DESKTOP_DATA_DIR` overrides for development and migration work.
 
 ## Backup And Restore
 
@@ -163,8 +160,7 @@ These commands use the configured backup directory, which defaults to:
 %LOCALAPPDATA%\TrackletDesktop\backups
 ```
 
-## What Still Needs To Happen For A Full Desktop Build
+## Remaining distribution work
 
-- Bundle and manage a local Tracklet backend if standalone offline installation is required
-- Add a user-facing settings screen for choosing the backend URL after install
-- Add app signing, updates, and platform-specific distribution settings
+- Code-sign the installer and application binaries before public distribution
+- Add an update channel if automatic upgrades are required

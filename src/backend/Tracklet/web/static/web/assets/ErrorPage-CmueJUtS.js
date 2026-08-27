@@ -1,0 +1,2 @@
+import{cA as i,r as s,ac as e,j as a}from"./index--0jb4biY.js";import{E as u}from"./GenericErrorPage-trI9ewVA.js";import{D as f}from"./moduleFlags-BLRbaFFt.js";import"./IconArrowBack-RCSErHAU.js";function m(t){i(()=>{typeof t=="string"&&t.trim().length>0&&(document.title=t.trim())},[t])}function x(){const t=f(),[r,o]=s.useState(e._({id:"SlfejT"}));return m(r),s.useEffect(()=>{t?.statusText&&o(e._({id:"TpqeIh",values:{0:t.statusText}}))},[t]),a.jsx(u,{title:r,message:e._({id:"MVDSZK"})})}export{x as default};
+//# sourceMappingURL=ErrorPage-CmueJUtS.js.map

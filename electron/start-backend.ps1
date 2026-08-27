@@ -55,30 +55,39 @@ if (-not $managePy) {
 }
 
 $projectRoot = Resolve-ProjectRoot -ManagePyPath $managePy
+
 $pythonCandidates = @(
   (Join-Path $projectRoot 'env\Scripts\python.exe'),
   (Join-Path (Split-Path $projectRoot -Parent) 'env\Scripts\python.exe')
 )
-$python = $pythonCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+$python = $pythonCandidates |
+  Where-Object { Test-Path $_ } |
+  Select-Object -First 1
 
 if (-not $python) {
   throw "Python virtual environment not found in expected locations: $($pythonCandidates -join ', ')"
 }
 
+# ---------------------------------------------------------
+# Desktop environment
+# ---------------------------------------------------------
+
 if (-not $env:INVENTREE_DESKTOP_MODE) {
   $env:INVENTREE_DESKTOP_MODE = '1'
 }
 
-if (-not $env:INVENTREE_DEBUG) {
-  $env:INVENTREE_DEBUG = '1'
-}
+$env:INVENTREE_DEBUG = '0'
 
 if (-not $env:INVENTREE_DESKTOP_DATA_DIR) {
+
   $desktopRoot = if ($env:LOCALAPPDATA) {
     Join-Path $env:LOCALAPPDATA 'TrackletDesktop'
-  } elseif ($env:APPDATA) {
+  }
+  elseif ($env:APPDATA) {
     Join-Path $env:APPDATA 'TrackletDesktop'
-  } else {
+  }
+  else {
     Join-Path $projectRoot 'runtime-data'
   }
 
@@ -91,36 +100,125 @@ Write-Step "managePy=$managePy"
 Write-Step "python=$python"
 Write-Step "address=$Address"
 Write-Step "cwd=$projectRoot"
+Write-Step "env.INVENTREE_DESKTOP_MODE=$env:INVENTREE_DESKTOP_MODE"
+Write-Step "env.INVENTREE_DEBUG=$env:INVENTREE_DEBUG"
+Write-Step "env.INVENTREE_DESKTOP_DATA_DIR=$env:INVENTREE_DESKTOP_DATA_DIR"
 
 Push-Location $projectRoot
 
 try {
-  if ($env:INVENTREE_DESKTOP_MODE -eq '1') {
-    Write-Step "command=$python $managePy runmigrations"
-    & $python $managePy runmigrations
-    $runMigrationsExit = $LASTEXITCODE
-    Write-Step "exitCode(runmigrations)=$runMigrationsExit"
 
-    if ($runMigrationsExit -ne 0) {
-      exit $runMigrationsExit
+  # =======================================================
+  # MIGRATION CHECK
+  #
+  # Old behaviour:
+  #   runmigrations
+  #   migrate --run-syncdb
+  #
+  # on EVERY launch.
+  #
+  # New behaviour:
+  #   Check whether Django actually has unapplied migrations.
+  #   Only perform migration work when required.
+  # =======================================================
+
+  if ($env:INVENTREE_DESKTOP_MODE -eq '1') {
+
+    Write-Step 'stage=migrationCheck.before'
+
+    $migrationOutput = & $python $managePy showmigrations --plan 2>&1
+    $migrationCheckExit = $LASTEXITCODE
+
+    if ($migrationOutput) {
+      $migrationOutput | ForEach-Object {
+        Write-Output $_
+      }
     }
 
-    Write-Step "command=$python $managePy migrate --run-syncdb --noinput"
-    & $python $managePy migrate --run-syncdb --noinput
-    $migrateExit = $LASTEXITCODE
-    Write-Step "exitCode(migrate)=$migrateExit"
+    Write-Step "exitCode(migrationCheck)=$migrationCheckExit"
 
-    if ($migrateExit -ne 0) {
-      exit $migrateExit
+    if ($migrationCheckExit -ne 0) {
+      Write-Step 'migration check failed'
+      exit $migrationCheckExit
+    }
+
+    # Django marks unapplied migrations with:
+    #
+    # [ ] app.0001_initial
+    #
+    $pendingMigrations = @(
+      $migrationOutput |
+        Where-Object {
+          $_.ToString() -match '^\s*\[\s\]\s+'
+        }
+    )
+
+    $migrationsNeeded = $pendingMigrations.Count -gt 0
+
+    Write-Step "migrationsNeeded=$($migrationsNeeded.ToString().ToLowerInvariant())"
+    Write-Step 'stage=migrationCheck.after'
+
+    if ($migrationsNeeded) {
+
+      Write-Step "pendingMigrationCount=$($pendingMigrations.Count)"
+
+      # Keep the existing migration behaviour when an upgrade
+      # actually requires database changes.
+
+      Write-Step 'stage=runmigrations.before'
+      Write-Step "command=$python $managePy runmigrations"
+
+      & $python $managePy runmigrations
+
+      $runMigrationsExit = $LASTEXITCODE
+
+      Write-Step "exitCode(runmigrations)=$runMigrationsExit"
+      Write-Step 'stage=runmigrations.after'
+
+      if ($runMigrationsExit -ne 0) {
+        exit $runMigrationsExit
+      }
+
+      Write-Step 'stage=migrate.before'
+      Write-Step "command=$python $managePy migrate --run-syncdb --noinput"
+
+      & $python $managePy migrate --run-syncdb --noinput
+
+      $migrateExit = $LASTEXITCODE
+
+      Write-Step "exitCode(migrate)=$migrateExit"
+      Write-Step 'stage=migrate.after'
+
+      if ($migrateExit -ne 0) {
+        exit $migrateExit
+      }
+
+    }
+    else {
+
+      Write-Step 'database is current - skipping migration work'
+
     }
   }
 
-  Write-Step "command=$python -m invoke dev.server -a $Address"
-  & $python -m invoke dev.server -a $Address
+  # =======================================================
+  # START DJANGO
+  # =======================================================
+
+  Write-Step 'stage=backend.start'
+  Write-Step "command=$python $managePy runserver $Address --noreload"
+
+  & $python $managePy runserver $Address --noreload
+
   $serverExit = $LASTEXITCODE
-  Write-Step "exitCode(dev.server)=$serverExit"
+
+  Write-Step "exitCode(runserver)=$serverExit"
+  Write-Step 'stage=backend.stop'
+
   exit $serverExit
 }
 finally {
+
   Pop-Location
+
 }

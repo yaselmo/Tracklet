@@ -1,7 +1,6 @@
 import { ActionIcon } from '@mantine/core';
 import { forwardRef } from 'react';
 import { NavLink } from 'react-router-dom';
-import trackletLogo from '../../assets/tracklet.svg';
 
 export const TrackletLogoHomeButton = forwardRef<HTMLDivElement>(
   (props, ref) => {
@@ -20,9 +19,9 @@ export const TrackletLogoHomeButton = forwardRef<HTMLDivElement>(
 export const TrackletLogo = () => {
   return (
     <img
-      src={trackletLogo}
+      src='/tracklet.png'
       alt='Tracklet'
-      style={{ height: 28, width: 28, borderRadius: 8 }}
+      style={{ height: 28, width: 28, borderRadius: 8, objectFit: 'contain' }}
     />
   );
 };

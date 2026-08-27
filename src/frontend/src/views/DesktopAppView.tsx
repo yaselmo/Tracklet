@@ -24,10 +24,6 @@ export default function DesktopAppView() {
       <ThemeContext>
         <BrowserRouter
           basename={getBaseUrl()}
-          future={{
-            v7_startTransition: true,
-            v7_relativeSplatPath: true
-          }}
         >
           {routes}
         </BrowserRouter>

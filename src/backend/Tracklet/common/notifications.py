@@ -109,7 +109,9 @@ def trigger_notification(obj: Model, category: str = '', obj_ref: str = 'pk', **
     # Resolve object reference
     refs = [obj_ref, 'pk', 'id', 'uid']
 
-    obj_ref_value = None
+    # System-level notifications may not reference a specific model instance.
+    # NotificationEntry.uid is required, so use a stable sentinel value.
+    obj_ref_value = 0
 
     # Find the first reference that is available
     if obj:

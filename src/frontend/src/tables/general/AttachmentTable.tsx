@@ -20,7 +20,7 @@ import {
   RowEditAction
 } from '@lib/components/RowActions';
 import { ApiEndpoints } from '@lib/enums/ApiEndpoints';
-import type { ModelType } from '@lib/enums/ModelType';
+import { ModelType } from '@lib/enums/ModelType';
 import { apiUrl } from '@lib/functions/Api';
 import type { TableFilter } from '@lib/types/Filters';
 import type { ApiFormFieldSet } from '@lib/types/Forms';
@@ -40,10 +40,11 @@ import { TrackletTable } from '../TrackletTable';
 /**
  * Define set of columns to display for the attachment table
  */
-function attachmentTableColumns(): TableColumn[] {
-  return [
+function attachmentTableColumns(showReportInformation: boolean): TableColumn[] {
+  const columns: TableColumn[] = [
     {
       accessor: 'attachment',
+      title: t`Attachment`,
       sortable: false,
       switchable: false,
       noWrap: true,
@@ -60,6 +61,7 @@ function attachmentTableColumns(): TableColumn[] {
     },
     {
       accessor: 'comment',
+      title: t`Comment`,
       sortable: false,
 
       render: (record: any) => {
@@ -68,6 +70,7 @@ function attachmentTableColumns(): TableColumn[] {
     },
     {
       accessor: 'upload_date',
+      title: t`Upload date`,
       sortable: true,
 
       render: (record: any) => {
@@ -83,6 +86,7 @@ function attachmentTableColumns(): TableColumn[] {
     },
     {
       accessor: 'file_size',
+      title: t`File size`,
       sortable: true,
       switchable: true,
       render: (record: any) => {
@@ -94,6 +98,24 @@ function attachmentTableColumns(): TableColumn[] {
       }
     }
   ];
+
+  if (showReportInformation) {
+    columns.splice(1, 0, {
+      accessor: 'report_type_label',
+      title: t`Type`,
+      sortable: false,
+      render: (record: any) => record.report_type_label || t`Attachment`
+    });
+    columns.splice(3, 0, {
+      accessor: 'report_item_count',
+      title: t`Items`,
+      sortable: false,
+      textAlign: 'right',
+      render: (record: any) => record.report_item_count ?? '—'
+    });
+  }
+
+  return columns;
 }
 
 function UploadProgress({
@@ -116,16 +138,21 @@ function UploadProgress({
  */
 export function AttachmentTable({
   model_type,
-  model_id
+  model_id,
+  additionalActions = []
 }: Readonly<{
   model_type: ModelType;
   model_id: number;
+  additionalActions?: ReactNode[];
 }>): ReactNode {
   const api = useApi();
   const user = useUserState();
   const table = useTable(`${model_type}-attachments`);
 
-  const tableColumns = useMemo(() => attachmentTableColumns(), []);
+  const tableColumns = useMemo(
+    () => attachmentTableColumns(model_type === ModelType.project),
+    [model_type]
+  );
 
   const url = apiUrl(ApiEndpoints.attachment_list);
 
@@ -318,9 +345,10 @@ export function AttachmentTable({
           setSelectedAttachment(undefined);
           uploadAttachment.open();
         }}
-      />
+      />,
+      ...additionalActions
     ];
-  }, [user, model_type]);
+  }, [user, model_type, additionalActions]);
 
   // Construct row actions for the attachment table
   const rowActions = useCallback(

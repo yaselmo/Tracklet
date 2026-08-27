@@ -23,7 +23,10 @@ const DEFAULT_ICON = path.resolve(
 const SMOKE_TEST_REPORT = path.resolve(__dirname, '.smoke-test.json');
 const BACKEND_CONFIG_FILE = 'backend-config.json';
 const BACKEND_LOG_FILE = 'backend-startup.log';
+const DEFAULT_BACKEND_STARTUP_TIMEOUT_MS = 120000;
 let packagedDesktopServer;
+let packagedBackendProcess;
+let packagedBackendOwned = false;
 let mainWindow;
 
 function getElectronUserDataDir() {
@@ -194,6 +197,21 @@ function getPowerShellCommand() {
     : 'powershell.exe';
 }
 
+function quotePowerShellArgument(value) {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function buildPowerShellScriptCommand(scriptPath, args = []) {
+  const renderedArgs = args
+    .map((arg) => {
+      const text = String(arg);
+      return text.startsWith('-') ? text : quotePowerShellArgument(text);
+    })
+    .join(' ');
+  const suffix = renderedArgs.length > 0 ? ` ${renderedArgs}` : '';
+  return `& { & ${quotePowerShellArgument(scriptPath)}${suffix} }`;
+}
+
 function getCreateSuperuserScriptPath() {
   return app.isPackaged
     ? path.join(process.resourcesPath, 'scripts', 'create-superuser.ps1')
@@ -344,9 +362,29 @@ async function getBackendHealth(backendUrl) {
       method: 'GET'
     });
 
+    const contentType = response.headers.get('content-type') || '';
+    let payload = null;
+
+    if (contentType.toLowerCase().includes('json')) {
+      try {
+        payload = await response.json();
+      } catch {
+        payload = null;
+      }
+    }
+
+    const isTracklet =
+      response.ok &&
+      payload &&
+      payload.server === 'Tracklet' &&
+      Number.isFinite(Number(payload.apiVersion));
+
     return {
-      ok: response.ok,
-      status: response.status
+      ok: isTracklet,
+      status: response.status,
+      isTracklet,
+      server: payload?.server || null,
+      apiVersion: payload?.apiVersion || null
     };
   } catch (error) {
     return {
@@ -362,7 +400,10 @@ function wait(delayMs) {
   });
 }
 
-async function waitForBackend(backendUrl, timeoutMs = 30000) {
+async function waitForBackend(
+  backendUrl,
+  timeoutMs = DEFAULT_BACKEND_STARTUP_TIMEOUT_MS
+) {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < timeoutMs) {
@@ -390,11 +431,16 @@ function writeBackendLaunchHeader(logPath, details) {
     logPath,
     [
       `=== Tracklet backend startup ${new Date().toISOString()} ===`,
+      `scriptPath: ${details.scriptPath}`,
       `backendDir: ${details.backendDir}`,
       `projectRoot: ${details.projectRoot}`,
       `managePy: ${details.managePyPath}`,
       `python: ${details.pythonPath}`,
       `address: ${details.backendAddress}`,
+      `startupTimeoutMs: ${details.startupTimeoutMs}`,
+      `env.INVENTREE_DESKTOP_MODE: ${details.desktopMode}`,
+      `env.INVENTREE_DEBUG: ${details.debugMode}`,
+      `env.INVENTREE_DESKTOP_DATA_DIR: ${details.desktopDataDir}`,
       ''
     ].join('\n'),
     'utf8'
@@ -410,6 +456,11 @@ function appendBackendLog(logPath, message) {
   );
 }
 
+function appendBackendLogChunk(logPath, chunk) {
+  fs.mkdirSync(path.dirname(logPath), { recursive: true });
+  fs.appendFileSync(logPath, chunk.toString(), 'utf8');
+}
+
 function launchBackendProcess(validation, backendUrl) {
   const scriptPath = getStartBackendScriptPath();
 
@@ -421,31 +472,74 @@ function launchBackendProcess(validation, backendUrl) {
   const logPath = getBackendLogPath();
   writeBackendLaunchHeader(logPath, {
     ...validation,
-    backendAddress
+    backendAddress,
+    scriptPath,
+    startupTimeoutMs: DEFAULT_BACKEND_STARTUP_TIMEOUT_MS,
+    desktopMode: process.env.INVENTREE_DESKTOP_MODE || '1',
+    debugMode: process.env.INVENTREE_DEBUG || '1',
+    desktopDataDir: process.env.INVENTREE_DESKTOP_DATA_DIR || getTrackletDesktopRootDir()
   });
-  const logFd = fs.openSync(logPath, 'a');
+
+  const launchCommand = buildPowerShellScriptCommand(scriptPath, [
+    '-BackendDir',
+    validation.backendDir,
+    '-Address',
+    backendAddress
+  ]);
+
+  appendBackendLog(logPath, `launcher.command=${launchCommand}`);
 
   const child = spawn(
     getPowerShellCommand(),
     [
+      '-NoProfile',
+      '-NonInteractive',
       '-ExecutionPolicy',
       'Bypass',
-      '-File',
-      scriptPath,
-      '-BackendDir',
-      validation.backendDir,
-      '-Address',
-      backendAddress
+      '-Command',
+      launchCommand
     ],
     {
-      detached: true,
-      stdio: ['ignore', logFd, logFd],
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true
     }
   );
 
-  fs.closeSync(logFd);
-  child.unref();
+  appendBackendLog(logPath, `launcher.spawn pid=${child.pid ?? 'unknown'}`);
+
+  child.stdout?.on('data', (chunk) => {
+    appendBackendLogChunk(logPath, chunk);
+  });
+
+  child.stderr?.on('data', (chunk) => {
+    appendBackendLogChunk(logPath, chunk);
+  });
+
+  child.on('spawn', () => {
+    appendBackendLog(logPath, 'launcher.event=spawn');
+  });
+
+  child.on('error', (error) => {
+    appendBackendLog(
+      logPath,
+      `launcher.event=error message=${error instanceof Error ? error.message : String(error)}`
+    );
+  });
+
+  child.on('exit', (code, signal) => {
+    appendBackendLog(
+      logPath,
+      `launcher.event=exit code=${code ?? 'null'} signal=${signal ?? 'null'}`
+    );
+  });
+
+  child.on('close', (code, signal) => {
+    appendBackendLog(
+      logPath,
+      `launcher.event=close code=${code ?? 'null'} signal=${signal ?? 'null'}`
+    );
+  });
 
   return {
     child,
@@ -454,6 +548,28 @@ function launchBackendProcess(validation, backendUrl) {
 }
 
 async function resolveBackendDirForDesktopAction(allowPrompt = true) {
+  if (app.isPackaged) {
+    const runtimeDir = path.join(process.resourcesPath, 'runtime');
+    const backendDir = path.join(runtimeDir, 'backend');
+    const managePyPath = path.join(backendDir, 'manage.py');
+    const pythonPath = path.join(runtimeDir, 'python', 'python.exe');
+
+    if (!fs.existsSync(managePyPath) || !fs.existsSync(pythonPath)) {
+      return {
+        ok: false,
+        error: 'The bundled Tracklet runtime is incomplete. Reinstall Tracklet using the current installer.'
+      };
+    }
+
+    return {
+      ok: true,
+      backendDir,
+      managePyPath,
+      pythonPath,
+      projectRoot: runtimeDir
+    };
+  }
+
   const savedConfig = readBackendConfig();
   let validation =
     validateBackendSelection(process.env.TRACKLET_BACKEND_DIR || '');
@@ -499,10 +615,38 @@ async function ensurePackagedBackendAvailable(
   backendUrl,
   options = {}
 ) {
-  const { forcePrompt = false } = options;
+  if (!app.isPackaged) {
+    return {
+      ok: false,
+      error: 'Bundled backend startup is only available in packaged mode.'
+    };
+  }
+
+  const runtimeDir = path.join(process.resourcesPath, 'runtime');
+  const backendDir = path.join(runtimeDir, 'backend');
+  const pythonPath = path.join(runtimeDir, 'python', 'python.exe');
+  const managePyPath = path.join(backendDir, 'manage.py');
+  const logPath = getBackendLogPath();
+
+  const requiredPaths = [runtimeDir, backendDir, pythonPath, managePyPath];
+  const missingPath = requiredPaths.find((candidate) => !fs.existsSync(candidate));
+
+  if (missingPath) {
+    appendBackendLog(logPath, `packagedRuntime.missing path=${missingPath}`);
+    return {
+      ok: false,
+      error: 'The bundled Tracklet runtime is incomplete. Reinstall Tracklet using the current installer.',
+      logPath
+    };
+  }
+
   const currentHealth = await getBackendHealth(backendUrl);
 
   if (currentHealth.ok) {
+    appendBackendLog(
+      getBackendLogPath(),
+      `backendHealth=ok url=${backendUrl} alreadyRunning=true server=${currentHealth.server} apiVersion=${currentHealth.apiVersion}`
+    );
     return {
       ok: true,
       alreadyRunning: true,
@@ -510,115 +654,198 @@ async function ensurePackagedBackendAvailable(
     };
   }
 
-  let validation = forcePrompt
-    ? { ok: false }
-    : await resolveBackendDirForDesktopAction(false);
+  const desktopDataDir = getTrackletDesktopRootDir();
+  const environment = {
+    ...process.env,
+    INVENTREE_DESKTOP_MODE: '1',
+    INVENTREE_DEBUG: '0',
+    INVENTREE_DESKTOP_DATA_DIR: desktopDataDir,
+    DJANGO_SETTINGS_MODULE: 'Tracklet.settings',
+    PYTHONUNBUFFERED: '1'
+  };
 
-  if (!validation?.ok) {
-    if (forcePrompt) {
-      validation = await promptForBackendDir();
-    } else {
-      const choice = await dialog.showMessageBox({
-        type: 'question',
-        buttons: ['Locate Backend', 'Continue'],
-        defaultId: 0,
-        cancelId: 1,
-        title: 'Tracklet backend required',
-        message:
-          'Tracklet Desktop needs the local backend to run in the background. Choose your Tracklet backend folder once and Tracklet.exe will start it automatically next time.'
-      });
+  [
+    'INVENTREE_CONFIG_FILE',
+    'INVENTREE_MEDIA_ROOT',
+    'INVENTREE_STATIC_ROOT',
+    'INVENTREE_BACKUP_DIR',
+    'INVENTREE_SECRET_KEY_FILE',
+    'INVENTREE_PLUGIN_FILE'
+  ].forEach((name) => delete environment[name]);
 
-      if (choice.response !== 0) {
-        return {
-          ok: false,
-          error:
-            currentHealth.status && currentHealth.status !== 200
-              ? `Backend is not healthy on ${backendUrl} (HTTP ${currentHealth.status}).`
-              : 'Tracklet backend startup was skipped.'
-        };
-      }
+  writeBackendLaunchHeader(logPath, {
+    scriptPath: 'Electron bundled Python runtime',
+    backendDir,
+    projectRoot: runtimeDir,
+    managePyPath,
+    pythonPath,
+    backendAddress: new URL(trimTrailingSlash(backendUrl)).host,
+    startupTimeoutMs: DEFAULT_BACKEND_STARTUP_TIMEOUT_MS,
+    desktopMode: environment.INVENTREE_DESKTOP_MODE,
+    debugMode: environment.INVENTREE_DEBUG,
+    desktopDataDir
+  });
+  appendBackendLog(logPath, `packagedRuntime=${runtimeDir}`);
+  appendBackendLog(logPath, `frontendDir=${getBuildDir()}`);
+  appendBackendLog(logPath, `healthCheck.start url=${backendUrl}`);
 
-      validation = await promptForBackendDir();
+  const databasePath = path.join(desktopDataDir, 'data', 'database.sqlite3');
+  if (!fs.existsSync(databasePath)) {
+    const initialMigration = await runBundledPythonCommand(
+      pythonPath,
+      backendDir,
+      managePyPath,
+      ['migrate', '--run-syncdb', '--noinput'],
+      environment,
+      logPath,
+      'initialMigration'
+    );
+
+    if (initialMigration.code !== 0) {
+      const error = 'Bundled backend could not initialize its first database. Check the startup log for details.';
+      appendBackendLog(logPath, `backendHealth=failed reason=${error}`);
+      return { ok: false, error, logPath, backendUrl };
     }
-
-    if (validation?.cancelled) {
-      return {
-        ok: false,
-        cancelled: true,
-        error: 'Tracklet backend startup was cancelled.'
-      };
-    }
-
-    if (!validation?.ok) {
-      return validation;
-    }
-
-    writeBackendConfig({
-      ...readBackendConfig(),
-      backendDir: validation.backendDir
-    });
   }
 
-  const { child, logPath } = launchBackendProcess(validation, backendUrl);
+  const migrationCheck = await runBundledPythonCommand(
+    pythonPath,
+    backendDir,
+    managePyPath,
+    ['showmigrations', '--plan'],
+    environment,
+    logPath,
+    'migrationCheck'
+  );
+
+  if (migrationCheck.code !== 0) {
+    const error = 'Bundled backend migration check failed. Check the startup log for details.';
+    appendBackendLog(logPath, `backendHealth=failed reason=${error}`);
+    return { ok: false, error, logPath, backendUrl };
+  }
+
+  if (/^\s*\[\s\]\s+/m.test(migrationCheck.stdout)) {
+    for (const [label, args] of [
+      ['runmigrations', ['runmigrations']],
+      ['migrate', ['migrate', '--run-syncdb', '--noinput']]
+    ]) {
+      const migration = await runBundledPythonCommand(
+        pythonPath,
+        backendDir,
+        managePyPath,
+        args,
+        environment,
+        logPath,
+        label
+      );
+
+      if (migration.code !== 0) {
+        const error = `Bundled backend ${label} step failed. Check the startup log for details.`;
+        appendBackendLog(logPath, `backendHealth=failed reason=${error}`);
+        return { ok: false, error, logPath, backendUrl };
+      }
+    }
+  } else {
+    appendBackendLog(logPath, 'database is current - skipping migration work');
+  }
+
+  const child = spawn(
+    pythonPath,
+    [managePyPath, 'runserver', new URL(trimTrailingSlash(backendUrl)).host, '--noreload'],
+    {
+      cwd: backendDir,
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      env: environment
+    }
+  );
+
+  packagedBackendProcess = child;
+  packagedBackendOwned = true;
+  appendBackendLog(logPath, `backend.spawn pid=${child.pid ?? 'unknown'}`);
+  child.stdout?.on('data', (chunk) => appendBackendLogChunk(logPath, chunk));
+  child.stderr?.on('data', (chunk) => appendBackendLogChunk(logPath, chunk));
+  child.on('error', (error) =>
+    appendBackendLog(logPath, `backend.event=error message=${error instanceof Error ? error.message : String(error)}`)
+  );
+  child.on('exit', (code, signal) =>
+    appendBackendLog(logPath, `backend.event=exit code=${code ?? 'null'} signal=${signal ?? 'null'}`)
+  );
 
   const startupResult = await waitForBackend(backendUrl);
 
   if (startupResult.ok) {
-    appendBackendLog(logPath, `backendHealth=ok url=${backendUrl}`);
-    return {
-      ok: true,
-      backendDir: validation.backendDir,
-      backendUrl,
-      logPath
-    };
-  }
-
-  let failureReason = startupResult.error;
-  let childExitCode = null;
-
-  if (child.exitCode !== null) {
-    childExitCode = child.exitCode;
+    appendBackendLog(logPath, `backendHealth=ok url=${backendUrl} firstSuccessfulHealthCheck=true`);
+    return { ok: true, backendDir, backendUrl, logPath };
   }
 
   const logTail = fs.existsSync(logPath)
-    ? fs
-        .readFileSync(logPath, 'utf8')
-        .split(/\r?\n/)
-        .slice(-40)
-        .join('\n')
+    ? fs.readFileSync(logPath, 'utf8').split(/\r?\n/).slice(-60).join('\n')
     : '';
+  const childExitCode = child.exitCode;
+  let failureReason = startupResult.error;
 
-  if (/Python virtual environment not found/i.test(logTail)) {
-    failureReason = 'Missing Python/dependencies for the selected Tracklet backend.';
-  } else if (/Tracklet backend was not found/i.test(logTail)) {
-    failureReason = 'Wrong backend folder selected.';
-  } else if (/Address already in use|Only one usage of each socket address/i.test(logTail)) {
+  if (/Address already in use|Only one usage of each socket address/i.test(logTail)) {
     failureReason = `Port already in use for backend address ${new URL(trimTrailingSlash(backendUrl)).host}.`;
-  } else if (/exitCode\(runmigrations\)=([1-9]\d*)/i.test(logTail)) {
-    failureReason = 'Backend migration check failed. Check the startup log for details.';
-  } else if (/exitCode\(migrate\)=([1-9]\d*)/i.test(logTail)) {
-    failureReason = 'Backend migration step failed. Check the startup log for details.';
-  } else if (/exitCode\(dev\.server\)=([1-9]\d*)/i.test(logTail)) {
-    failureReason = 'Backend server command exited unexpectedly. Check the startup log for details.';
-  } else if (/Applying Tracklet database migrations|Database Migrations required|Traceback|Error/i.test(logTail)) {
-    failureReason =
-      'Backend failed during startup, migration, or configuration. Check the backend startup log for details.';
+  } else if (/Traceback|Error/i.test(logTail)) {
+    failureReason = 'Bundled backend failed during startup or configuration. Check the startup log for details.';
   } else if (childExitCode !== null) {
-    failureReason = `Tracklet backend launcher exited with code ${childExitCode} before the backend became healthy.`;
+    failureReason = `Bundled Tracklet backend exited with code ${childExitCode} before becoming healthy.`;
   }
 
-  appendBackendLog(
-    logPath,
-    `backendHealth=failed url=${backendUrl} reason=${failureReason}`
-  );
+  appendBackendLog(logPath, `backendHealth=failed url=${backendUrl} reason=${failureReason}`);
+  if (packagedBackendProcess === child) {
+    packagedBackendProcess = undefined;
+    packagedBackendOwned = false;
+  }
+  try {
+    child.kill();
+  } catch {
+    // The process may already have exited.
+  }
 
-  return {
-    ok: false,
-    error: failureReason,
-    logPath,
-    backendDir: validation.backendDir,
-    backendUrl
-  };
+  return { ok: false, error: failureReason, logPath, backendDir, backendUrl };
+}
+
+function runBundledPythonCommand(
+  pythonPath,
+  backendDir,
+  managePyPath,
+  args,
+  environment,
+  logPath,
+  label
+) {
+  return new Promise((resolve) => {
+    const child = spawn(pythonPath, [managePyPath, ...args], {
+      cwd: backendDir,
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+      env: environment
+    });
+    let stdout = '';
+    let stderr = '';
+
+    appendBackendLog(logPath, `stage=${label}.before args=${args.join(' ')}`);
+    child.stdout?.on('data', (chunk) => {
+      stdout += chunk.toString();
+      appendBackendLogChunk(logPath, chunk);
+    });
+    child.stderr?.on('data', (chunk) => {
+      stderr += chunk.toString();
+      appendBackendLogChunk(logPath, chunk);
+    });
+    child.on('error', (error) => {
+      appendBackendLog(logPath, `stage=${label}.error message=${error instanceof Error ? error.message : String(error)}`);
+      resolve({ code: null, stdout, stderr, error });
+    });
+    child.on('close', (code) => {
+      appendBackendLog(logPath, `stage=${label}.after exitCode=${code ?? 'null'}`);
+      resolve({ code, stdout, stderr });
+    });
+  });
 }
 
 function buildStartupFailureMessage(startupFailure) {
@@ -652,6 +879,12 @@ function createStartupErrorWindow(startupFailure) {
 
   const logPath = startupFailure?.logPath || getBackendLogPath();
   const reason = buildStartupFailureMessage(startupFailure);
+  const locateButton = app.isPackaged
+    ? ''
+    : '<button class="primary" id="locate">Locate Backend Again</button>';
+  const locateHandler = app.isPackaged
+    ? ''
+    : "document.getElementById('locate').addEventListener('click', async () => { setBusy(true, 'Opening backend folder picker...'); await window.TRACKLET_ELECTRON?.locateBackendAgain?.(); });";
 
   const startupErrorHtml = `
     <!doctype html>
@@ -750,7 +983,7 @@ function createStartupErrorWindow(startupFailure) {
             ${escapeHtml(logPath)}
           </div>
           <div class="actions">
-            <button class="primary" id="locate">Locate Backend Again</button>
+            ${locateButton}
             <button class="secondary" id="retry">Retry Startup</button>
             <button class="ghost" id="logs">Open Logs Folder</button>
           </div>
@@ -768,10 +1001,7 @@ function createStartupErrorWindow(startupFailure) {
             status.textContent = message;
           };
 
-          document.getElementById('locate').addEventListener('click', async () => {
-            setBusy(true, 'Opening backend folder picker...');
-            await window.TRACKLET_ELECTRON?.locateBackendAgain?.();
-          });
+          ${locateHandler}
 
           document.getElementById('retry').addEventListener('click', async () => {
             setBusy(true, 'Retrying backend startup...');
@@ -808,7 +1038,14 @@ function runPowerShellJsonCommand(scriptPath, args) {
   return new Promise((resolve, reject) => {
     const child = spawn(
       getPowerShellCommand(),
-      ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, ...args],
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-Command',
+        buildPowerShellScriptCommand(scriptPath, args)
+      ],
       {
         windowsHide: true
       }
@@ -870,12 +1107,16 @@ function withTrailingSlash(value) {
 
 function getRendererUrl() {
   return withTrailingSlash(
-    process.env.ELECTRON_RENDERER_URL || DEFAULT_RENDERER_URL
+    (!app.isPackaged && process.env.ELECTRON_RENDERER_URL) || DEFAULT_RENDERER_URL
   );
 }
 
 function getBackendUrl() {
-  return trimTrailingSlash(process.env.ELECTRON_API_URL || DEFAULT_API_URL);
+  return trimTrailingSlash(
+    app.isPackaged
+      ? DEFAULT_API_URL
+      : process.env.ELECTRON_API_URL || DEFAULT_API_URL
+  );
 }
 
 function getBuildDir() {
@@ -928,13 +1169,17 @@ async function launchCreateSuperuserFlow() {
     const child = spawn(
       getPowerShellCommand(),
       [
+        '-NoProfile',
+        '-NonInteractive',
         '-ExecutionPolicy',
         'Bypass',
         '-NoExit',
-        '-File',
-        scriptPath,
-        '-BackendDir',
-        backendDir.backendDir
+        '-Command',
+        buildPowerShellScriptCommand(scriptPath, [
+          '-BackendDir',
+          backendDir.backendDir,
+          ...(backendDir.pythonPath ? ['-PythonPath', backendDir.pythonPath] : [])
+        ])
       ],
       {
         detached: true,
@@ -993,7 +1238,8 @@ ipcMain.handle('tracklet:create-backup', async () => {
   try {
     const result = await runPowerShellJsonCommand(scriptPath, [
       '-BackendDir',
-      backendDir.backendDir
+      backendDir.backendDir,
+      ...(backendDir.pythonPath ? ['-PythonPath', backendDir.pythonPath] : [])
     ]);
 
     return {
@@ -1338,6 +1584,20 @@ app.on('before-quit', () => {
   if (packagedDesktopServer) {
     packagedDesktopServer.close().catch(() => {});
     packagedDesktopServer = undefined;
+  }
+
+  if (packagedBackendProcess && packagedBackendOwned) {
+    appendBackendLog(
+      getBackendLogPath(),
+      `backend.stop pid=${packagedBackendProcess.pid ?? 'unknown'} reason=electron-quit`
+    );
+    try {
+      packagedBackendProcess.kill();
+    } catch {
+      // The child may have exited between the health check and application quit.
+    }
+    packagedBackendProcess = undefined;
+    packagedBackendOwned = false;
   }
 });
 

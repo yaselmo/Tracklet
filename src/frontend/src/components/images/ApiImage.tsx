@@ -6,7 +6,7 @@
 import { Image, type ImageProps, Skeleton, Stack } from '@mantine/core';
 import { useEffect, useMemo, useState } from 'react';
 
-import { generateUrl } from '../../functions/urls';
+import { resolveImageUrl } from '../../functions/urls';
 import { useLocalState } from '../../states/LocalState';
 
 interface ApiImageProps extends ImageProps {
@@ -26,7 +26,7 @@ export function ApiImage(props: Readonly<ApiImageProps>) {
 
   const imageUrl = useMemo(() => {
     const src = imageFailed ? '/static/img/blank_image.png' : props.src;
-    return generateUrl(src, getHost());
+    return resolveImageUrl(src, getHost());
   }, [getHost, imageFailed, props.src]);
 
   return (

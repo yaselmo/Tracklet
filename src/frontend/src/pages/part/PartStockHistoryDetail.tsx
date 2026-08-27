@@ -242,7 +242,10 @@ export function PartStocktakePanel({ partId }: Readonly<{ partId: number }>) {
             rightYAxisLabel={t`Stock Value`}
             tooltipProps={{
               content: ({ label, payload }) => (
-                <ChartTooltip label={label} payload={payload} />
+                <ChartTooltip
+                  label={label}
+                  payload={payload ? [...payload] : undefined}
+                />
               )
             }}
             yAxisProps={{

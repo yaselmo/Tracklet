@@ -658,6 +658,9 @@ class AttachmentSerializer(FilterableSerializerMixin, InvenTreeModelSerializer):
             'file_size',
             'model_type',
             'model_id',
+            'report_type',
+            'report_type_label',
+            'report_item_count',
             'tags',
         ]
 
@@ -685,6 +688,10 @@ class AttachmentSerializer(FilterableSerializerMixin, InvenTreeModelSerializer):
 
     upload_date = serializers.DateField(read_only=True)
 
+    report_type = serializers.SerializerMethodField()
+    report_type_label = serializers.SerializerMethodField()
+    report_item_count = serializers.SerializerMethodField()
+
     # Note: The choices are overridden at run-time on class initialization
     model_type = serializers.ChoiceField(
         label=_('Model Type'),
@@ -693,6 +700,30 @@ class AttachmentSerializer(FilterableSerializerMixin, InvenTreeModelSerializer):
         allow_blank=False,
         allow_null=False,
     )
+
+    def get_project_report(self, obj):
+        """Return the project report linked to this attachment, if any."""
+        if not hasattr(obj, '_project_report_attachment_metadata'):
+            reports = getattr(obj, 'project_reports', None)
+            report = next(iter(reports.all()), None) if reports is not None else None
+            obj._project_report_attachment_metadata = report
+
+        return obj._project_report_attachment_metadata
+
+    def get_report_type(self, obj):
+        """Return the machine-readable project report type."""
+        report = self.get_project_report(obj)
+        return report.report_type if report is not None else None
+
+    def get_report_type_label(self, obj):
+        """Return the translated project report type label."""
+        report = self.get_project_report(obj)
+        return report.get_report_type_display() if report is not None else None
+
+    def get_report_item_count(self, obj):
+        """Return the number of rows included in the project report."""
+        report = self.get_project_report(obj)
+        return len(report.items.all()) if report is not None else None
 
     def save(self, **kwargs):
         """Override the save method to handle the model_type field."""

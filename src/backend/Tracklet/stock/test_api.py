@@ -1504,6 +1504,87 @@ class StockItemTest(StockImageTestMixin, StockAPITestCase):
         self.assertEqual(item.name, 'After Name')
         self.assertEqual(item.category, 'After Category')
 
+    def test_instrument_fields_persist_and_remain_stock_item_specific(self):
+        """Editing one serialized instrument must not alter its sibling StockItem."""
+        shared_part = Part.objects.create(
+            name='Shared Instrument Model',
+            description='Description stored on the shared part',
+            IPN='MODEL-100',
+            trackable=True,
+        )
+
+        response = self.post(
+            self.list_url,
+            data={
+                'name': 'Original Instrument Name',
+                'category': 'Field Instruments',
+                'part': shared_part.pk,
+                'location': 1,
+                'quantity': 2,
+                'serial_numbers': 'INST-A,INST-B',
+            },
+            expected_code=201,
+        )
+
+        self.assertEqual(len(response.data), 2)
+
+        instruments = list(
+            StockItem.objects.filter(part=shared_part).order_by('serial')
+        )
+        first, second = instruments
+
+        self.patch(
+            reverse('api-stock-detail', kwargs={'pk': first.pk}),
+            {
+                'name': 'Edited Instrument Name',
+                'category': 'Survey Instruments',
+                'serial': 'INST-A-EDITED',
+                'location': 2,
+                'tracklet_status': 'CALIBRATION',
+                'last_calibration_date': '2026-01-15',
+                'last_factory_calibration_date': '2025-12-01',
+                'notes': 'Instrument-specific notes',
+            },
+            expected_code=200,
+        )
+
+        # Fetch both records again through the API to exercise persisted detail data,
+        # rather than relying on transient serializer or frontend state.
+        edited = self.get(
+            reverse('api-stock-detail', kwargs={'pk': first.pk}),
+            {'part_detail': True, 'location_detail': True},
+            expected_code=200,
+        ).data
+        untouched = self.get(
+            reverse('api-stock-detail', kwargs={'pk': second.pk}),
+            {'part_detail': True, 'location_detail': True},
+            expected_code=200,
+        ).data
+
+        self.assertEqual(edited['name'], 'Edited Instrument Name')
+        self.assertEqual(edited['category'], 'Survey Instruments')
+        self.assertEqual(edited['serial'], 'INST-A-EDITED')
+        self.assertEqual(edited['location'], 2)
+        self.assertEqual(edited['tracklet_status'], 'CALIBRATION')
+        self.assertEqual(edited['last_calibration_date'], '2026-01-15')
+        self.assertEqual(edited['last_factory_calibration_date'], '2025-12-01')
+        self.assertEqual(edited['notes'], 'Instrument-specific notes')
+
+        self.assertEqual(untouched['name'], 'Original Instrument Name')
+        self.assertEqual(untouched['category'], 'Field Instruments')
+        self.assertEqual(untouched['serial'], 'INST-B')
+        self.assertEqual(untouched['location'], 1)
+        self.assertIsNone(untouched['last_calibration_date'])
+        self.assertIsNone(untouched['last_factory_calibration_date'])
+        self.assertIsNone(untouched['notes'])
+
+        shared_part.refresh_from_db()
+        self.assertEqual(shared_part.name, 'Shared Instrument Model')
+        self.assertEqual(shared_part.IPN, 'MODEL-100')
+        self.assertEqual(
+            shared_part.description, 'Description stored on the shared part'
+        )
+
     def test_stock_item_update_broken_and_missing_quantities(self):
         """Broken and missing quantities should update availability and tracking."""
         item = StockItem.objects.create(
@@ -1556,6 +1637,20 @@ class StockItemTest(StockImageTestMixin, StockAPITestCase):
 
         item.refresh_from_db()
         self.assertTrue(bool(item.image))
+
+        original_image = response.data['image']
+
+        replacement = self.client.patch(
+            reverse('api-stock-detail', kwargs={'pk': item.pk}),
+            {'image': self.create_upload_image()},
+            format='multipart',
+        )
+
+        self.assertEqual(replacement.status_code, 200)
+        self.assertNotEqual(replacement.data['image'], original_image)
+        self.assertNotEqual(
+            replacement.data['thumbnail'], response.data['thumbnail']
+        )
 
         response = self.patch(
             reverse('api-stock-detail', kwargs={'pk': item.pk}),

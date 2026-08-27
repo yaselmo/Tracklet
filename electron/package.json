@@ -13,7 +13,7 @@
     "dist:win": "node build-win.js"
   },
   "devDependencies": {
-    "electron": "^37.4.0",
+    "electron": "^43.4.1",
     "electron-builder": "^26.0.12"
   },
   "build": {
@@ -24,6 +24,7 @@
     },
     "files": [
       "build-win.js",
+      "prepare-runtime.js",
       "desktopServer.js",
       "launch.js",
       "main.js",
@@ -31,6 +32,10 @@
       "preload.js"
     ],
     "extraResources": [
+      {
+        "from": ".runtime-stage/runtime",
+        "to": "runtime"
+      },
       {
         "from": "create-superuser.ps1",
         "to": "scripts/create-superuser.ps1"
@@ -50,7 +55,7 @@
     ],
     "artifactName": "Tracklet-Setup-${version}.${ext}",
     "win": {
-      "signAndEditExecutable": false,
+      "signExecutable": false,
       "target": [
         {
           "target": "nsis",

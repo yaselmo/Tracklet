@@ -1,0 +1,2 @@
+import{ar as c,r,j as E}from"./index--0jb4biY.js";function f({title:t,subtitle:s}){const a=c(),n=r.useMemo(()=>{const o=a.getSetting("INVENTREE_INSTANCE","Tracklet"),i=a.isSet("INVENTREE_INSTANCE_TITLE",!1);let e="";return t&&(e+=t),s&&(e+=` - ${s}`),i&&(e=`${o} | ${e}`),e||(e=o),e},[t,s,a]);return r.useEffect(()=>{document.title=n},[n]),E.jsx("title",{children:n})}export{f as P};
+//# sourceMappingURL=PageTitle-CNfdTB1V.js.map

@@ -1,6 +1,7 @@
 param(
   [Parameter(Mandatory = $true)]
-  [string]$BackendDir
+  [string]$BackendDir,
+  [string]$PythonPath = ''
 )
 
 $ErrorActionPreference = 'Stop'
@@ -56,7 +57,15 @@ if (-not $managePy) {
   exit 1
 }
 
-$pythonCommand = Resolve-PythonCommand
+$pythonCommand = if ($PythonPath) {
+  if (-not (Test-Path $PythonPath)) {
+    throw "Bundled Python was not found at '$PythonPath'"
+  }
+
+  @($PythonPath)
+} else {
+  Resolve-PythonCommand
+}
 
 if (-not $pythonCommand) {
   Write-Host ''
@@ -73,8 +82,7 @@ Write-Host ''
 Write-Host 'Tracklet Desktop - Create Superuser' -ForegroundColor Green
 Write-Host "Backend directory: $managePyDirectory"
 Write-Host ''
-Write-Host 'This helper runs Django createsuperuser against your existing Tracklet backend.' -ForegroundColor Cyan
-Write-Host 'It does not install or bundle a backend automatically.' -ForegroundColor Cyan
+Write-Host 'This helper runs Django createsuperuser against the Tracklet desktop backend.' -ForegroundColor Cyan
 Write-Host ''
 
 Push-Location $managePyDirectory

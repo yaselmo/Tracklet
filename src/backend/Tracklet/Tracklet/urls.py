@@ -10,6 +10,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import RedirectView
+from django.views.static import serve as serve_static
 
 from allauth.headless.urls import Client, build_urlpatterns
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView
@@ -41,7 +42,7 @@ from .api import (
     VersionTextView,
     VersionView,
 )
-from .config import get_setting
+from .config import desktop_mode_enabled, get_setting
 from .magic_login import GetSimpleLoginView
 from .views import auth_request
 
@@ -178,6 +179,19 @@ if settings.DEBUG:
 
     # Media file access
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+elif desktop_mode_enabled():
+    # The desktop backend is bound to loopback with DEBUG disabled, but still
+    # owns the user's local uploaded media. Register this route explicitly:
+    # django.conf.urls.static.static() intentionally returns no URL patterns
+    # when DEBUG is False, which otherwise lets /media/ fall through to /web.
+    urlpatterns += [
+        path(
+            f'{settings.MEDIA_URL.strip("/")}/<path:path>',
+            serve_static,
+            {'document_root': settings.MEDIA_ROOT},
+            name='desktop-media',
+        )
+    ]
 
 # Redirect for favicon.ico
 urlpatterns.append(

@@ -34,6 +34,7 @@ from Tracklet.unit_test import (
 )
 from part.models import Part
 from plugin import registry
+from plugin.builtin.integration.core_notifications import InvenTreeUINotifications
 
 from .api import WebhookView
 from .models import (
@@ -1331,6 +1332,19 @@ class NotificationTest(InvenTreeAPITestCase):
             user=self.user,
             data={'message': 'This is a test notification'},
         )
+
+    def test_system_notification(self):
+        """Test that a notification can be created without an object reference."""
+        trigger_notification(
+            None,
+            category='core.system',
+            context={'name': 'System notification'},
+            targets=[self.user],
+            delivery_methods={InvenTreeUINotifications},
+        )
+
+        entry = NotificationEntry.objects.get(key='core.system')
+        self.assertEqual(entry.uid, 0)
 
     def test_with_group(self):
         """Test that a notification can be created with a group."""

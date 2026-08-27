@@ -26,14 +26,14 @@ import { PageDetail } from '../../components/nav/PageDetail';
 import NotesPanel from '../../components/panels/NotesPanel';
 import type { PanelType } from '../../components/panels/Panel';
 import { PanelGroup } from '../../components/panels/PanelGroup';
-import { AttachmentTable } from '../../tables/general/AttachmentTable';
-import ProjectAllocationTable from '../../tables/projects/ProjectAllocationTable';
-import ProjectAutomaticReportsPanel from '../../tables/projects/ProjectAutomaticReportsPanel';
-import ProjectInstrumentationPanel from '../../tables/projects/ProjectInstrumentationPanel';
 import { useProjectFields } from '../../forms/ProjectForms';
 import { useEditApiFormModal } from '../../hooks/UseForm';
 import { useInstance } from '../../hooks/UseInstance';
 import { useUserState } from '../../states/UserState';
+import { AttachmentTable } from '../../tables/general/AttachmentTable';
+import ProjectAllocationTable from '../../tables/projects/ProjectAllocationTable';
+import ProjectAutomaticReportsPanel from '../../tables/projects/ProjectAutomaticReportsPanel';
+import ProjectInstrumentationPanel from '../../tables/projects/ProjectInstrumentationPanel';
 
 export default function ProjectDetail() {
   const { id } = useParams();
@@ -41,7 +41,11 @@ export default function ProjectDetail() {
   const navigate = useNavigate();
   const user = useUserState();
 
-  const { instance: project, instanceQuery, refreshInstance } = useInstance({
+  const {
+    instance: project,
+    instanceQuery,
+    refreshInstance
+  } = useInstance({
     endpoint: ApiEndpoints.project_list,
     pk: id
   });
@@ -249,7 +253,10 @@ export default function ProjectDetail() {
         label: t`Instrumentation`,
         icon: <IconListDetails />,
         content: project?.pk ? (
-          <ProjectInstrumentationPanel projectId={project.pk} readOnly={readOnly} />
+          <ProjectInstrumentationPanel
+            projectId={project.pk}
+            readOnly={readOnly}
+          />
         ) : (
           <Skeleton />
         )
@@ -259,20 +266,24 @@ export default function ProjectDetail() {
         label: t`Attachments`,
         icon: <IconPaperclip />,
         content: project?.pk ? (
-          <Stack gap='md'>
-            <AttachmentTable model_type={ModelType.project} model_id={project.pk} />
-            <ProjectAutomaticReportsPanel
-              projectId={project.pk}
-              projectName={project.name}
-              projectLocation={project.location}
-              projectLocationDisplay={
-                project?.location_detail?.pathstring ||
-                project?.location_detail?.name ||
-                ''
-              }
-              readOnly={readOnly}
-            />
-          </Stack>
+          <AttachmentTable
+            model_type={ModelType.project}
+            model_id={project.pk}
+            additionalActions={[
+              <ProjectAutomaticReportsPanel
+                key='generate-project-report'
+                projectId={project.pk}
+                projectName={project.name}
+                projectLocation={project.location}
+                projectLocationDisplay={
+                  project?.location_detail?.pathstring ||
+                  project?.location_detail?.name ||
+                  ''
+                }
+                readOnly={readOnly || !user.hasAddRole(UserRoles.project)}
+              />
+            ]}
+          />
         ) : (
           <Skeleton />
         )
@@ -298,7 +309,10 @@ export default function ProjectDetail() {
             actions={actions}
             breadcrumbs={[{ name: t`Projects`, url: '/projects/' }]}
             lastCrumb={[
-              { name: project?.name || t`Project`, url: `/projects/${project?.pk}` }
+              {
+                name: project?.name || t`Project`,
+                url: `/projects/${project?.pk}`
+              }
             ]}
           />
           <PanelGroup

@@ -1,5 +1,5 @@
 import { t } from '@lingui/core/macro';
-import { Anchor, Group, HoverCard, Image } from '@mantine/core';
+import { Anchor, Group, HoverCard } from '@mantine/core';
 import { type ReactNode, useMemo } from 'react';
 
 import { ApiImage } from './ApiImage';
@@ -62,9 +62,9 @@ export function Thumbnail({
         </Group>
       </HoverCard.Target>
       <HoverCard.Dropdown>
-        <Image
+        <ApiImage
           src={src || backup_image}
-          alt={alt}
+          aria-label={alt}
           w={hoverSize}
           fit='contain'
           style={{ maxHeight: hoverSize }}

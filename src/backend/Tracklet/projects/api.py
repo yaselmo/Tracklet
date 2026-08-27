@@ -4,7 +4,9 @@ from collections import OrderedDict
 from datetime import timedelta
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
+from django.db.utils import IntegrityError
 from django.db.models import (
     Count,
     DecimalField,
@@ -44,6 +46,7 @@ from stock.serializers import StockItemSerializer
 from .models import (
     Project,
     ProjectInstrument,
+    ProjectInstrumentReleaseStatus,
     ProjectReport,
     ProjectReportItem,
     ProjectStatus,
@@ -556,10 +559,28 @@ class ProjectInstrumentList(ListCreateDestroyAPIView):
 
         serializer = self.get_serializer(data=self.clean_data(data))
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        try:
+            self.perform_create(serializer)
+        except (IntegrityError, DjangoValidationError) as exc:
+            detail = (
+                exc.message_dict
+                if isinstance(exc, DjangoValidationError) and hasattr(exc, 'message_dict')
+                else {
+                    'non_field_errors': [
+                        _(
+                            'Unable to create the project instrument with the provided data.'
+                        )
+                    ]
+                }
+            )
+            raise serializers.ValidationError(detail) from exc
         headers = self.get_success_headers(serializer.data)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        """Explicitly set release status during API creates."""
+        serializer.save(release_status=ProjectInstrumentReleaseStatus.PENDING)
 
 
 class ProjectInstrumentDetail(RetrieveUpdateDestroyAPI):

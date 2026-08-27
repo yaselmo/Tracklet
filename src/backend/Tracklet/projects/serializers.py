@@ -18,6 +18,7 @@ from Tracklet.serializers import InvenTreeModelSerializer, enable_filter
 from .models import (
     Project,
     ProjectInstrument,
+    ProjectInstrumentReleaseStatus,
     ProjectReport,
     ProjectReportItem,
     ProjectStockAllocation,
@@ -392,6 +393,13 @@ class ProjectInstrumentSerializer(InvenTreeModelSerializer):
                 })
 
         return attrs
+
+    def create(self, validated_data):
+        """Backfill release status for older clients that do not send it."""
+        validated_data.setdefault(
+            'release_status', ProjectInstrumentReleaseStatus.PENDING
+        )
+        return super().create(validated_data)
 
 
 class DashboardSummarySerializer(serializers.Serializer):

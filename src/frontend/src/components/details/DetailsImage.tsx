@@ -19,7 +19,7 @@ import {
 } from '@mantine/dropzone';
 import { useHover } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
-import { type ComponentType, useMemo, useState } from 'react';
+import { type ComponentType, useEffect, useMemo, useState } from 'react';
 
 import { ActionButton } from '@lib/components/ActionButton';
 import type { UserRoles } from '@lib/enums/Roles';
@@ -41,7 +41,7 @@ import { StylishText } from '../items/StylishText';
  */
 export type DetailImageProps = {
   appRole?: UserRoles;
-  src: string;
+  src?: string;
   apiPath: string;
   refresh?: () => void;
   imageActions?: DetailImageButtonProps;
@@ -392,6 +392,10 @@ export function DetailsImage(props: Readonly<DetailImageProps>) {
   // Displays a group of ActionButtons on hover
   const { hovered, ref } = useHover();
   const [img, setImg] = useState<string>(props.src ?? backup_image);
+
+  useEffect(() => {
+    setImg(props.src ?? backup_image);
+  }, [props.src]);
 
   // Sets a new image, and triggers upstream instance refresh
   const setAndRefresh = (image: string) => {
