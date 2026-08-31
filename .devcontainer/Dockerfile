@@ -3,7 +3,7 @@
 # In contrast with the "production" image (which is based on an Alpine image)
 # we use a Debian-based image for the devcontainer
 
-FROM mcr.microsoft.com/devcontainers/python:3.11-bookworm@sha256:e754c29c4e3ffcf6c794c1020e36a0812341d88ec9569a34704b975fa89e8848
+FROM mcr.microsoft.com/devcontainers/python:3.14-bookworm@sha256:b1c8e01d2dcb17a102fdd0abd2d2f4737f2b1be0373944314ef22c39f3c4b931
 
 # InvenTree paths
 ENV INVENTREE_HOME="/home/inventree"
